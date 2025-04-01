@@ -119,7 +119,7 @@ export const menuItems: MenuItemType[] = [
   {
     label: "employees",
     icon: "ph-file-text",
-    id: "sidebarInvoices",
+    id: "sidebarEmployees",
     prefix: "/invoices",
     link: "/invoices/list"
   },
@@ -141,14 +141,14 @@ export const menuItems: MenuItemType[] = [
   {
     label: "clinics",
     icon: "ph-file-text",
-    id: "sidebarInvoices",
+    id: "sidebarClinics",
     prefix: "/invoices",
     link: "/invoices/list"
   },
   {
     label: "billing",
     icon: "ph-file-text",
-    id: "sidebarInvoices",
+    id: "sidebarBilling",
     prefix: "/invoices",
     link: "/invoices/list"
   },
@@ -187,6 +187,16 @@ export const menuItems: MenuItemType[] = [
     label: "administration",
     isHeader: true,
     id: "HeaderMenu",
+  },
+  {
+    label: "base-tables",
+    icon: "ph-user-circle",
+    id: "sidebarAuth",
+    subMenu: [
+      { label: "document-types", link: "/baseTable/documenttype/list" },
+      { label: "institution-types", link: "/auth/signup" },
+      { label: "state-types", link: "/auth/pass-reset" },
+    ],
   },
   /*{
     label: "pages",

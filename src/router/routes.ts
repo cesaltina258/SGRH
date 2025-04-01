@@ -28,6 +28,7 @@ const mapPrefix = "/maps";
 
 //new 
 const institutionPrefix = "/institution";
+const baseTablePrefix = "/baseTable";
 
 
 const institutionRoutes = [
@@ -48,6 +49,32 @@ const institutionRoutes = [
     name: "CreateInvoice",
     component: () => import("@/views/institution/CreateInstitution.vue"),
     meta: { title: "Create Institution", authRequired: true },
+  },
+].map((data) => {
+  return {
+    ...data,
+    meta: { ...data.meta, layout: DefaultLayout },
+  };
+});
+
+const baseTableRoutes = [
+  {
+    path: `${baseTablePrefix}/documenttype/list`,
+    name: "DocumentTypeListView",
+    component: () => import("@/views/baseTables/documentType/ListView.vue"),
+    meta: { title: "Agent List", authRequired: true },
+  },
+  {
+    path: `${baseTablePrefix}/grid`,
+    name: "DocumentTypeGridView",
+    component: () => import("@/views/baseTables/documentType/GridView.vue"),
+    meta: { title: "Agent Grid", authRequired: true },
+  },
+  {
+    path: `${baseTablePrefix}/overview`,
+    name: "DocumentTypeOverview",
+    component: () => import("@/views/baseTables/documentType/Overview.vue"),
+    meta: { title: "Overview", authRequired: true },
   },
 ].map((data) => {
   return {
@@ -1028,6 +1055,7 @@ export const routes = [
   ...advanceUIRoutes,
   ...customUIRoutes,
   ...institutionRoutes,
+  ...baseTableRoutes,
   {
     path: "/widgets",
     name: "Widgets",

@@ -305,8 +305,14 @@
   "t-search-for-interaction": "Search interaction...",
   "t-interaction": "Interaction",
   "t-interaction-type": "Interaction Type",
-  "t-document-type": "Document Type",
+  "t-document-type": "Document Type", 
+  "t-document-types": "Document Types",
   "t-clinics": "Clinics",
-  "t-billing": "Billing"
+  "t-billing": "Billing",
+  "t-document-type-list": "Document Type List",
+  "t-base-tables": "Base Tables",
+  "t-institution-types": "Institution Type",
+  "t-state-types": "State Types"
+
 
 }
