@@ -31,39 +31,21 @@ const dialogValue = computed({
   },
 });
 
-const img = ref(formData.value.img ? [formData.value.img] : []);
 const name = ref(formData.value.name || "");
-const location = ref(formData.value.location || "");
-const email = ref(formData.value.email || "");
-const contact = ref(formData.value.contact || "");
-const status = ref(formData.value.status || "");
-
+const description = ref(formData.value.description || "");
 const onSubmit = () => {
-  if (!img.value.length) {
-    errorMsg.value = "Please enter image!";
-  } else if (!name.value) {
+  if (!name.value) {
     errorMsg.value = "Please enter agent name!";
-  } else if (!location.value) {
-    errorMsg.value = "Please enter location!";
-  } else if (!email.value) {
-    errorMsg.value = "Please enter email!";
-  } else if (!contact.value) {
-    errorMsg.value = "Please enter contact!";
-  } else if (!status.value) {
-    errorMsg.value = "Please select status!";
-  }
+  } else if (!description.value) {
+    errorMsg.value = "Please enter description!";
+  } 
 
   setTimeout(() => {
     errorMsg.value = "";
   }, 3000);
 
-  if (
-    !img.value.length ||
-    !name.value ||
-    !location.value ||
-    !email.value ||
-    !contact.value ||
-    !status.value
+  if (!name.value ||
+    !description.value
   ) {
     return;
   }
@@ -72,12 +54,8 @@ const onSubmit = () => {
 
   const data = {
     ...prop.data,
-    img: img.value[0],
     name: name.value,
-    location: location.value,
-    email: email.value,
-    contact: contact.value,
-    status: status.value,
+    description: description.value,
   };
 
   emit("onSubmit", data);
@@ -105,37 +83,13 @@ const onSubmit = () => {
       />
       <v-card-text data-simplebar style="height: calc(100vh - 300px)">
         <div class="font-weight-bold text-caption mb-1">
-          Agent Images <i class="ph-asterisk ph-xs text-danger" />
-        </div>
-        <ImageUploader v-model="img" :multiple="false" />
-
-        <div class="font-weight-bold text-caption mb-1">
           Agent Name <i class="ph-asterisk ph-xs text-danger" />
         </div>
-        <TextField v-model="name" placeholder="Enter agent name" />
 
-        <div class="font-weight-bold text-caption mb-1">
-          Email <i class="ph-asterisk ph-xs text-danger" />
-        </div>
-        <TextField v-model="email" placeholder="Enter email" />
-
-        <div class="font-weight-bold text-caption mb-1">
-          Contact Number <i class="ph-asterisk ph-xs text-danger" />
-        </div>
-        <TextField v-model="contact" placeholder="Enter contact number" />
-
-        <div class="font-weight-bold text-caption mb-1">
-          Status <i class="ph-asterisk ph-xs text-danger" />
-        </div>
-        <MenuSelect
-          v-model="status"
-          :items="statusOptions"
-          placeholder="Select status"
-        />
         <div class="font-weight-bold text-caption mb-1 mt-3">
           Address <i class="ph-asterisk ph-xs text-danger" />
         </div>
-        <TextArea v-model="location" placeholder="Enter address" />
+        <TextArea v-model="description" placeholder="Enter address" />
       </v-card-text>
       <v-divider />
       <v-card-actions class="d-flex justify-end">

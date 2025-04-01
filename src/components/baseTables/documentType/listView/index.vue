@@ -109,8 +109,7 @@ watch(query, (newQuery: string) => {
     const val = newQuery.toLowerCase();
     if (
       item.name.toLowerCase().includes(val) ||
-      item.location.includes(val) ||
-      item.email.includes(val)
+      item.description.includes(val)
     ) {
       return item;
     }
@@ -134,16 +133,8 @@ const onCreateEditClick = (data: AgentListingType | null) => {
   if (!data) {
     agentData.value = {
       id: -1,
-      joining_date: new Date(),
-      img: "",
-      img_alt: "avatar.jpg",
       name: "",
-      property: "149",
-      location: "",
-      email: "",
-      contact: "",
-      status: "",
-      new: true,
+      description: "",
     };
   } else {
     agentData.value = data;
@@ -157,7 +148,7 @@ const onSubmit = (data: AgentListingType) => {
     const preparedData = {
       ...data,
       id: finalData.value.length + 1,
-      img: data.img.src ? data.img.src : data.img,
+      // img: data.img.src ? data.img.src : data.img,
     };
 
     filteredData.value.unshift(preparedData);
@@ -218,7 +209,7 @@ const onSelectAll = () => {
         </v-col>
         <v-col lg="auto">
           <v-btn color="secondary" @click="onCreateEditClick(null)">
-            <i class="ph-user-plus me-1" /> Add Agent
+            <i class="ph-user-plus me-1" /> {{ $t('t-add-document-type') }}
           </v-btn>
         </v-col>
       </v-row>
@@ -247,15 +238,11 @@ const onSelectAll = () => {
             >
               #TBS{{ item.id }}
             </td>
-            <td>{{ formateDate(item.joining_date) }}</td>
             <td>
-              <v-avatar :image="item.img" rounded size="small" class="me-2" />
+              <!-- <v-avatar :image="item.img" rounded size="small" class="me-2" /> -->
               {{ item.name }}
             </td>
-            <td>{{ item.location }}</td>
-            <td>{{ item.email }}</td>
-            <td>{{ item.contact }}</td>
-            <td><Status :status="item.status" /></td>
+            <td>{{ item.description }}</td>
             <td>
               <TableAction
                 @onEdit="onCreateEditClick(item)"

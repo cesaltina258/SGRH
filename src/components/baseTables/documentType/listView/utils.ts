@@ -15,11 +15,7 @@ export const breadcrumb: BreadcrumbType[] = [
 export const listViewHeader: TableHeaderType[] = [
   { title: "", isCheck: true },
   { title: "#" },
-  { title: "Date" },
-  { title: "Agent Name" },
-  { title: "Address" },
-  { title: "Email" },
-  { title: "Contacts" },
-  { title: "Status" },
-  { title: "Action" },
+  { title: "Nome" },
+  { title: "Descrição" },
+  { title: "Acção" },
 ];

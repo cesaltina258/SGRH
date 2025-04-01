@@ -305,14 +305,22 @@
   "t-search-for-interaction": "Search interaction...",
   "t-interaction": "Interaction",
   "t-interaction-type": "Interaction Type",
-  "t-document-type": "Document Type", 
+  "t-document-type": "Document Type",
   "t-document-types": "Document Types",
   "t-clinics": "Clinics",
   "t-billing": "Billing",
   "t-document-type-list": "Document Type List",
   "t-base-tables": "Base Tables",
   "t-institution-types": "Institution Type",
-  "t-state-types": "State Types"
-
+  "t-state-types": "State Types",
+  "t-description": "Description",
+  "t-add-document-type": "Add Document Type",
+  "t-edit-document-type": "Edit Document Type",
+  "t-search-document-type": "Search Document Type",
+  "t-delete-document-type": "Are you sure you want to delete this document type?",
+  "t-delete-text": "Are you sure?",
+  "t-close": "Close",
+  "t-confirm-delete":"Yes, Delete It!",
+  "t-add": "Add"
 
 }

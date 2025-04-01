@@ -43,18 +43,18 @@ const dialogValue = computed({
         </div>
         <div class="mt-4">
           <h4 class="text-h6 font-weight-bold">
-            <slot name="title"> Are you sure ? </slot>
+            <slot name="title"> {{ $t('t-delete-text') }} </slot>
           </h4>
           <p class="text-muted mx-4 mb-0 text-subtitle-1">
             <slot name="text">
-              Are you sure you want to remove this record ?
+             {{ $t('t-delete-document-type') }}
             </slot>
           </p>
         </div>
       </v-card-text>
       <v-card-actions class="d-flex justify-center mt-4 mb-7">
         <v-btn @click="dialogValue = false" class="me-2" flat variant="tonal">
-          Close
+          {{ $t('t-close') }}
         </v-btn>
         <v-btn
           color="danger"
@@ -62,7 +62,7 @@ const dialogValue = computed({
           variant="elevated"
           @click="emit('onConfirm')"
         >
-          Yes, Delete It!
+        {{ $t('t-confirm-delete') }}
         </v-btn>
       </v-card-actions>
     </v-card>
