@@ -11,6 +11,8 @@ import CreateUpdateAgentDialog from "@/components/baseTables/documentType/Create
 import { formateDate } from "@/app/common/dateFormate";
 import { useRouter } from "vue-router";
 import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue";
+import { useI18n } from "vue-i18n";
+
 
 const router = useRouter();
 const dialog = ref(false);
@@ -27,6 +29,14 @@ const mappedData = agentListingData
     };
   })
   .toReversed();
+
+const { t } = useI18n();
+const translatedHeader = computed(() =>
+  listViewHeader.map((item) => ({
+    ...item,
+    title: t(item.title), // assume que item.title tem a key do i18n, como 't-name'
+  }))
+);
 
 const filteredData = ref<AgentListingType[]>(mappedData);
 const finalData = ref<AgentListingType[]>(filteredData.value);
@@ -199,13 +209,10 @@ const onSelectAll = () => {
 </script>
 <template>
   <v-card>
-    <v-card-title>
+    <v-card-title class="mt-2 mb-2">
       <v-row justify="space-between">
         <v-col lg="3">
-          <QuerySearch
-            v-model="query"
-            placeholder="Search for agent, email, address or something..."
-          />
+          <QuerySearch v-model="query" :placeholder="$t('t-search-document')" />
         </v-col>
         <v-col lg="auto">
           <v-btn color="secondary" @click="onCreateEditClick(null)">
@@ -215,40 +222,22 @@ const onSelectAll = () => {
       </v-row>
     </v-card-title>
     <v-card-text>
-      <Table
-        v-model="page"
-        :headerItems="listViewHeader"
-        :config="config"
-        :loading="loading"
-        is-pagination
-        @on-select-all="onSelectAll"
-      >
+      <Table v-model="page" :headerItems="translatedHeader" :config="config" :loading="loading" is-pagination
+        @on-select-all="onSelectAll">
         <template #body>
-          <tr
-            v-for="(item, index) in tableData"
-            :key="'agent-listing-item-' + index"
-            height="50"
-          >
+          <tr v-for="(item, index) in tableData" :key="'agent-listing-item-' + index" height="50">
             <td>
               <v-checkbox v-model="item.isCheck" hide-details color="primary" />
             </td>
-            <td
-              class="text-primary font-weight-bold curser-pointer"
-              @click="onView"
-            >
-              #TBS{{ item.id }}
-            </td>
             <td>
-              <!-- <v-avatar :image="item.img" rounded size="small" class="me-2" /> -->
               {{ item.name }}
             </td>
             <td>{{ item.description }}</td>
             <td>
-              <TableAction
-                @onEdit="onCreateEditClick(item)"
-                @onView="onView"
-                @onDelete="onDelete(item.id)"
-              />
+              <Status :status="item.status" />
+            </td>
+            <td>
+              <TableAction @onEdit="onCreateEditClick(item)" @onView="onView" @onDelete="onDelete(item.id)" />
             </td>
           </tr>
         </template>
@@ -271,16 +260,7 @@ const onSelectAll = () => {
     </v-card-text>
   </v-card>
 
-  <CreateUpdateAgentDialog
-    v-if="agentData"
-    v-model="dialog"
-    :data="agentData"
-    @onSubmit="onSubmit"
-  />
+  <CreateUpdateAgentDialog v-if="agentData" v-model="dialog" :data="agentData" @onSubmit="onSubmit" />
 
-  <RemoveItemConfirmationDialog
-    v-if="deleteId"
-    v-model="deleteDialog"
-    @onConfirm="onConfirmDelete"
-  />
+  <RemoveItemConfirmationDialog v-if="deleteId" v-model="deleteDialog" @onConfirm="onConfirmDelete" />
 </template>

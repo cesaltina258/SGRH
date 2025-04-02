@@ -14,8 +14,8 @@ export const breadcrumb: BreadcrumbType[] = [
 
 export const listViewHeader: TableHeaderType[] = [
   { title: "", isCheck: true },
-  { title: "#" },
-  { title: "Nome" },
-  { title: "Descrição" },
-  { title: "Acção" },
+  { title: "t-name" },
+  { title: "t-description" },
+  { title: "t-status" },
+  { title: "t-action" },
 ];

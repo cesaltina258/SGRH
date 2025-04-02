@@ -3,4 +3,5 @@ export type AgentListingType = {
   name: string;
   description: string;
   isCheck?: boolean;
+  status?: string;
 };

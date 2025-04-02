@@ -33,12 +33,15 @@ const dialogValue = computed({
 
 const name = ref(formData.value.name || "");
 const description = ref(formData.value.description || "");
+const status = ref(formData.value.status || "");
 
 const onSubmit = () => {
   if (!name.value) {
     errorMsg.value = "Please enter agent name!";
   } else if (!description.value) {
     errorMsg.value = "Please enter description!";
+  } else if (!status.value) {
+    errorMsg.value = "Please select status!";
   }
 
   setTimeout(() => {
@@ -47,7 +50,8 @@ const onSubmit = () => {
 
   if (
     !name.value ||
-    !description.value 
+    !description.value ||
+    !status.value
   ) {
     return;
   }
@@ -58,6 +62,7 @@ const onSubmit = () => {
     ...prop.data,
     name: name.value,
     description: description.value,
+    status: status.value,
   };
 
   emit("onSubmit", data);
@@ -65,21 +70,27 @@ const onSubmit = () => {
 </script>
 <template>
   <v-dialog v-model="dialogValue" width="500" scrollable>
-    <Card :title="isCreate ? $t('t-add-document-type') : $t('t-edit-document-type')" title-class="py-0" style="overflow: hidden">
+    <Card :title="isCreate ? $t('t-add-document-type') : $t('t-edit-document-type')" title-class="py-0"
+      style="overflow: hidden">
       <template #title-action>
         <v-btn icon="ph-x" variant="plain" @click="dialogValue = false" />
       </template>
       <v-divider />
 
       <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mx-5 mt-3" density="compact" />
-      <v-card-text data-simplebar >
+      <v-card-text data-simplebar>
         <div class="font-weight-bold text-caption mb-1">
-          {{$t('t-name')}} <i class="ph-asterisk ph-xs text-danger" />
+          {{ $t('t-name') }} <i class="ph-asterisk ph-xs text-danger" />
         </div>
         <TextField v-model="name" placeholder="Enter name" />
 
+        <div class="font-weight-bold text-caption mb-1">
+          {{ $t('t-status') }} <i class="ph-asterisk ph-xs text-danger" />
+        </div>
+        <MenuSelect v-model="status" :items="statusOptions" placeholder="Select status" />
+
         <div class="font-weight-bold text-caption mb-1 mt-3">
-          {{$t('t-description')}} <i class="ph-asterisk ph-xs text-danger" />
+          {{ $t('t-description') }} <i class="ph-asterisk ph-xs text-danger" />
         </div>
         <TextArea v-model="description" placeholder="Enter description" />
       </v-card-text>

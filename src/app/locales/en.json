@@ -321,6 +321,7 @@
   "t-delete-text": "Are you sure?",
   "t-close": "Close",
   "t-confirm-delete":"Yes, Delete It!",
-  "t-add": "Add"
+  "t-add": "Add",
+  "t-search-document": "Search for name or description..."
 
 }
