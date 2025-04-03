@@ -195,7 +195,7 @@ export const menuItems: MenuItemType[] = [
     subMenu: [
       { label: "document-types", link: "/baseTable/documenttype/list" },
       { label: "institution-types", link: "/auth/signup" },
-      { label: "state-types", link: "/auth/pass-reset" },
+      { label: "status-types", link: "/baseTable/statustype/list" },
     ],
   },
   /*{

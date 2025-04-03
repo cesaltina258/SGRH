@@ -322,5 +322,9 @@
   "t-close": "Fechar",
   "t-confirm-delete": "Sim, apagar!",
   "t-add": "Adicionar",
-  "t-search-document": "Pesquisar por nome ou descrição..."
+  "t-search-document": "Pesquisar por nome ou descrição...",
+  "t-add-status-types": "Adicionar Tipo de Estado",
+  "t-status-types-list": "Lista de Tipos de Estados",
+  "t-status-types": "Tipos de Estados",
+  "t-update-status-types": "Editar Tipo de Estado"
 }

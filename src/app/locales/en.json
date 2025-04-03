@@ -320,8 +320,11 @@
   "t-delete-document-type": "Are you sure you want to delete this document type?",
   "t-delete-text": "Are you sure?",
   "t-close": "Close",
-  "t-confirm-delete":"Yes, Delete It!",
+  "t-confirm-delete": "Yes, Delete It!",
   "t-add": "Add",
-  "t-search-document": "Search for name or description..."
-
+  "t-search-document": "Search for name or description...",
+  "t-add-status-types": "Add Status Type",
+  "t-status-types-list": "List of Status Types",
+  "t-status-types": "Status Types",
+  "t-update-status-types": "Edit Status Type"
 }
