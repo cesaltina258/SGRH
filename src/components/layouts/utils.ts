@@ -194,7 +194,7 @@ export const menuItems: MenuItemType[] = [
     id: "sidebarAuth",
     subMenu: [
       { label: "document-types", link: "/baseTable/documenttype/list" },
-      { label: "institution-types", link: "/auth/signup" },
+      { label: "institution-types", link: "/baseTable/institutionstypes/list" },
       { label: "status-types", link: "/baseTable/statustype/list" },
     ],
   },

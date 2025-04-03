@@ -311,7 +311,7 @@
   "t-billing": "Billing",
   "t-document-type-list": "Document Type List",
   "t-base-tables": "Base Tables",
-  "t-institution-types": "Institution Type",
+  "t-institution-types": "Institutions Types",
   "t-state-types": "State Types",
   "t-description": "Description",
   "t-add-document-type": "Add Document Type",
@@ -326,5 +326,8 @@
   "t-add-status-types": "Add Status Type",
   "t-status-types-list": "List of Status Types",
   "t-status-types": "Status Types",
-  "t-update-status-types": "Edit Status Type"
+  "t-update-status-types": "Edit Status Type",
+  "t-add-institution-type": "Add Institution Type",
+  "t-institutions-types-list": "List of Institution Types",
+  "t-edit-institution-type": "Edit Institution Type"
 }

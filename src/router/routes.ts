@@ -82,6 +82,12 @@ const baseTableRoutes = [
     component: () => import("@/views/baseTables/statusType/ListView.vue"),
     meta: { title: "Status Type List", authRequired: true },
   },
+  {
+    path: `${baseTablePrefix}/institutionstypes/list`,
+    name: "InstitutionTypeListView",
+    component: () => import("@/views/baseTables/institutionType/ListView.vue"),
+    meta: { title: "Institution Type List", authRequired: true },
+  },
 ].map((data) => {
   return {
     ...data,

@@ -326,5 +326,8 @@
   "t-add-status-types": "Adicionar Tipo de Estado",
   "t-status-types-list": "Lista de Tipos de Estados",
   "t-status-types": "Tipos de Estados",
-  "t-update-status-types": "Editar Tipo de Estado"
+  "t-update-status-types": "Editar Tipo de Estado",
+  "t-add-institution-type": "Adicionar Tipo de Instituição",
+  "t-institutions-types-list": "Lista de Tipos de Instituições",
+  "t-edit-institution-type": "Editar tipo de instituição"
 }
