@@ -103,6 +103,7 @@ const onClick = (path: string, isSingleLevel?: boolean) => {
               </template>
             </v-list-item>
           </template>
+          
 
           <v-list-item v-for="(nestedItem, index) in subMenu.subMenu" :key="index"
             class="py-0 nav nav-sm rail-navigation-list" density="compact" :to="nestedItem.link" height="38"

@@ -259,7 +259,7 @@
   "t-institution-name": "Nome da Instituição",
   "t-institution-type": "Tipo de Instituição",
   "t-created-date": "Data de Criação",
-  "t-status": "Estado",
+  "t-status": "Estados",
   "t-search-not-found-message": "Desculpe! Nenhum resultado encontrado",
   "t-delete-confirmation": " Tem certeza que deseja eliminar registo?",
   "t-confirmation": "Confirmação",
@@ -329,5 +329,10 @@
   "t-update-status-types": "Editar Tipo de Estado",
   "t-add-institution-type": "Adicionar Tipo de Instituição",
   "t-institutions-types-list": "Lista de Tipos de Instituições",
-  "t-edit-institution-type": "Editar tipo de instituição"
+  "t-edit-institution-type": "Editar tipo de instituição",
+  "t-appearance": "Aparência",
+  "t-color": "Cor",
+  "t-status-list": "Lista de Estados",
+  "t-add-status": "Adicionar Estado",
+  "t-edit-status": "Editar Estado"
 }

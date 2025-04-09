@@ -329,5 +329,10 @@
   "t-update-status-types": "Edit Status Type",
   "t-add-institution-type": "Add Institution Type",
   "t-institutions-types-list": "List of Institution Types",
-  "t-edit-institution-type": "Edit Institution Type"
+  "t-edit-institution-type": "Edit Institution Type",
+  "t-appearance": "Appearance",
+  "t-color": "Color",
+  "t-status-list": "Status List",
+  "t-add-status": "Add Status",
+  "t-edit-status": "Edit Status"
 }
