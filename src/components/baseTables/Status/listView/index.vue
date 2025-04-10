@@ -10,7 +10,7 @@ import TableAction from "@/app/common/components/TableAction.vue";
 import CreateUpdateAgentDialog from "@/components/baseTables/Status/CreateUpdateAgentDialog.vue";
 import { formateDate } from "@/app/common/dateFormate";
 import { useRouter } from "vue-router";
-import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue";
+import RemoveItemConfirmationDialog from "@/components/baseTables/Status/listView/RemoveItemConfirmationDialog.vue";
 import { useI18n } from "vue-i18n";
 
 

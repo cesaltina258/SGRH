@@ -100,6 +100,12 @@ const baseTableRoutes = [
     component: () => import("@/views/baseTables/function/ListView.vue"),
     meta: { title: "Status List", authRequired: true },
   },
+  {
+    path: `${baseTablePrefix}/currency/list`,
+    name: "CurrencyListView",
+    component: () => import("@/views/baseTables/currency/ListView.vue"),
+    meta: { title: "Currency List", authRequired: true },
+  },
 ].map((data) => {
   return {
     ...data,

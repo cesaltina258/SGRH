@@ -318,6 +318,11 @@
   "t-edit-document-type": "Editar tipo de Documento",
   "t-search-document-type": "Pesquisar Tipo de Documento",
   "t-delete-document-type": "Tem certeza que deseja excluir este tipo de documento?",
+  "t-delete-institution-type": "Tem certeza que deseja excluir este tipo de instituição?",
+  "t-delete-status-type": "Tem certeza que deseja excluir este tipo de estado?",
+  "t-delete-status": "Tem certeza que deseja excluir este estado?",
+  "t-delete-function": "Tem certeza que deseja excluir esta função?",
+  "t-delete-currency": "Tem certeza que deseja excluir esta moeda?",
   "t-delete-text": "Tem certeza?",
   "t-close": "Fechar",
   "t-confirm-delete": "Sim, apagar!",
@@ -338,5 +343,11 @@
   "t-function-list":"Lista de Funções",
   "t-add-function":"Adicionar Função",
   "t-function":"Funções",
-  "t-edit-function":"Editar Função"
+  "t-edit-function":"Editar Função",
+  "t-currency-list": "Lista de Moedas",
+  "t-add-currency": "Adicionar Moeda",
+  "t-currency": "Moedas",
+  "t-edit-currency": "Editar Moeda",
+  "t-symbol": "Símbolo",
+  "t-currency-name":"Nome"
 }

@@ -2,15 +2,15 @@
 import { ref, watch, computed, onMounted } from "vue";
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
 import Table from "@/app/common/components/Table.vue";
-import { listViewHeader } from "@/components/baseTables/statusType/listView/utils";
-import { agentListingData } from "@/components/baseTables/statusType/utils";
-import { AgentListingType } from "@/components/baseTables/statusType/types";
+import { listViewHeader } from "@/components/baseTables/currency/listView/utils";
+import { agentListingData } from "@/components/baseTables/currency/utils";
+import { AgentListingType } from "@/components/baseTables/currency/types";
 import Status from "@/app/common/components/Status.vue";
 import TableAction from "@/app/common/components/TableAction.vue";
-import CreateUpdateAgentDialog from "@/components/baseTables/statusType/CreateUpdateAgentDialog.vue";
+import CreateUpdateAgentDialog from "@/components/baseTables/currency/CreateUpdateAgentDialog.vue";
 import { formateDate } from "@/app/common/dateFormate";
 import { useRouter } from "vue-router";
-import RemoveItemConfirmationDialog from "@/components/baseTables/statusType/listView/RemoveItemConfirmationDialog.vue";
+import RemoveItemConfirmationDialog from "@/components/baseTables/currency/listView/RemoveItemConfirmationDialog.vue";
 import { useI18n } from "vue-i18n";
 
 
@@ -216,12 +216,12 @@ const onSelectAll = () => {
         </v-col>
         <v-col lg="auto">
           <v-btn color="secondary" @click="onCreateEditClick(null)">
-            <i class="ph-user-plus me-1" /> {{ $t('t-add-status-types') }}
+            <i class="ph-user-plus me-1" /> {{ $t('t-add-currency') }}
           </v-btn>
         </v-col>
       </v-row>
     </v-card-title>
-    <v-card-text >
+    <v-card-text>
       <Table v-model="page" :headerItems="translatedHeader" :config="config" :loading="loading" is-pagination
         @on-select-all="onSelectAll">
         <template #body>
@@ -233,9 +233,9 @@ const onSelectAll = () => {
               {{ item.name }}
             </td>
             <td>{{ item.description }}</td>
-            <td>
+            <!-- <td>
               <Status :status="item.status" />
-            </td>
+            </td> -->
             <td>
               <TableAction @onEdit="onCreateEditClick(item)" @onView="onView" @onDelete="onDelete(item.id)" />
             </td>

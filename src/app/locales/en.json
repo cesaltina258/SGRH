@@ -338,5 +338,11 @@
   "t-function-list": "Function List",
   "t-add-function": "Add Function",
   "t-function": "Functions",
-  "t-edit-function": "Edit Function"
+  "t-edit-function": "Edit Function",
+  "t-currency-list": "Currency List",
+  "t-add-currency": "Add Currency",
+  "t-currency": "Currencies",
+  "t-edit-currency": "Edit Currency",
+  "t-symbol": "Symbol",
+  "t-currency-name":"Name"
 }
