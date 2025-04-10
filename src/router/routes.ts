@@ -106,6 +106,12 @@ const baseTableRoutes = [
     component: () => import("@/views/baseTables/currency/ListView.vue"),
     meta: { title: "Currency List", authRequired: true },
   },
+  {
+    path: `${baseTablePrefix}/contactType/list`,
+    name: "ContactTypeListView",
+    component: () => import("@/views/baseTables/contactType/ListView.vue"),
+    meta: { title: "Contact Type List", authRequired: true },
+  },
 ].map((data) => {
   return {
     ...data,

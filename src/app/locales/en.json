@@ -344,5 +344,10 @@
   "t-currency": "Currencies",
   "t-edit-currency": "Edit Currency",
   "t-symbol": "Symbol",
-  "t-currency-name":"Name"
+  "t-currency-name": "Name",
+  "t-contact-type-list": "Contact Type List",
+  "t-add-contact-type": "Add Contact Type",
+  "t-contact-types": "Contact Types",
+  "t-edit-contact-type": "Edit Contact Type",
+  "t-search-contact-type": "Searching by name..."
 }

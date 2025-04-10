@@ -199,6 +199,7 @@ export const menuItems: MenuItemType[] = [
       { label: "status", link: "/baseTable/status/list" },
       { label: "function", link: "/baseTable/function/list" },
       { label: "currency", link: "/baseTable/currency/list" },
+      { label: "contact-types", link: "/baseTable/contactType/list" },
     ],
   },
   /*{
