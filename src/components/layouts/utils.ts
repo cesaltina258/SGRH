@@ -197,6 +197,7 @@ export const menuItems: MenuItemType[] = [
       { label: "institution-types", link: "/baseTable/institutionstypes/list" },
       { label: "status-types", link: "/baseTable/statustype/list" },
       { label: "status", link: "/baseTable/status/list" },
+      { label: "function", link: "/baseTable/function/list" },
     ],
   },
   /*{

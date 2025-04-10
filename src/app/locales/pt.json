@@ -334,5 +334,9 @@
   "t-color": "Cor",
   "t-status-list": "Lista de Estados",
   "t-add-status": "Adicionar Estado",
-  "t-edit-status": "Editar Estado"
+  "t-edit-status": "Editar Estado",
+  "t-function-list":"Lista de Funções",
+  "t-add-function":"Adicionar Função",
+  "t-function":"Funções",
+  "t-edit-function":"Editar Função"
 }

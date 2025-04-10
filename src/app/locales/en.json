@@ -334,5 +334,9 @@
   "t-color": "Color",
   "t-status-list": "Status List",
   "t-add-status": "Add Status",
-  "t-edit-status": "Edit Status"
+  "t-edit-status": "Edit Status",
+  "t-function-list": "Function List",
+  "t-add-function": "Add Function",
+  "t-function": "Functions",
+  "t-edit-function": "Edit Function"
 }
