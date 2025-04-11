@@ -112,6 +112,12 @@ const baseTableRoutes = [
     component: () => import("@/views/baseTables/contactType/ListView.vue"),
     meta: { title: "Contact Type List", authRequired: true },
   },
+  {
+    path: `${baseTablePrefix}/repartition/list`,
+    name: "RepartitionListView",
+    component: () => import("@/views/baseTables/repartition/ListView.vue"),
+    meta: { title: "Repartition List", authRequired: true },
+  },
 ].map((data) => {
   return {
     ...data,

@@ -324,6 +324,7 @@
   "t-delete-function": "Tem certeza que deseja excluir esta função?",
   "t-delete-currency": "Tem certeza que deseja excluir esta moeda?",
   "t-delete-contact-type": "Tem certeza que deseja excluir este tipo de contacto?",
+  "t-delete-repartition": "Tem certeza de que deseja excluir esta repartição?",
   "t-delete-text": "Tem certeza?",
   "t-close": "Fechar",
   "t-confirm-delete": "Sim, apagar!",
@@ -355,5 +356,11 @@
   "t-add-contact-type": "Adicionar Tipo de Contacto",
   "t-contact-types": "Tipos de Contactos",
   "t-edit-contact-type": "Editar Tipo de Contacto",
-  "t-search-contact-type": "Pesquisar por nome..."
+  "t-search-contact-type": "Pesquisar por nome...",
+  "t-repartitions": "Repartições",
+  "t-repartition-list": "Lista de Repartições",
+  "t-add-repartition": "Adicionar Repartição",
+  "t-edit-repartition": "Editar Repartição",
+  "t-search-repartition": "Pesquisar por nome...",
+  "t-repartition-name": "Nome"
 }
