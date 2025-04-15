@@ -362,5 +362,12 @@
   "t-add-repartition": "Add Department",
   "t-edit-repartition": "Edit Department",
   "t-search-repartition": "Searching by name...",
-  "t-repartition-name": "Name"
+  "t-sector": "Sectors",
+  "t-add-sector": "Add Sector",
+  "t-sector-list": "Sector List",
+  "t-edit-sector-list": "List of Nature of Services",
+  "t-service-nature": "Nature of Services",
+  "t-add-service-nature": "Add Nature of Services",
+  "t-edit-service-nature": "Edit Nature of Services",
+  "t-sector-name": "Sector Name"
 }

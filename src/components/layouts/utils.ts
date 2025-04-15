@@ -201,6 +201,7 @@ export const menuItems: MenuItemType[] = [
       { label: "currency", link: "/baseTable/currency/list" },
       { label: "contact-types", link: "/baseTable/contactType/list" },
       { label: "repartitions", link: "/baseTable/repartition/list" },
+      { label: "sector", link: "/baseTable/sector/list" },
     ],
   },
   /*{

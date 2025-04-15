@@ -118,6 +118,18 @@ const baseTableRoutes = [
     component: () => import("@/views/baseTables/repartition/ListView.vue"),
     meta: { title: "Repartition List", authRequired: true },
   },
+  {
+    path: `${baseTablePrefix}/sector/list`,
+    name: "SectorListView",
+    component: () => import("@/views/baseTables/sector/ListView.vue"),
+    meta: { title: "Sector List", authRequired: true },
+  },
+  {
+    path: `${baseTablePrefix}/edit-sector`,
+    name: "EditSectorListView",
+    component: () => import("@/views/baseTables/sector/EditSector.vue"),
+    meta: { title: "Edit Sector List", authRequired: true },
+  },
 ].map((data) => {
   return {
     ...data,
