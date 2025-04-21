@@ -38,8 +38,6 @@ const status = ref(formData.value.status || "");
 const onSubmit = () => {
   if (!name.value) {
     errorMsg.value = "Please enter agent name!";
-  } else if (!description.value) {
-    errorMsg.value = "Please enter description!";
   } else if (!status.value) {
     errorMsg.value = "Please select status!";
   }
@@ -50,7 +48,6 @@ const onSubmit = () => {
 
   if (
     !name.value ||
-    !description.value ||
     !status.value
   ) {
     return;
@@ -85,12 +82,12 @@ const onSubmit = () => {
         <TextField v-model="name" placeholder="Enter name" />
 
         <div class="font-weight-bold text-caption mb-1">
-          {{ $t('t-status') }} <i class="ph-asterisk ph-xs text-danger" />
+          {{ $t('t-status-modal') }} <i class="ph-asterisk ph-xs text-danger" />
         </div>
         <MenuSelect v-model="status" :items="statusOptions" placeholder="Select status" />
 
         <div class="font-weight-bold text-caption mb-1 mt-3">
-          {{ $t('t-description') }} <i class="ph-asterisk ph-xs text-danger" />
+          {{ $t('t-description') }} 
         </div>
         <TextArea v-model="description" placeholder="Enter description" />
       </v-card-text>

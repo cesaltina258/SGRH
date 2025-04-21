@@ -16,5 +16,6 @@ export const listViewHeader: TableHeaderType[] = [
   { title: "", isCheck: true },
   { title: "t-name" },
   { title: "t-symbol" },
+  { title: "t-status-modal" },
   { title: "t-action" },
 ];

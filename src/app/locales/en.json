@@ -369,5 +369,6 @@
   "t-service-nature": "Nature of Services",
   "t-add-service-nature": "Add Nature of Services",
   "t-edit-service-nature": "Edit Nature of Services",
-  "t-sector-name": "Sector Name"
+  "t-sector-name": "Sector Name",
+  "t-status-modal": "Status"
 }

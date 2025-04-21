@@ -166,6 +166,12 @@ import {
     { label: "UnActive", value: "unActive" },
   ];
 
+  export const statusOption: MenuSelectItemType[] = [
+    { label: "Select all", value: "" },
+    { label: "Active", value: "active" },
+    { label: "UnActive", value: "unActive" },
+  ];
+
 
   export const statusSelectOptions: MenuSelectItemTypeOption[] = [
     { label: "Select all", value: "" },

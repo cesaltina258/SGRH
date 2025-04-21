@@ -233,9 +233,9 @@ const onSelectAll = () => {
               {{ item.name }}
             </td>
             <td>{{ item.description }}</td>
-            <!-- <td>
+            <td>
               <Status :status="item.status" />
-            </td> -->
+            </td>
             <td>
               <TableAction @onEdit="onCreateEditClick(item)" @onView="onView" @onDelete="onDelete(item.id)" />
             </td>

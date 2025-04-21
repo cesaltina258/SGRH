@@ -370,5 +370,6 @@
   "t-service-nature": "Natureza de Serviços",
   "t-add-service-nature": "Adicionar Natureza dos Serviços",
   "t-edit-service-nature": "Editar Natureza dos Serviços",
-  "t-sector-name": "Sector de Actuação"
+  "t-sector-name": "Sector de Actuação",
+  "t-status-modal": "Estado"
 }

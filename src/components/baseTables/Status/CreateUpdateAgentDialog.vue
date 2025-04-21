@@ -4,6 +4,7 @@ import { AgentListingType } from "@/components/baseTables/Status/types";
 import ImageUploader from "@/app/common/components/ImageUploader.vue";
 import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
 import { statusSelectOptions } from "@/components/realEstate/agent/utils";
+import { statusOption } from "@/components/realEstate/agent/utils";
 import { agentListingData } from "@/components/realEstate/agent/utils";
 import Status from "@/components/baseTables/Status/utils/Status.vue";
 
@@ -38,12 +39,12 @@ const description = ref(formData.value.description || "");
 const status = ref(formData.value.status || "");
 const status_type = ref(formData.value.status_type || "");
 const color = ref(formData.value.color || "");
+const select_status = ref(formData.value.select_status || "");
+
 
 const onSubmit = () => {
   if (!name.value) {
     errorMsg.value = "Please enter agent name!";
-  } else if (!description.value) {
-    errorMsg.value = "Please enter description!";
   } else if (!status.value) {
     errorMsg.value = "Please select status!";
   } else if (!status_type.value) {
@@ -58,8 +59,7 @@ const onSubmit = () => {
 
   if (
     !name.value ||
-    !description.value ||
-    !status.value
+    !status.value || !select_status.value || !status_type.value 
   ) {
     return;
   }
@@ -73,7 +73,9 @@ const onSubmit = () => {
     status: status.value,
     status_type: status_type.value,
     color: color.value,
+    select_status: select_status.value,
   };
+
 
   emit("onSubmit", data);
 };
@@ -92,9 +94,8 @@ const corSelecionada = computed(() => {
 
 </script>
 <template>
-  <v-dialog v-model="dialogValue" width="500" scrollable>
-    <Card :title="isCreate ? $t('t-add-status') : $t('t-edit-status')" title-class="py-0"
-      style="overflow: hidden">
+  <v-dialog v-model="dialogValue" width="600" scrollable>
+    <Card :title="isCreate ? $t('t-add-status') : $t('t-edit-status')" title-class="py-0" style="overflow: hidden">
       <template #title-action>
         <v-btn icon="ph-x" variant="plain" @click="dialogValue = false" />
       </template>
@@ -103,13 +104,23 @@ const corSelecionada = computed(() => {
       <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mx-5 mt-3" density="compact" />
 
       <v-card-text data-simplebar>
-        <div class="font-weight-bold text-caption mb-1">
-          {{ $t('t-name') }} <i class="ph-asterisk ph-xs text-danger" />
-        </div>
-        <TextField v-model="name" placeholder="Enter name" />
+        <v-row>
+          <v-col cols="8">
+            <div class="font-weight-bold text-caption mb-1">
+              {{ $t('t-name') }} <i class="ph-asterisk ph-xs text-danger" />
+            </div>
+            <TextField v-model="name" placeholder="Enter name" />
+          </v-col>
+          <v-col cols="4">
+            <div class="font-weight-bold text-caption mb-1">
+              {{ $t('t-status-modal') }} <i class="ph-asterisk ph-xs text-danger" />
+            </div>
+            <MenuSelect v-model="select_status" :items="statusOption" placeholder="Enter status" />
+          </v-col>
+        </v-row>
 
         <v-row>
-          <v-col cols="5">
+          <v-col cols="4">
             <div class="font-weight-bold text-caption mb-1">
               {{ $t('t-status-types') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
@@ -122,7 +133,7 @@ const corSelecionada = computed(() => {
             </div>
             <MenuSelect v-model="status" :items="statusSelectOptions" placeholder="Select status" />
           </v-col>
-          <v-col cols="3">
+          <v-col cols="2">
             <!-- Aparência da cor do status selecionado -->
             <div class="form-group mb-15 mb-md-25 d-flex align-items-center mt-3">
               <div class="mt-5">
@@ -132,7 +143,7 @@ const corSelecionada = computed(() => {
           </v-col>
         </v-row>
         <div class="font-weight-bold text-caption mb-1">
-          {{ $t('t-description') }} <i class="ph-asterisk ph-xs text-danger" />
+          {{ $t('t-description') }}
         </div>
         <TextArea v-model="description" placeholder="Enter description" />
       </v-card-text>

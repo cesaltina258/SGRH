@@ -33,22 +33,22 @@ const dialogValue = computed({
 
 const name = ref(formData.value.name || "");
 const description = ref(formData.value.description || "");
+const status = ref(formData.value.status || "");
 
 const onSubmit = () => {
   if (!name.value) {
     errorMsg.value = "Please enter agent name!";
   } else if (!description.value) {
-    errorMsg.value = "Please enter description!";
+    errorMsg.value = "Please select symbol!";
+  }else if (!status.value) {
+    errorMsg.value = "Please select status!";
   }
 
   setTimeout(() => {
     errorMsg.value = "";
   }, 3000);
 
-  if (
-    !name.value ||
-    !description.value
-  ) {
+  if (!name.value || !description.value || !status.value) {
     return;
   }
 
@@ -57,7 +57,8 @@ const onSubmit = () => {
   const data = {
     ...prop.data,
     name: name.value,
-    description: description.value,
+    description: description.value, // opcional
+    status: status.value,
   };
 
   emit("onSubmit", data);
@@ -74,7 +75,7 @@ const onSubmit = () => {
       <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mx-5 mt-3" density="compact" />
       <v-card-text data-simplebar>
         <v-row>
-          <v-col cols="6">
+          <v-col cols="12">
             <div class="font-weight-bold text-caption mb-1">
               {{ $t('t-currency-name') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
@@ -85,6 +86,12 @@ const onSubmit = () => {
               {{ $t('t-symbol') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
             <TextField v-model="description" placeholder="Enter symbol" />
+          </v-col>
+          <v-col cols="6">
+            <div class="font-weight-bold text-caption mb-1">
+              {{ $t('t-status-modal') }} <i class="ph-asterisk ph-xs text-danger" />
+            </div>
+            <MenuSelect v-model="status" :items="statusOptions" placeholder="Select status" />
           </v-col>
         </v-row>
       </v-card-text>

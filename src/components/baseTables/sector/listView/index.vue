@@ -240,6 +240,9 @@ const onSelectAll = () => {
               {{ item.name }}
             </td>
             <td style="padding-right: 550px;"></td>
+            <td>
+              <Status :status="item.status" />
+            </td>
             <td >
               <TableAction @onEdit="onEdit(item)" @onView="onEdit(item)" @onDelete="onDelete(item.id)" />
             </td>

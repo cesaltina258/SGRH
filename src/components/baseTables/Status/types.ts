@@ -6,4 +6,5 @@ export type AgentListingType = {
   description: string;
   isCheck?: boolean;
   status?: string;
+  select_status?: string;
 };

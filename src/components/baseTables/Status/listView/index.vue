@@ -6,6 +6,7 @@ import { listViewHeaderStatus } from "@/components/baseTables/Status/listView/ut
 import { agentListingData } from "@/components/baseTables/Status/utils/utils";
 import { AgentListingType } from "@/components/baseTables/Status/types";
 import Status from "@/components/baseTables/Status/utils/Status.vue";
+import StatusSelect  from "@/components/baseTables/Status/utils/StatusSelect.vue";
 import TableAction from "@/app/common/components/TableAction.vue";
 import CreateUpdateAgentDialog from "@/components/baseTables/Status/CreateUpdateAgentDialog.vue";
 import { formateDate } from "@/app/common/dateFormate";
@@ -234,8 +235,12 @@ const onSelectAll = () => {
             </td>
             <td>{{ item.description }}</td>
             <td>
+              <StatusSelect :status="item.select_status" />
+            </td>
+            <td>
               <Status :status="item.status" />
             </td>
+            
             <td>
               <TableAction @onEdit="onCreateEditClick(item)" @onView="onView" @onDelete="onDelete(item.id)" />
             </td>

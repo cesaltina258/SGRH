@@ -19,6 +19,7 @@ export const agentListingData: AgentListingType[] = [
     status_type: "Dianna Bogan",
     description: "Especialista em contratos de arrendamento residencial.",
     status: "active",
+    select_status: "active",
     new: true,
   },
   {
@@ -27,6 +28,7 @@ export const agentListingData: AgentListingType[] = [
     status_type: "Josefa Weissnat",
     description: "Responsável por escritura pública de compra e venda.",
     status: "unActive",
+    select_status: "unActive",
     new: false,
   },
   {
@@ -35,6 +37,7 @@ export const agentListingData: AgentListingType[] = [
     status_type: "Ophelia Steuber",
     description: "Especialista em registros de imóveis urbanos.",
     status: "active",
+    select_status: "active",
     new: false,
   },
   {
@@ -43,6 +46,7 @@ export const agentListingData: AgentListingType[] = [
     status_type: "Federico Hand",
     description: "Perito em documentação de hipotecas e garantias.",
     status: "active",
+    select_status: "active",
     new: false,
   },
   {
@@ -51,6 +55,7 @@ export const agentListingData: AgentListingType[] = [
     status_type: "Uriel King",
     description: "Avaliador de certidões negativas e ônus reais.",
     status: "unActive",
+    select_status: "unActive",
     new: true,
   },
   // {
