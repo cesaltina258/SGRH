@@ -62,7 +62,8 @@ const onSubmit = () => {
 </script>
 <template>
   <v-dialog v-model="dialogValue" width="600" scrollable>
-    <Card :title="isCreate ? $t('t-add-repartition') : $t('t-edit-repartition')" title-class="py-0" style="overflow: hidden">
+    <Card :title="isCreate ? $t('t-add-repartition') : $t('t-edit-repartition')" title-class="py-0"
+      style="overflow: hidden">
       <template #title-action>
         <v-btn icon="ph-x" variant="plain" @click="dialogValue = false" />
       </template>
@@ -70,15 +71,21 @@ const onSubmit = () => {
 
       <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mx-5 mt-3" density="compact" />
       <v-card-text data-simplebar>
+        <v-row>
+          <v-col cols="8">
             <div class="font-weight-bold text-caption mb-1">
               {{ $t('t-repartition-name') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
             <TextField v-model="name" placeholder="Enter name" />
+          </v-col>
 
+          <v-col cols="4">
             <div class="font-weight-bold text-caption mb-1">
               {{ $t('t-status-modal') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
             <MenuSelect v-model="status" :items="statusOptions" placeholder="Select status" />
+          </v-col>
+        </v-row>
       </v-card-text>
       <v-card-actions class="d-flex justify-end">
         <div>

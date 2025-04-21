@@ -64,7 +64,7 @@ const onSubmit = () => {
 
 </script>
 <template>
-  <v-dialog v-model="dialogValue" width="500" scrollable>
+  <v-dialog v-model="dialogValue" width="600" scrollable>
     <Card :title="isCreate ? $t('t-add-document-type') : $t('t-edit-document-type')" title-class="py-0"
       style="overflow: hidden">
       <template #title-action>
@@ -74,16 +74,21 @@ const onSubmit = () => {
 
       <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mx-5 mt-3" density="compact" />
       <v-card-text data-simplebar>
-        <div class="font-weight-bold text-caption mb-1">
-          {{ $t('t-name') }} <i class="ph-asterisk ph-xs text-danger" />
-        </div>
-        <TextField v-model="name" placeholder="Enter name" />
+        <v-row>
+          <v-col cols="8">
+            <div class="font-weight-bold text-caption mb-1">
+              {{ $t('t-name') }} <i class="ph-asterisk ph-xs text-danger" />
+            </div>
+            <TextField v-model="name" placeholder="Enter name" />
+          </v-col>
 
-        <div class="font-weight-bold text-caption mb-1">
-          {{ $t('t-status-modal') }} <i class="ph-asterisk ph-xs text-danger" />
-        </div>
-        <MenuSelect v-model="status" :items="statusOptions" placeholder="Select status" />
-
+          <v-col cols="4">
+            <div class="font-weight-bold text-caption mb-1">
+              {{ $t('t-status-modal') }} <i class="ph-asterisk ph-xs text-danger" />
+            </div>
+            <MenuSelect v-model="status" :items="statusOptions" placeholder="Select status" />
+          </v-col>
+        </v-row>
         <div class="font-weight-bold text-caption mb-1 mt-3">
           {{ $t('t-description') }}
         </div>
