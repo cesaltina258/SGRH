@@ -1,8 +1,7 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue";
 import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
-import { statusOptions } from "@/components/institution/createInstitution/utils";
-import ImageUploader from "@/app/common/components/ImageUploader.vue";
+import { statusOptions } from "@/components/employee/create/utils";
 
 const emit = defineEmits(["update:modelValue", "onConfirm"]);
 

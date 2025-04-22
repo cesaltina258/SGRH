@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import { ref } from "vue";
-import ButtonNav from "@/components/institution/createInstitution/ButtonNav.vue";
-import Step1 from "@/components/institution/createInstitution/TabGeneralInfo.vue";
-import Step2 from "@/components/institution/createInstitution/TabContacts.vue";
-import Step3 from "@/components/institution/createInstitution/TabHealthPlan.vue";
-import Step4 from "@/components/institution/createInstitution/TabInteractionHistory.vue";
+import ButtonNav from "@/components/employee/create/ButtonNav.vue";
+import Step1 from "@/components/employee/create/TabGeneralInfo.vue";
+import Step2 from "@/components/employee/create/TabContacts.vue";
+import Step3 from "@/components/employee/create/TabHealthPlan.vue";
+import Step4 from "@/components/employee/create/TabInteractionHistory.vue";
 const step = ref(1);
 
 const onStepChange = (value: number) => {

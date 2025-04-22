@@ -1,7 +1,5 @@
 <script lang="ts" setup>
 import { ref } from "vue";
-import { propertyTypes } from "@/components/realEstate/grid/utils";
-import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
 const emit = defineEmits(["onStepChange"]);
 
 const img = ref([]);

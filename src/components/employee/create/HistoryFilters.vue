@@ -1,8 +1,6 @@
 <script lang="ts" setup>
 import { computed } from "vue";
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
-import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
-import { statusOptions } from "@/components/institution/createInstitution/utils";
 
 const emit = defineEmits(["update:modelValue"]);
 
@@ -53,20 +51,13 @@ const date = computed({
   <v-card>
     <v-card-text>
       <v-row>
-        <v-col cols="12" lg="4">
+        <v-col cols="12" lg="6">
           <QuerySearch
             v-model="query"
-            :placeholder="$t('t-search-for-contact')"
+            :placeholder="$t('t-search-for-interaction')"
           />
         </v-col>
-        <v-col cols="12" sm="6" lg="lg">
-          <MenuSelect
-            v-model="status"
-            :items="statusOptions"
-            :placeholder="$t('t-select-status')"
-          />
-        </v-col>
-        <v-col cols="12" sm="6" lg="lg">
+        <v-col cols="12" sm="12" lg="lg">
           <VueDatePicker
             v-model="date"
             :teleport="true"
