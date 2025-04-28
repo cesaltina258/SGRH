@@ -40,7 +40,7 @@ const firstName = ref(formData.value.firstName || "");
 const lastName = ref(formData.value.lastName || "");
 const email = ref(formData.value.email || "");
 const username = ref(formData.value.username || "");
-const enable = ref(formData.value.enable || true);
+//const enable = ref(formData.value.enable || true);
 
 // Remove as refs de password se não for criação
 const password = ref(isCreate ? formData.value.password || "" : "");

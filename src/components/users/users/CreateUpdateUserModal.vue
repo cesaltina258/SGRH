@@ -36,13 +36,13 @@ const dialogValue = computed({
 }); 
 
 const id =  ref(formData.value.id || "");
-const firstName = ref(formData.value.firstName || "");
+const firstName = ref(formData.value.firstName || ""); 
 const lastName = ref(formData.value.lastName || "");
 const email = ref(formData.value.email || "");
 const username = ref(formData.value.username || "");
-const enable = ref(formData.value.enable || true);
+//const enable = ref(formData.value.enable || true);
 
-// Remove as refs de password se não for criação
+// Remove as refs de password se  for criação
 const password = ref(isCreate ? formData.value.password || "" : "");
 const password_confirm = ref(isCreate ? formData.value.password_confirm || "" : "");
 
@@ -51,9 +51,12 @@ const { t } = useI18n();
 //validate functions
 const validatePassword = () => {
   if (!isCreate.value) return true; // Ignora validação se for update
-  
-  if (password.value !== password_confirm.value) {
-    errorMsg.value = t('t-passwords-do-not-match');
+
+  const pwdValue = typeof password.value === 'object' ? password.value.value : password.value;
+  const pwdConfirmValue = typeof password_confirm.value === 'object' ? password_confirm.value.value : password_confirm.value;
+
+  if (pwdValue !== pwdConfirmValue) {
+    errorMsg.value = t('t-please-enter-same-password-and-password-confirm');
     return false;
   }
   return true;
@@ -67,7 +70,7 @@ const validateEmail = (email: string) => {
 
 const onSubmit = () => {
 
-  //Validações Gerais
+//Validações Gerais
 
   if (firstName.value === '') {
     errorMsg.value = t('t-please-enter-firstname');
@@ -106,7 +109,6 @@ const onSubmit = () => {
     } 
     
     if (!validatePassword()) {
-      errorMsg.value = t('t-please-enter-same-password-and-password-confirm');
       setTimeout(() => errorMsg.value = "", 3000);
       return;
     }
@@ -143,7 +145,7 @@ const onSubmit = () => {
   localLoading.value = true;
 
   const data = {
-    id: id.value,
+    ...(!isCreate.value && { id: id.value }),// Apenas inclui password se for update
     firstName: firstName.value,
     lastName: lastName.value,
     email: typeof email.value === 'object' ? email.value.value : email.value,
@@ -152,10 +154,10 @@ const onSubmit = () => {
       password: typeof password.value === 'object' ? password.value.value : password.value,
       password_confirm: typeof password_confirm.value === 'object' ? password_confirm.value.value : password_confirm.value
     }),
-    enable: enable.value
+    //enable: enable.value
   };
 
-  console.log('data',data);
+  //console.log('data',data);
 
   //emit("onSubmit", data);
 
