@@ -4,9 +4,7 @@ export type UserInsertType= {
   lastName: string;
   email: string;
   username: string;
-  enabled: boolean;
 };
-
 
 export type UserListingType  = {
   id: number;
@@ -26,3 +24,9 @@ export type UserListingType  = {
 };
 
 
+export type UserUpdateType = {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  username?: string;
+}
