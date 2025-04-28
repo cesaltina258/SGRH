@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import Overview from "@/components/institution/list/Overview.vue";
-import Listing from '@/components/institution/list/Listing.vue'
+import Overview from "@/components/employee/list/Overview.vue";
+import Listing from '@/components/employee/list/Listing.vue'
 
 </script>
 <template>

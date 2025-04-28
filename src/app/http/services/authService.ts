@@ -6,16 +6,17 @@ class AuthService {
 
     async login(username: string, password: string) {
         try {
-          const response = await axiosInstance.post("/user/login", { username, password });
+          const response = await axiosInstance.post("/auth/login", { username, password });
     
-          //console.log("🔍 Resposta do login:", response);
+          console.log("🔍 Resposta do login:", response);
     
           // ✅ Garante que a resposta e os dados existem antes de acessá-los
-          if (!response || !response.data || !response.data.data) {
+          if (!response || !response.data ) {
+            
             throw new Error("Resposta inválida da API: Dados ausentes");
           }
     
-          const accessToken = response.data.data.access_token;
+          const accessToken = response.data.token;
     
           if (!accessToken) {
             throw new Error("Resposta inválida da API: Access token ausente");
@@ -31,12 +32,12 @@ class AuthService {
           //console.log("✅ Token salvo no Pinia");
     
           // ✅ Buscar perfil do usuário após login
-          const userProfile = await this.getUserProfile();
-          authStore.setUser(userProfile);
+          //const userProfile = await this.getUserProfile();
+          //authStore.setUser(userProfile);
     
           //console.log("👤 Perfil do usuário salvo:", userProfile);
     
-          return response.data.data;
+          return response.data;
     
         } catch (error: any) {
           console.error("❌ Erro no login:", error.message || error);

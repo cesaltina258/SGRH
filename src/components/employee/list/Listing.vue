@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
 import { ref, watch, computed, onMounted } from "vue";
-import { invoiceHeader, invoicesList } from "@/components/institution/list/utils";
+import { invoiceHeader, invoicesList } from "@/components/employee/list/utils";
 import Table from "@/app/common/components/Table.vue";
 import Status from "@/app/common/components/Status.vue";
 import ConfirmationDialog from "@/app/common/components/ConfirmationDialog.vue";
@@ -135,24 +135,24 @@ const updateTableData = (newVal: any[]) => {
 };
 
 const onView = () => {
-  router.push({ path: "/institution/overview" });
+  router.push({ path: "/employee/overview" });
 };
 
 const onEdit = () => {
-  router.push({ path: "/institution/create" });
+  router.push({ path: "/employee/create" });
 };
 </script>
 
 <template>
-  <Card :title="$t('t-institution-list')" class="mt-7">
+  <Card :title="$t('t-employee-list')" class="mt-7">
     <template #title-action>
       <v-row justify="end" align="center" no-gutters>
         <v-col lg="3">
-          <QuerySearch v-model="query" :placeholder="$t('t-search-institution')" />
+          <QuerySearch v-model="query" :placeholder="$t('t-search-employee')" />
         </v-col>
         <v-col lg="auto" class="ms-3">
-          <v-btn color="secondary" to="/institution/create">
-            <i class="ph-plus-circle" /> {{ $t('t-add-institution') }}
+          <v-btn color="secondary" to="/employee/create">
+            <i class="ph-plus-circle" /> {{ $t('t-add-employee') }}
           </v-btn>
         </v-col>
       </v-row>

@@ -28,6 +28,8 @@ const mapPrefix = "/maps";
 
 //new 
 const institutionPrefix = "/institution";
+const employeePrefix = "/employee";
+const baseTablePrefix = "/baseTable";
 
 
 const institutionRoutes = [
@@ -48,6 +50,58 @@ const institutionRoutes = [
     name: "CreateInvoice",
     component: () => import("@/views/institution/CreateInstitution.vue"),
     meta: { title: "Create Institution", authRequired: true },
+  },
+].map((data) => {
+  return {
+    ...data,
+    meta: { ...data.meta, layout: DefaultLayout },
+  };
+});
+
+const employeeRoutes = [
+  {
+    path: `${employeePrefix}/list`,
+    name: "EmployeeList",
+    component: () => import("@/views/employee/List.vue"),
+    meta: { title: "Employee List", authRequired: true },
+  },
+  {
+    path: `${employeePrefix}/overview`,
+    name: "EmployeeOverview",
+    component: () => import("@/views/employee/Overview.vue"),
+    meta: { title: "Employee Overview", authRequired: true },
+  },
+  {
+    path: `${employeePrefix}/create`,
+    name: "CreateEmployee",
+    component: () => import("@/views/employee/CreateInstitution.vue"),
+    meta: { title: "Create Employee", authRequired: true },
+  },
+].map((data) => {
+  return {
+    ...data,
+    meta: { ...data.meta, layout: DefaultLayout },
+  };
+});
+
+const baseTableRoutes = [
+  {
+    path: `${baseTablePrefix}/documenttype/list`,
+    name: "DocumentTypeListView",
+    component: () => import("@/views/baseTables/documentType/ListView.vue"),
+    meta: { title: "Agent List", authRequired: true },
+  },
+  {
+    path: `${baseTablePrefix}/documenttype/grid`,
+    name: "DocumentTypeGridView",
+    component: () => import("@/views/baseTables/documentType/GridView.vue"),
+    meta: { title: "Agent Grid", authRequired: true },
+  },
+  {
+    path: `${baseTablePrefix}/documenttype/overview`,
+    name: "DocumentTypeOverview",
+    component: () => import("@/views/baseTables/documentType/Overview.vue"),
+    meta: { title: "Overview", authRequired: true },
   },
 ].map((data) => {
   return {
@@ -1028,6 +1082,8 @@ export const routes = [
   ...advanceUIRoutes,
   ...customUIRoutes,
   ...institutionRoutes,
+  ...employeeRoutes,
+  ...baseTableRoutes,
   {
     path: "/widgets",
     name: "Widgets",
