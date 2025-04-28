@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { institutionOverview } from "@/components/institution/list/utils";
+import { employeeOverview } from "@/components/employee/list/utils";
 </script>
 <template>
   <v-row>
@@ -11,10 +11,10 @@ import { institutionOverview } from "@/components/institution/list/utils";
               cols="12"
               sm="6"
               lg="3"
-              v-for="(item, index) in institutionOverview"
+              v-for="(item, index) in employeeOverview"
               :key="'invoice-list-' + index"
               class="ps-10"
-              :class="index < institutionOverview.length - 1 ? 'right-border' : ''"
+              :class="index < employeeOverview.length - 1 ? 'right-border' : ''"
             >
               <v-avatar
                 :color="item.color"

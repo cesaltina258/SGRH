@@ -3,7 +3,7 @@ import { TableHeaderType } from "@/app/common/types/table.types";
 
 export const breadcrumb: BreadcrumbType[] = [
   {
-    title: "institutions",
+    title: "employees",
     disabled: false,
   },
   {
@@ -12,9 +12,9 @@ export const breadcrumb: BreadcrumbType[] = [
   },
 ];
 
-export const institutionOverview = [
+export const employeeOverview = [
   {
-    title: "total-institution",
+    title: "total-employees",
     endVal: 8956,
     color: "primary",
     percent: "12.09%",
@@ -22,7 +22,7 @@ export const institutionOverview = [
     icon: "ph-buildings",
   },
   {
-    title: "total-active-institution",
+    title: "total-active-employees",
     endVal: 4519,
     color: "success",
     percent: "6.57%",
@@ -30,7 +30,7 @@ export const institutionOverview = [
     icon: "ph-check",
   },
   {
-    title: "total-inactive-institution",
+    title: "total-inactive-employees",
     endVal: 2648,
     color: "danger",
     percent: "4.07%",
@@ -38,7 +38,7 @@ export const institutionOverview = [
     icon: "ph-x-circle",
   },
   {
-    title: "new-institution-registed",
+    title: "new-employees-registed",
     endVal: 871,
     color: "primary",
     percent: "3.49%",

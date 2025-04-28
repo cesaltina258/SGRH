@@ -120,8 +120,8 @@ export const menuItems: MenuItemType[] = [
     label: "employees",
     icon: "ph-file-text",
     id: "sidebarEmployees",
-    prefix: "/invoices",
-    link: "/invoices/list"
+    prefix: "/employee",
+    link: "/employee/list"
   },
   /*{
     label: "support-tickets",

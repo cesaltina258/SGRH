@@ -312,7 +312,11 @@
   "t-document-type-list": "Lista de Tipos de Documento",
   "t-base-tables": "Tabelas Base",
   "t-institution-types": "Tipos de Instituições",
-  "t-state-types": "Tipos de Estado"
-
+  "t-state-types": "Tipos de Estado",
+  "t-employee-list": "Lista de Funcionários",
+  "t-total-employees": "Total de Funcionários",
+  "t-total-active-employees": "Total de Funcionários Activos",
+  "t-total-inactive-employees": "Total de Funcionários Inativos",
+  "t-new-employees-registed": "Total de Novos Funcionários"
 
 }
