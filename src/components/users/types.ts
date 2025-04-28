@@ -1,10 +1,14 @@
-export type UserType = {
+export type UserInsertType= {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
   username: string;
-  email?: string;
-  password: string;
+  enabled: boolean;
 };
 
-export type UserType1 = {
+
+export type UserListingType  = {
   id: number;
   firstName: string;
   lastName: string;
@@ -22,8 +26,3 @@ export type UserType1 = {
 };
 
 
-export type AuthResponse = {
-  accessToken: string;
-  refreshToken: string;
-  user: UserType;
-};

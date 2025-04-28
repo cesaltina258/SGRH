@@ -44,6 +44,7 @@ const onSignIn = async () => {
         router.push({ path: "/" });
       }
     }
+    
   } catch (error: any) {
     errorMsg.value = error.message;
   } finally {

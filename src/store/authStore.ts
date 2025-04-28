@@ -20,7 +20,7 @@ export const useAuthStore = defineStore("auth", () => {
 
     function setUser(userData: any) {
         if (!userData || typeof userData !== "object") {
-            //console.error("❌ Dados inválidos ao definir usuário:", userData);
+            console.error("❌ Dados inválidos ao definir usuário:", userData);
             return;
         }
 
@@ -31,7 +31,7 @@ export const useAuthStore = defineStore("auth", () => {
 
     function setToken(accessToken: string) {
         if (!accessToken) {
-            //console.error("❌ Token inválido:", accessToken);
+            console.error("❌ Token inválido:", accessToken);
             return;
         }
         token.value = accessToken;

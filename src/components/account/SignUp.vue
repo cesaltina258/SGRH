@@ -44,7 +44,7 @@ const onSignUp = async () => {
       email: email.value,
     };
 
-    if (auth === "fakebackend") {
+    if (auth === "backend") {
       const data = await fakeBackendService.signUp(payload);
       if (data) {
         successMsg.value = data;

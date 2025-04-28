@@ -30,6 +30,7 @@ const mapPrefix = "/maps";
 const institutionPrefix = "/institution";
 const employeePrefix = "/employee";
 const baseTablePrefix = "/baseTable";
+const usersPrefix = "/users";
 
 
 const institutionRoutes = [
@@ -74,7 +75,7 @@ const employeeRoutes = [
   {
     path: `${employeePrefix}/create`,
     name: "CreateEmployee",
-    component: () => import("@/views/employee/CreateInstitution.vue"),
+    component: () => import("@/views/employee/Create.vue"),
     meta: { title: "Create Employee", authRequired: true },
   },
 ].map((data) => {
@@ -102,6 +103,20 @@ const baseTableRoutes = [
     name: "DocumentTypeOverview",
     component: () => import("@/views/baseTables/documentType/Overview.vue"),
     meta: { title: "Overview", authRequired: true },
+  },
+].map((data) => {
+  return {
+    ...data,
+    meta: { ...data.meta, layout: DefaultLayout },
+  };
+});
+
+const usersRoutes = [
+  {
+    path: `${usersPrefix}/users/list`,
+    name: "UsersListView",
+    component: () => import("@/views/users/users/ListView.vue"),
+    meta: { title: "Users List", authRequired: true },
   },
 ].map((data) => {
   return {
@@ -1084,6 +1099,7 @@ export const routes = [
   ...institutionRoutes,
   ...employeeRoutes,
   ...baseTableRoutes,
+  ...usersRoutes,
   {
     path: "/widgets",
     name: "Widgets",

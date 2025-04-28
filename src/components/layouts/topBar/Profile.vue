@@ -1,6 +1,7 @@
 <script lang="ts">
 import { brandsList } from "@/components/layouts/utils";
 import { useAuthStore } from "@/store/authStore";
+import { authService } from "@/app/http/httpServiceProvider";
 import { useRouter } from "vue-router"; 
 import { computed } from "vue";
 
@@ -18,7 +19,8 @@ export default {
     const userRole = computed(() => authStore.user?.function_name || "Sem função");
 
     function logout() {
-      authStore.clearUserData(); 
+      authService.logout();
+      //authStore.clearUserData(); 
       router.push("/login"); 
     }
 
