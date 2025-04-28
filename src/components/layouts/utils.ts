@@ -189,6 +189,15 @@ export const menuItems: MenuItemType[] = [
     id: "HeaderMenu",
   },
   {
+    label: "users",
+    icon: "ph-user-circle",
+    id: "sidebarUsers",
+    subMenu: [
+      { label: "users", link: "/users/users/list" },
+      { label: "functions", link: "/auth/signup" },
+    ],
+  },
+  {
     label: "base-tables",
     icon: "ph-user-circle",
     id: "sidebarAuth",
