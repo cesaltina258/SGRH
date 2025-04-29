@@ -11,13 +11,13 @@ class AuthService {
           console.log("🔍 Resposta do login:", response);
     
           // ✅ Garante que a resposta e os dados existem antes de acessá-los
-          if (!response || !response.data ) {
+          if (!response || !response.data.data ) {
             
             throw new Error("Resposta inválida da API: Dados ausentes");
           }
     
-          const accessToken = response.data.token;
-          const refreshToken = response.data.refreshToken;
+          const accessToken = response.data.data.token;
+          const refreshToken = response.data.data.refreshToken;
     
           if (!accessToken) {
             throw new Error("Resposta inválida da API: Access token ausente");
@@ -53,7 +53,7 @@ class AuthService {
             const response = await axiosInstance.get("/administration/users/own-profile");
             //console.log("👤 Perfil do usuário:", response.data);
 
-            return response.data;
+            return response.data.data;
 
         } catch (error) {
             

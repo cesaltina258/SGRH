@@ -32,12 +32,12 @@ axiosInstance.interceptors.response.use(
       if (refreshToken) {
         try {
           const { data } = await axios.post(`${appConfigs.baseUrl}auth/refresh-token`, { refreshToken });
-          setAccessToken(data.token);
-          setRefreshToken(data.refreshToken);
+          setAccessToken(data.data.token);
+          setRefreshToken(data.data.refreshToken);
           console.log('------------------------------token actualizado')
 
           // Atualizar o token e refazer a requisição original
-          originalRequest!.headers["Authorization"] = `Bearer ${data.token}`;
+          originalRequest!.headers["Authorization"] = `Bearer ${data.data.token}`;
           return axios(originalRequest!);
         } catch (refreshError) {
           console.error("Erro ao renovar token:", refreshError);

@@ -12,7 +12,7 @@ import { formateDate } from "@/app/common/dateFormate";
 import { useRouter } from "vue-router";
 import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue";
 import { useUserStore } from "@/store/userStore";
-import { userService } from "@/app/http/httpServiceProvider";
+import { userService } from "@/app/http/httpServiceProvider"; 
 import { useToast } from 'vue-toastification';
 import { useI18n } from "vue-i18n";
 

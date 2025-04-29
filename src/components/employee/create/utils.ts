@@ -1,155 +1,149 @@
 import { MenuSelectItemType } from "@/app/common/components/filters/types";
 import { BreadcrumbType } from "@/app/common/types/breadcrumb.type";
-import { TableHeaderType } from "@/app/common/types/table.types";
-import { OptionType } from "@/app/common/types/option.type";
-import { ContactType, HistoryType } from "@/components/institution/createInstitution/types";
 export const breadcrumb: BreadcrumbType[] = [
   {
-    title: "institution-list",
+    title: "employee-list",
     disabled: false,
   },
   {
-    title: "add-institution",
+    title: "add-employee",
     disabled: true,
   },
 ];
 
-export const statusOptions: MenuSelectItemType[] = [
-  { value: "", label: "Select status" },
-  { value: "Paid", label: "Paid" },
-  { value: "Pending", label: "Pending" },
-  { value: "Refund", label: "Refund" },
-  { value: "UnPaid", label: "UnPaid" },
-];
-
-export const productHeader: TableHeaderType[] = [
-  { title: "#" },
-  { title: "Product Details" },
-  { title: "Rate ($)" },
-  { title: "Quantity" },
-  { title: "Amount" },
-];
-
-
-export const contactOptions: OptionType[] = [
+export const genderOptions: MenuSelectItemType[] = [
+  { value: "", label: "Selecione o Sexo" },
   {
-    title: "view",
-    icon: "ph-eye",
-    value: "view",
+    label: "Feminino",
+    value: "F"
   },
   {
-    title: "edit",
-    icon: "ph-pencil",
-    value: "edit",
-  },
-  {
-    title: "delete",
-    icon: "ph-trash",
-    value: "delete",
+    label: "Masculino",
+    value: "M"
   },
 ];
 
-export const statusContactOptions: MenuSelectItemType[] = [
-  { value: "", label: "All Select" },
-  { value: "active", label: "Active" },
-  { value: "block", label: "Block" },
-  { value: "unActive", label: "UnActive" },
-];
-
-
-export const filters = {
-  query: "",
-  status: "",
-  date: "",
-};
-
-export const customers: ContactType[] = [
+export const maritalStatusOptions: MenuSelectItemType[] = [
+  { value: "", label: "Selecione o Estado Cívil" },
   {
-    id: "1",
-    name: "Javon Pouros",
-    email: "rashawn@steex.com",
-    phone: "+(253) 12345 67890",
-    create_date: "28 Feb, 2023",
-    status: "unActive",
+    label: "Solteiro",
+    value: "S"
   },
   {
-    id: "2",
-    name: "Willy Gulgowski",
-    email: "gulgowski@steex.com",
-    phone: "+(152) 32165 49873",
-    create_date: "20 Feb, 2023",
-    status: "block",
+    label: "Casado",
+    value: "C"
   },
   {
-    id: "3",
-    name: "Verona Mosciski",
-    email: "vmosciski@steex.com",
-    phone: "+(231) 14562 32165",
-    create_date: "16 Feb, 2023",
-    status: "active",
+    label: "Divorciado",
+    value: "D"
   },
   {
-    id: "4",
-    name: "Vinnie Huels",
-    email: "vinnie@steex.com",
-    phone: "+(44) 98765 32104",
-    create_date: "23 Jan, 2023",
-    status: "active",
+    label: "Viúvo",
+    value: "V"
+  },
+  {
+    label: "União de facto",
+    value: "U"
   }
 ];
 
-
-export const contactHeader: TableHeaderType[] = [
-  //{ title: "id" },
-  { title: "name" },
-  { title: "email" },
-  { title: "phone-number" },
-  { title: "created-date" },
-  { title: "status" },
-  { title: "action" },
+  export const bloodGroupOptions: MenuSelectItemType[] = [
+  { value: "", label: "Selecione o Grupo Sanguíneo" },
+  {
+    label: "A+",
+    value: "A+"
+  },
+  {
+    label: "A-",
+    value: "A-"
+  },
+  {
+    label: "B+",
+    value: "B+"
+  },
+  {
+    label: "B-",
+    value: "B-"
+  },
+  {
+    label: "AB+",
+    value: "AB+"
+  },
+  {
+    label: "AB-",
+    value: "AB-"
+  },
+  {
+    label: "O+",
+    value: "O+"
+  },
+  {
+    label: "O-",
+    value: "O-"
+  }   
 ];
 
-
-
-export const interactions: HistoryType[] = [
+export const nationalityOptions: MenuSelectItemType[] = [
   {
-    id: "1",
-    name: "Javon Pouros",
-    email: "rashawn@steex.com",
-    create_date: "28 Feb, 2023",
-    status: "unActive",
+    label: "Moçambicano",
+    value: "1073741824"
   },
   {
-    id: "2",
-    name: "Willy Gulgowski",
-    email: "gulgowski@steex.com",
-    create_date: "20 Feb, 2023",
-    status: "block",
+    label: "Angolano",
+    value: "Angola"
   },
   {
-    id: "3",
-    name: "Verona Mosciski",
-    email: "vmosciski@steex.com",
-    create_date: "16 Feb, 2023",
-    status: "active",
+    label: "Cabo Verdiano",
+    value: "Cabo Verde"
   },
   {
-    id: "4",
-    name: "Vinnie Huels",
-    email: "vinnie@steex.com",
-    create_date: "23 Jan, 2023",
-    status: "active",
+    label: "São Tomense",
+    value: "São Tomé e Príncipe"
   }
 ];
 
+export const provinceOptions: MenuSelectItemType[] = [
+  {
+    label: "Maputo",
+    value: "Maputo"
+  },
+  {
+    label: "Gaza",
+    value: "Gaza"   
+  },
+  {
+    label: "Inhambane",
+    value: "Inhambane"
+  },
+  {
+    label: "Sofala",
+    value: "Sofala"
+  },
+  {
+    label: "Manica",
+    value: "Manica"
+  },
+  {
+    label: "Tete",
+    value: "Tete"
+  },
+  {
+    label: "Zambézia",
+    value: "Zambézia"
+  },
+  {
+    label: "Nampula",
+    value: "Nampula"
+  },
+  {
+    label: "Niassa",
+    value: "Niassa"
+  },
+  {
+    label: "Cabo Delgado",
+    value: "Cabo Delgado"
+  }
 
-export const historyHeader: TableHeaderType[] = [
-  //{ title: "id" },
-  { title: "interaction" },
-  { title: "interaction-type" },
-  { title: "date" },
-  { title: "document-type" },
-  { title: "action" },
 ];
 
 
