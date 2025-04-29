@@ -8,7 +8,7 @@ export default class UserService extends HttpService {
     try {
       const response = await this.get("/administration/users/");
       //console.log('response users',response);
-      return response;
+      return response.data;
 
     } catch (error) {
       console.error("❌ Erro ao buscar utilizador:", error);
@@ -20,7 +20,7 @@ export default class UserService extends HttpService {
     try {
       const response = await this.post("/administration/users/", userData);
       console.log('response create user',response);
-      return response;
+      return response; // Retorna os dados do utilizador criado
 
     } catch (error) {
       console.error("❌ Erro ao criar utilizador:", error);

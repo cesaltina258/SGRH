@@ -1,146 +1,150 @@
 <script lang="ts" setup>
-import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
+// --- IMPORTS ---
 import { ref, watch, computed, onMounted } from "vue";
-import { invoiceHeader, invoicesList } from "@/components/employee/list/utils";
-import Table from "@/app/common/components/Table.vue";
-import Status from "@/app/common/components/Status.vue";
-import ConfirmationDialog from "@/app/common/components/ConfirmationDialog.vue";
 import { useRouter } from "vue-router";
+import { useEmployeeStore } from "@/store/employeeStore";
+import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
+import Table from "@/app/common/components/Table.vue";
 import TableAction from "@/app/common/components/TableAction.vue";
+import { employeeHeader } from "@/components/employee/list/utils";
+import type { EmployeeListingType } from "../types";
+import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue";
 
+// --- STORES E ROUTER ---
 const router = useRouter();
+const employeeStore = useEmployeeStore();
 
+// --- REFS ---
 const query = ref("");
 const confirmationDialog = ref(false);
 const deleteId = ref<number | null>(null);
-
-const mappedData = invoicesList.map((data: any) => {
-  return {
-    ...data,
-    isChecked: false,
-  };
-});
-
-const filteredData = ref(mappedData);
-const finalData = ref(filteredData.value);
 const isAllSelected = ref(false);
-
 const page = ref(1);
-const noOfItems = computed(() => {
-  return finalData.value.length;
-});
-const tableData = ref<any[]>([]);
 const loading = ref(false);
+const deleteLoading = ref(false);
+const tableData = ref<EmployeeListingType[]>([]);
 
+// --- CONFIG PAGINAÇÃO ---
+const itemsPerPage = 10;
 const config = ref({
   page: page.value,
   start: 0,
   end: 0,
-  noOfItems: noOfItems.value,
-  itemsPerPage: 10,
+  noOfItems: 0,
+  itemsPerPage: itemsPerPage,
 });
 
+// --- COMPUTED PROPERTIES ---
+// Dados mapeados com reversão para mostrar os mais recentes primeiro
+const mappedData = computed(() => 
+  employeeStore.employees.map(item => ({
+    ...item,
+    isCheck: false
+  })).toReversed()
+);
+
+// Dados filtrados pela pesquisa
+const filteredData = computed(() => {
+  if (!query.value) return mappedData.value;
+  
+  const searchTerm = query.value.toLowerCase();
+  return mappedData.value.filter(item => 
+    item.firstName?.toLowerCase().includes(searchTerm) ||
+    item.lastName?.toLowerCase().includes(searchTerm) ||
+    item.email?.toLowerCase().includes(searchTerm) ||
+    item.phone?.toLowerCase().includes(searchTerm)
+  );
+});
+
+// Total de itens para paginação
+const noOfItems = computed(() => filteredData.value.length);
+
+// --- WATCHERS ---
+// Atualiza paginação quando a página muda
+watch(page, (newPage) => {
+  config.value.page = newPage;
+  getPaginatedData();
+});
+
+// Atualiza dados quando a pesquisa muda
+watch(query, () => {
+  page.value = 1; // Reset para primeira página
+  getPaginatedData();
+});
+
+// Atualiza contagem total quando os dados filtrados mudam
+watch(filteredData, () => {
+  config.value.noOfItems = noOfItems.value;
+});
+
+// --- MÉTODOS ---
+// Obtém dados paginados
 const getPaginatedData = () => {
-  const { itemsPerPage, page } = config.value;
-  const start = (page - 1) * itemsPerPage;
-  let end = start + itemsPerPage;
-  end = end <= noOfItems.value ? end : noOfItems.value;
+  const start = (page.value - 1) * itemsPerPage;
+  const end = Math.min(start + itemsPerPage, noOfItems.value);
 
   config.value = {
     ...config.value,
     start,
     end,
+    noOfItems: noOfItems.value
   };
-
-  const data = filteredData.value.slice(config.value.start, config.value.end);
 
   loading.value = true;
   tableData.value = [];
 
   setTimeout(() => {
-    tableData.value = data;
+    tableData.value = filteredData.value.slice(start, end);
     loading.value = false;
   }, 200);
 };
 
-onMounted(() => {
-  getPaginatedData();
-});
-
-watch(page, (newPage: number) => {
-  config.value.page = newPage;
-  getPaginatedData();
-});
-
-watch(confirmationDialog, (dialog: boolean) => {
-  if (!dialog) {
-    deleteId.value = null;
-  }
-});
-
-watch(query, (newQuery: string) => {
-  filteredData.value = mappedData.filter((item) => {
-    const val = newQuery.toLowerCase();
-    if (
-      item.customer.toLowerCase().includes(val) ||
-      item.email.toLowerCase().includes(val)
-    ) {
-      return item;
-    }
-  });
-  updateTableData(filteredData.value);
-});
-
+// Seleciona/deseleciona todos os itens
 const onSelectAll = () => {
   isAllSelected.value = !isAllSelected.value;
-  tableData.value = tableData.value.map((item) => {
-    return {
-      ...item,
-      isChecked: isAllSelected.value,
-    };
-  });
+  tableData.value = tableData.value.map(item => ({
+    ...item,
+    isChecked: isAllSelected.value
+  }));
 };
 
+// Ações CRUD
 const onDelete = (id: number) => {
   deleteId.value = id;
   confirmationDialog.value = true;
 };
-const onConfirmDelete = () => {
-  filteredData.value = filteredData.value.filter((item) => {
-    return item.id !== deleteId.value;
-  });
-  confirmationDialog.value = false;
-  updateTableData(filteredData.value);
+
+const onConfirmDelete = async () => {
+  if (!deleteId.value) return;
+  
+  deleteLoading.value = true;
+  try {
+    await employeeStore.deleteEmployee(deleteId.value);
+    await employeeStore.fetchEmployees();
+    confirmationDialog.value = false;
+  } finally {
+    deleteLoading.value = false;
+  }
 };
 
-const updateTableData = (newVal: any[]) => {
+const onView = (id: number) => {
+  router.push({ path: `/employee/overview/${id}` });
+};
+
+const onEdit = (id: number) => {
+  router.push({ path: `/employee/edit/${id}` });
+};
+
+// --- LIFECYCLE HOOKS ---
+onMounted(async () => {
   loading.value = true;
-  const { itemsPerPage } = config.value;
-
-  const start = 1;
-  let end = start + itemsPerPage;
-  end = end <= newVal.length ? end : newVal.length;
-  tableData.value = [];
-
-  setTimeout(() => {
-    tableData.value = newVal;
-    config.value = {
-      ...config.value,
-      start,
-      end,
-      noOfItems: newVal.length,
-    };
+  try {
+    await employeeStore.fetchEmployees();
+    getPaginatedData();
+  } finally {
     loading.value = false;
-  }, 200);
-};
-
-const onView = () => {
-  router.push({ path: "/employee/overview" });
-};
-
-const onEdit = () => {
-  router.push({ path: "/employee/create" });
-};
+  }
+});
 </script>
 
 <template>
@@ -158,53 +162,53 @@ const onEdit = () => {
       </v-row>
     </template>
     <v-card-text>
-      <Table v-model="page" :headerItems="invoiceHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
-        is-pagination :config="config" :loading="loading" @onSelectAll="onSelectAll">
+      <Table 
+        :config="config" 
+        v-model:page="page"
+        :headerItems="employeeHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
+        :items-per-page="itemsPerPage"
+        :total-items="totalItems"
+        :loading="loading"
+         @on-select-all="onSelectAll"
+        is-pagination
+      >
         <template #body>
-          <tr v-for="(item, index) in tableData" :key="'cart-item-' + index" height="40">
+          <tr v-for="(item, index) in tableData" :key="'employee-' + index" height="40">
             <td>
               <v-checkbox v-model="item.isChecked" hide-details color="primary" />
             </td>
-            <td class="text-primary curser-pointer" @click="onView">
-              #TBS{{ 2430900 + item.id }}
+            <td class="text-primary cursor-pointer" @click="onView(item.id)">
+              #{{ item.employeeNumber }}
             </td>
-            <td>{{ item.customer }}</td>
+            <td>{{ item.firstName }} {{ item.lastName }}</td>
+            <td>{{ item.phone }}</td>
             <td>{{ item.email }}</td>
-            <td>{{ item.createDate }}</td>
-            <td>{{ item.dueDate }}</td>
-            <td>${{ item.invoice_amount }}</td>
             <td>
-              <Status :status="item.status" />
-            </td>
-            <td>
-              <TableAction @onView="onView" @onEdit="onEdit" @onDelete="onDelete(item.id)" />
+              <TableAction 
+                @onView="onView(item.id)" 
+                @onEdit="onEdit(item.id)" 
+                @onDelete="onDelete(item.id)" 
+              />
             </td>
           </tr>
         </template>
       </Table>
-      <div v-if="!filteredData.length" class="text-center">
+      
+      <div v-if="!tableData.length && !loading" class="text-center py-10">
         <v-avatar size="80" color="primary" variant="text">
           <i class="ph-magnifying-glass" style="font-size: 30px" color="primary" />
         </v-avatar>
         <div class="font-weight-bold text-subtitle-1 mb-1">
-          {{$t('t-search-not-found-message')}}
+          {{ $t('t-search-not-found-message') }}
         </div>
       </div>
     </v-card-text>
   </Card>
 
-  <ConfirmationDialog v-if="deleteId" v-model="confirmationDialog" @onConfirm="onConfirmDelete">
-    <v-btn variant="text" class="confirm-close-icon" icon="ph-x" @click="confirmationDialog = false" />
-    <v-card-text class="text-center ma-md-5">
-      <div class="text-danger">
-        <i class="ph ph-trash ph-4x"></i>
-      </div>
-      <div class="mt-4">
-        <h4>{{ $t('t-confirmation') }}</h4>
-        <p class="text-muted mx-4 mb-0 text-subtitle-1">
-          {{ $t('t-delete-confirmation') }}
-        </p>
-      </div>
-    </v-card-text>
-  </ConfirmationDialog>
+  <RemoveItemConfirmationDialog 
+    v-if="deleteId"
+    v-model="confirmationDialog"
+    @onConfirm="onConfirmDelete"
+    :loading="deleteLoading"
+  />
 </template>
