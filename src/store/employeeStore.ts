@@ -11,7 +11,6 @@ export const useEmployeeStore = defineStore('employees', {
   actions: {
     async fetchEmployees() {
       this.error = null;
-
       try {
         const data = await employeeService.getEmployees();
         console.log('response store employees', data);
