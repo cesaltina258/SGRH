@@ -60,19 +60,19 @@ const filteredData = computed(() => {
 const noOfItems = computed(() => filteredData.value.length);
 
 // --- WATCHERS ---
-// Atualiza paginação quando a página muda
+// Actualiza paginação quando a página muda
 watch(page, (newPage) => {
   config.value.page = newPage;
   getPaginatedData();
 });
 
-// Atualiza dados quando a pesquisa muda
+// Actualiza dados quando a pesquisa muda
 watch(query, () => {
   page.value = 1; // Reset para primeira página
   getPaginatedData();
 });
 
-// Atualiza contagem total quando os dados filtrados mudam
+// Actualiza contagem total quando os dados filtrados mudam
 watch(filteredData, () => {
   config.value.noOfItems = noOfItems.value;
 });
@@ -167,7 +167,6 @@ onMounted(async () => {
         v-model:page="page"
         :headerItems="employeeHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
         :items-per-page="itemsPerPage"
-        :total-items="totalItems"
         :loading="loading"
          @on-select-all="onSelectAll"
         is-pagination

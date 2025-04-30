@@ -6,8 +6,15 @@ import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
 import { borderedCard } from "@/components/ui/cards/utils";
 import BorderedCard from "@/components/ui/cards/BorderedCard.vue";
 import { id } from "@/assets/images/flags/utils";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 const emit = defineEmits(["onStepChange"]);
+
+const onBack = () => {
+  router.push({ path: `/employee/list` });
+};
 
 
 const employeeNumber = ref("");
@@ -95,13 +102,8 @@ const passportExpiryDate = ref(new Date());
           <div class="font-weight-bold mb-2">
             {{ $t('t-birth-date') }} <i class="ph-asterisk ph-xs text-danger" />
           </div>
-          <VueDatePicker
-            v-model="birthDate"
-            :teleport="true"
-            placeholder="Select date"
-            :enable-time-picker="false"
-            format="dd/MM/yyyy"
-          />
+          <VueDatePicker v-model="birthDate" :teleport="true" placeholder="Select date" :enable-time-picker="false" 
+            format="dd/MM/yyyy" />
         </v-col>
         <v-col cols="12" lg="4">
           <div class="font-weight-bold mb-2">
@@ -173,8 +175,9 @@ const passportExpiryDate = ref(new Date());
           <div class="font-weight-bold mb-2">
             {{ $t('t-phone') }} <i class="ph-asterisk ph-xs text-danger" />
           </div>
-          <MazPhoneNumberInput v-model="phone" default-country-code="MZ" size="sm" :placeholder="$t('t-enter-phone-number')"
-            :showCodeOnList="false" :no-example="true" class="custom-phone-input" />
+          <MazPhoneNumberInput v-model="phone" default-country-code="MZ" size="sm"
+            :placeholder="$t('t-enter-phone-number')" :showCodeOnList="false" :no-example="true"
+            class="custom-phone-input" />
         </v-col>
       </v-row>
       <v-row class="">
@@ -182,8 +185,9 @@ const passportExpiryDate = ref(new Date());
           <div class="font-weight-bold mb-2">
             {{ $t('t-mobile') }} <i class="ph-asterisk ph-xs text-danger" />
           </div>
-          <MazPhoneNumberInput v-model="mobile" default-country-code="MZ" size="sm" :placeholder="$t('t-enter-phone-number')"
-            :showCodeOnList="false" :no-example="true" class="custom-phone-input" />
+          <MazPhoneNumberInput v-model="mobile" default-country-code="MZ" size="sm"
+            :placeholder="$t('t-enter-phone-number')" :showCodeOnList="false" :no-example="true"
+            class="custom-phone-input" />
         </v-col>
         <v-col cols="12" lg="4">
           <div class="font-weight-bold mb-2">
@@ -195,8 +199,9 @@ const passportExpiryDate = ref(new Date());
           <div class="font-weight-bold mb-2">
             {{ $t('t-emergency-contact-phone') }} <i class="ph-asterisk ph-xs text-danger" />
           </div>
-          <MazPhoneNumberInput v-model="emergencyContactPhone" default-country-code="MZ" size="sm" :placeholder="$t('t-enter-phone-number')"
-            :showCodeOnList="false" :no-example="true" class="custom-phone-input" />
+          <MazPhoneNumberInput v-model="emergencyContactPhone" default-country-code="MZ" size="sm"
+            :placeholder="$t('t-enter-phone-number')" :showCodeOnList="false" :no-example="true"
+            class="custom-phone-input" />
         </v-col>
       </v-row>
       <v-row class="">
@@ -216,13 +221,8 @@ const passportExpiryDate = ref(new Date());
           <div class="font-weight-bold mb-2">
             {{ $t('t-id-card-expiry-date') }} <i class="ph-asterisk ph-xs text-danger" />
           </div>
-          <VueDatePicker
-            v-model="idCardExpiryDate"
-            :teleport="true"
-            :placeholder="$t('t-enter-id-card-expiry-date')"
-            :enable-time-picker="false"
-            format="dd/MM/yyyy"
-          />
+          <VueDatePicker v-model="idCardExpiryDate" :teleport="true" :placeholder="$t('t-enter-id-card-expiry-date')"
+            :enable-time-picker="false" format="dd/MM/yyyy" />
         </v-col>
       </v-row>
       <v-row class="">
@@ -230,13 +230,8 @@ const passportExpiryDate = ref(new Date());
           <div class="font-weight-bold mb-2">
             {{ $t('t-id-card-issuance-date') }} <i class="ph-asterisk ph-xs text-danger" />
           </div>
-          <VueDatePicker
-            v-model="idCardIssuanceDate"
-            :teleport="true"
-            :placeholder="$t('t-enter-id-card-issuance-date')"
-            :enable-time-picker="false"
-            format="dd/MM/yyyy"
-          />
+          <VueDatePicker v-model="idCardIssuanceDate" :teleport="true"
+            :placeholder="$t('t-enter-id-card-issuance-date')" :enable-time-picker="false" format="dd/MM/yyyy" />
         </v-col>
         <v-col cols="12" lg="4">
           <div class="font-weight-bold mb-2">
@@ -256,39 +251,38 @@ const passportExpiryDate = ref(new Date());
           <div class="font-weight-bold mb-2">
             {{ $t('t-passport-issuance-date') }} <i class="ph-asterisk ph-xs text-danger" />
           </div>
-          <VueDatePicker
-            v-model="passportIssuanceDate"
-            :teleport="true"
-            :placeholder="$t('t-passport-issuance-date')"
-            :enable-time-picker="false"
-            format="dd/MM/yyyy"
-          />
+          <VueDatePicker v-model="passportIssuanceDate" :teleport="true" :placeholder="$t('t-passport-issuance-date')"
+            :enable-time-picker="false" format="dd/MM/yyyy" />
         </v-col>
         <v-col cols="12" lg="6">
           <div class="font-weight-bold mb-2">
             {{ $t('t-id-passport-expiry-date') }} <i class="ph-asterisk ph-xs text-danger" />
           </div>
-          <VueDatePicker
-            v-model="passportExpiryDate"
-            :teleport="true"
-            :placeholder="$t('t-enter-id-passport-expiry-date')"
-            :enable-time-picker="false"
-            format="dd/MM/yyyy"
-          />
+          <VueDatePicker v-model="passportExpiryDate" :teleport="true"
+            :placeholder="$t('t-enter-id-passport-expiry-date')" :enable-time-picker="false" format="dd/MM/yyyy" />
         </v-col>
       </v-row>
     </v-card-text>
-
-
-    <v-card-actions class="d-flex justify-end mt-3">
+    <!--<v-card-actions class="d-flex justify-end mt-3">
       <v-btn color="success" variant="elevated" @click="emit('onStepChange', 2)">
         {{ $t('t-save-and-proceed') }} <i class="ph-arrow-right ms-2" />
+      </v-btn>
+    </v-card-actions>-->
+    <v-card-actions class="d-flex justify-space-between mt-3">
+      <v-btn color="secondary" variant="outlined" class="me-2" @click="onBack()">
+        {{ $t('t-cancel') }} <i class="ph-arrow-left ms-2" />
+      </v-btn>
+      <v-btn color="success" variant="elevated">
+        {{ $t('t-save') }} <i class="ph-floppy-disk ms-2" />
       </v-btn>
     </v-card-actions>
   </Card>
 </template>
 
 <style scoped>
+:deep(.dp__input) {
+  height: 2.63rem;
+}
 /* Container principal */
 .custom-phone-input {
   background-color: #fff;
