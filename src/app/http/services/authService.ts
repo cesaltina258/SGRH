@@ -6,7 +6,11 @@ class AuthService {
 
     async login(username: string, password: string) {
         try {
-          const response = await axiosInstance.post("/auth/login", { username, password });
+          const response = await axiosInstance.post("/auth/login", {
+            username: "admin",   // string direta
+            password: "admin"   // string direta
+          });
+          
     
           console.log("🔍 Resposta do login:", response);
     
@@ -43,9 +47,10 @@ class AuthService {
           return response.data;
     
         } catch (error: any) {
-          console.error("❌ Erro no login:", error.message || error);
-          throw error;
-        }
+            console.error("❌ Erro no login:", error.response?.data || error.message || error);
+            throw error;
+          }
+          
       }
 
     async getUserProfile() {
