@@ -221,9 +221,7 @@ const onViewClick = (data: UserListingType | null) => {
     //console.log('data userdata', data);
     userData.value = data;
     //console.log('userData.value', userData.value);
-
   }
-
   viewDialog.value = true;
 };
 
