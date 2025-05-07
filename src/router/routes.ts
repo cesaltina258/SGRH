@@ -1,6 +1,6 @@
 import { DefaultLayout, AuthLayout } from "@/layouts/index";
 
-import ECommerce from "@/views/dashboard/ECommerce.vue";
+import Dashboard from "@/views/pages/StarterKit.vue";
 import Chats from "@/views/chats/index.vue";
 import Email from "@/views/email/index.vue";
 import FileManager from "@/views/fileManager/index.vue";
@@ -30,6 +30,7 @@ const mapPrefix = "/maps";
 const institutionPrefix = "/institution";
 const employeePrefix = "/employee";
 const baseTablePrefix = "/baseTable";
+const usersPrefix = "/users";
 
 
 const institutionRoutes = [
@@ -74,9 +75,15 @@ const employeeRoutes = [
   {
     path: `${employeePrefix}/create`,
     name: "CreateEmployee",
-    component: () => import("@/views/employee/CreateInstitution.vue"),
+    component: () => import("@/views/employee/Create.vue"),
     meta: { title: "Create Employee", authRequired: true },
   },
+  {
+    path: '/employee/edit/:id',
+    name: 'EditEmployee',
+    component: () => import('@/views/employee/Edit.vue'),
+    meta: { title: "Edit Employee", requiresAuth: true }
+  }
 ].map((data) => {
   return {
     ...data,
@@ -102,6 +109,20 @@ const baseTableRoutes = [
     name: "DocumentTypeOverview",
     component: () => import("@/views/baseTables/documentType/Overview.vue"),
     meta: { title: "Overview", authRequired: true },
+  },
+].map((data) => {
+  return {
+    ...data,
+    meta: { ...data.meta, layout: DefaultLayout },
+  };
+});
+
+const usersRoutes = [
+  {
+    path: `${usersPrefix}/users/list`,
+    name: "UsersListView",
+    component: () => import("@/views/users/users/ListView.vue"),
+    meta: { title: "Users List", authRequired: true },
   },
 ].map((data) => {
   return {
@@ -145,8 +166,8 @@ const accountRoutes = [
 const dashboardRoutes = [
   {
     path: "/",
-    name: "ECommerce",
-    component: ECommerce,
+    name: "Dashboard",
+    component: Dashboard,
     meta: { title: "Dashboard", authRequired: true, layout: DefaultLayout },
   },
   {
@@ -1084,6 +1105,7 @@ export const routes = [
   ...institutionRoutes,
   ...employeeRoutes,
   ...baseTableRoutes,
+  ...usersRoutes,
   {
     path: "/widgets",
     name: "Widgets",

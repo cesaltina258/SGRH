@@ -1,39 +1,42 @@
 import axiosInstance from "@/app/http/axios";
 import { useAuthStore } from "@/store/authStore";
-import { getAccessToken, setAccessToken, clearTokens } from "@/app/localStorage";
+import { getAccessToken, setAccessToken, clearTokens, setRefreshToken } from "@/app/localStorage";
 
 class AuthService {
 
-    async login(username: string, password: string) {
+    async login(email: string, password: string) {
         try {
-          const response = await axiosInstance.post("/auth/login", { username, password });
+          const response = await axiosInstance.post("/auth/login", { email, password });
     
           console.log("🔍 Resposta do login:", response);
     
           // ✅ Garante que a resposta e os dados existem antes de acessá-los
-          if (!response || !response.data ) {
+          if (!response || !response.data.data ) {
             
             throw new Error("Resposta inválida da API: Dados ausentes");
           }
     
-          const accessToken = response.data.token;
+          const accessToken = response.data.data.token;
+          const refreshToken = response.data.data.refreshToken;
     
           if (!accessToken) {
             throw new Error("Resposta inválida da API: Access token ausente");
           }
     
           setAccessToken(accessToken);
+          setRefreshToken(refreshToken)
     
-          //console.log("🔑 Token salvo:", accessToken);
+          //console.log("🔑 Token salvo:");
     
           const authStore = useAuthStore(); 
           authStore.setToken(accessToken);
+          
     
           //console.log("✅ Token salvo no Pinia");
     
           // ✅ Buscar perfil do usuário após login
-          //const userProfile = await this.getUserProfile();
-          //authStore.setUser(userProfile);
+          const userProfile = await this.getUserProfile();
+          authStore.setUser(userProfile);
     
           //console.log("👤 Perfil do usuário salvo:", userProfile);
     
@@ -47,11 +50,13 @@ class AuthService {
 
     async getUserProfile() {
         try {
-            const response = await axiosInstance.get("/user/get-user-profile");
+            const response = await axiosInstance.get("/administration/users/own-profile");
             //console.log("👤 Perfil do usuário:", response.data);
+
             return response.data.data;
 
         } catch (error) {
+            
             console.error("❌ Erro ao buscar perfil do usuário:", error);
             throw error;
         }
@@ -75,7 +80,8 @@ class AuthService {
 
     async logout() {
         try {
-            await axiosInstance.post("/user/logout");
+            await axiosInstance.delete("/auth/logout");
+            //console.log('fiz logout')
         } catch (error) {
             console.error("Erro ao fazer logout:", error);
         } finally {

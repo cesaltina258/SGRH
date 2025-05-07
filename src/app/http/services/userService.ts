@@ -1,19 +1,58 @@
 import HttpService from "@/app/http/httpService";
-import type { UserType } from "@/app/http/types";
+import type { UserInsertType, UserListingType, UserUpdateType } from "@/components/users/types";
 
 export default class UserService extends HttpService {
-  // Obtém os dados do usuário logado
-  async getUserProfile(): Promise<UserType> {
-    return this.get<UserType>("/users/me");
+
+  //get de todos utilizadores
+  async getUsers(): Promise<UserListingType[]> {
+    try {
+      const response = await this.get("/administration/users/");
+      //console.log('response users',response);
+      return response.data;
+
+    } catch (error) {
+      console.error("❌ Erro ao buscar utilizador:", error); 
+      throw error; 
+    }
   }
 
-  // Atualiza o perfil do usuário
-  async updateUserProfile(userData: Partial<UserType>): Promise<UserType> {
-    return this.post<UserType>("/users/update", userData);
+  async createUser(userData: UserInsertType): Promise<UserInsertType> {
+    try {
+      const response = await this.post("/administration/users/", userData);
+      console.log('response create user',response);
+      return response; // Retorna os dados do utilizador criado
+
+    } catch (error) {
+      console.error("❌ Erro ao criar utilizador:", error);
+      throw error; 
+    }
   }
 
-  // Obtém uma lista de usuários (para admin, por exemplo)
-  async getUsers(): Promise<UserType[]> {
-    return this.get<UserType[]>("/users");
+  async deleteUser(id: number): Promise<void> {
+    try {
+      await this.delete(`/administration/users/${id}`);
+    } catch (error) {
+      console.error("❌ Erro ao deletar utilizador:", error);
+      throw error;
+    }
   }
+
+  async updateUser(id: number, userData: UserUpdateType): Promise<UserListingType> {
+    try {
+      // Corpo da requisição conforme especificado
+      const payload = {
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        email: userData.email,
+        username: userData.username
+      };
+
+      const response = await this.put<UserListingType>(`/administration/users/${id}`, payload);
+      return response;
+    } catch (error) {
+      console.error("❌ Erro ao actualizar utilizador:", error);
+      throw error;
+    }
+  }
+
 }

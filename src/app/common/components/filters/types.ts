@@ -1,4 +1,4 @@
 export type MenuSelectItemType = {
-  label: string;
+  label: string | null;
   value: string | number;
 };

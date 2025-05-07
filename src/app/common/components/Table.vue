@@ -94,8 +94,8 @@ const page = computed({
     class="d-flex justify-space-between align-center"
   >
     <div class="text-muted">
-      Showing <b>{{ tableConfig.end }}</b> of
-      <b>{{ tableConfig.noOfItems }}</b> Results
+      {{$t('t-showing')}}  <b>{{ tableConfig.end }}</b> {{$t('t-of')}} 
+      <b>{{ tableConfig.noOfItems }}</b> {{$t('t-results')}}
     </div>
     <v-pagination
       v-model="page"

@@ -19,9 +19,9 @@ export const menuItems: MenuItemType[] = [
   {
     label: "dashboards", 
     icon: "ph-gauge",
-    id: "sidebarDashboards",
-    prefix: "/dashboard",
-    link: "/dashboard/crm"
+    id: "index",
+    prefix: "/",
+    link: "/"
   },
   {
     label: "personnel-managment",
@@ -133,7 +133,7 @@ export const menuItems: MenuItemType[] = [
       { label: "overview", link: "/tickets/overview" },
     ],
   },*/
-  {
+ /* {
     label: "healthcare-management",
     isHeader: true,
     id: "HeaderMenu",
@@ -151,7 +151,7 @@ export const menuItems: MenuItemType[] = [
     id: "sidebarBilling",
     prefix: "/invoices",
     link: "/invoices/list"
-  },
+  },*/
   /*{
     label: "real-estate",
     icon: "ph-buildings",
@@ -187,6 +187,15 @@ export const menuItems: MenuItemType[] = [
     label: "administration",
     isHeader: true,
     id: "HeaderMenu",
+  },
+  {
+    label: "users",
+    icon: "ph-user-circle",
+    id: "sidebarUsers",
+    subMenu: [
+      { label: "users", link: "/users/users/list" },
+     // { label: "functions", link: "/auth/signup" },
+    ],
   },
   {
     label: "base-tables",

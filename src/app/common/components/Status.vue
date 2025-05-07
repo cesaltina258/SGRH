@@ -21,7 +21,7 @@ const infoChips: { text: string; value: string }[] = [
 ];
 const successChips: { text: string; value: string }[] = [
   { value: "delivered", text: "Delivered" },
-  { value: "active", text: "Active" },
+  { value: "active", text: "active" },
   { value: "beginner", text: "Beginner" },
   { value: "advance", text: "Advance" },
   { value: "live", text: "Live" },
@@ -31,7 +31,7 @@ const successChips: { text: string; value: string }[] = [
 ];
 const dangerChips: { text: string; value: string }[] = [
   { value: "ood", text: "Out of Delivery" },
-  { value: "unActive", text: "UnActive" },
+  { value: "unActive", text: "unactive" },
   { value: "block", text: "Block" },
   { value: "close", text: "Close" },
   { value: "intermediate", text: "Intermediate" },
@@ -59,7 +59,7 @@ const primaryChips: { text: string; value: string }[] = [
       density="compact"
     >
       <span class="status-chip">
-        {{ dangerChip.text }}
+        {{ $t('t-' + dangerChip.text) }}
       </span>
     </v-chip>
   </span>
@@ -99,7 +99,8 @@ const primaryChips: { text: string; value: string }[] = [
       elevation="0"
       density="compact"
     >
-      <span class="status-chip"> {{ success.text }} </span>
+    <span class="status-chip">{{ $t('t-' + success.text) }}</span>
+
     </v-chip>
   </span>
 

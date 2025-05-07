@@ -28,8 +28,20 @@ import Breadcrumb from "@/app/common/components/Breadcrumb.vue";
 import TextField from "@/app/common/validationComponents/TextField.vue";
 import TextArea from "@/app/common/validationComponents/TextArea.vue";
 
+import Toast from 'vue-toastification';
+import 'vue-toastification/dist/index.css';
+
 const app: App = createApp(AppMain);
 registerPlugins(app);
+
+app.use(Toast, {
+    timeout: 3000, // Tempo padrão do toast (3 segundos)
+    closeOnClick: true, // Fecha ao clicar
+    pauseOnFocusLoss: false, // Não pausa quando a janela perde foco
+    transition: 'Vue-Toastification__bounce', // Animação
+    maxToasts: 3, // Máximo de toasts visíveis
+    newestOnTop: true, // Novos toasts aparecem no topo
+  });
 
 app.use(i18n);
 app.use(VueApexCharts);

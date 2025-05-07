@@ -21,22 +21,23 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Interceptor para lidar com erros de autenticação (401)
+// Interceptor para lidar com erros de autenticação (401) ou 403
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 403) {
       const originalRequest = error.config;
       const refreshToken = getRefreshToken();
 
       if (refreshToken) {
         try {
-          const { data } = await axios.post(`${appConfigs.baseUrl}/auth/refresh-token`, { refreshToken });
-          setAccessToken(data.accessToken);
-          setRefreshToken(data.refreshToken);
+          const { data } = await axios.post(`${appConfigs.baseUrl}auth/refresh-token`, { refreshToken });
+          setAccessToken(data.data.token);
+          setRefreshToken(data.data.refreshToken);
+          console.log('------------------------------token actualizado')
 
           // Atualizar o token e refazer a requisição original
-          originalRequest!.headers["Authorization"] = `Bearer ${data.accessToken}`;
+          originalRequest!.headers["Authorization"] = `Bearer ${data.data.token}`;
           return axios(originalRequest!);
         } catch (refreshError) {
           console.error("Erro ao renovar token:", refreshError);
