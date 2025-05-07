@@ -24,8 +24,14 @@ const props = defineProps({
   density: {
     type: String as PropType<DensityType>,
     default: "compact"
+  },
+  // Nova prop para regras do Vuetify
+  rules: {
+    type: Array as PropType<Array<(value: any) => string | boolean>>,
+    default: () => []
   }
 });
+
 const emit = defineEmits(["update:modelValue", "keyup"]);
 
 const showPassword = ref(false);
@@ -53,14 +59,29 @@ const fieldValue = computed({
   }
 });
 
-const rules = {
+// Regras do Vuelidate (mantido para compatibilidade)
+const vuelidateRules = {
   fieldValue: {
     required: props.isRequired ? required : {},
     email: props.isEmail ? email : {}
   }
 };
 
-const v$ = useVuelidate(rules, { fieldValue });
+const v$ = useVuelidate(vuelidateRules, { fieldValue });
+
+// Combina as regras do Vuetify com as mensagens de erro do Vuelidate
+const combinedRules = computed(() => {
+  const vuetifyRules = props.rules || [];
+  
+  if (props.showError && props.isSubmitted) {
+    return [
+      ...vuetifyRules,
+      () => v$.value.fieldValue.$errors.length === 0 || v$.value.fieldValue.$errors[0].$message
+    ];
+  }
+  
+  return vuetifyRules;
+});
 
 const onChange = () => {
   if (isValidation.value) {
@@ -81,7 +102,6 @@ const getType = computed(() => {
       return "password";
     }
   }
-
   return props.type || "text";
 });
 
@@ -89,6 +109,7 @@ watch(isSubmitted, () => {
   onChange();
 });
 </script>
+
 <template>
   <div :class="class">
     <v-text-field
@@ -103,6 +124,7 @@ watch(isSubmitted, () => {
       :label="label"
       :disabled="disabled"
       :id="id"
+      :rules="combinedRules"
       :class="{
         'is-invalid': isSubmitted && showError && !isValid,
         'is-valid': isSubmitted && showError && isValid
@@ -125,6 +147,7 @@ watch(isSubmitted, () => {
       </template>
     </v-text-field>
   </div>
+  <!-- Mantemos a exibição de erros do Vuelidate para compatibilidade -->
   <div
     v-if="isSubmitted && showError && v$.fieldValue.$invalid"
     class="invalid-feedback"
@@ -137,3 +160,16 @@ watch(isSubmitted, () => {
     <slot name="success-message" />
   </div>
 </template>
+
+
+<style scoped>
+/* Estilo para as mensagens de validação */
+:deep(.v-messages__message) {
+  font-size: 0.65rem;
+  color: #ff5252;
+  line-height: 1.2;
+  margin-top: -3px;
+}
+
+
+</style>

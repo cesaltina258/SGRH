@@ -6,7 +6,7 @@ export const breadcrumb: BreadcrumbType[] = [
     disabled: false,
   },
   {
-    title: "add-employee",
+    title: "edit-employee",
     disabled: true,
   },
 ];

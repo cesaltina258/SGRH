@@ -6,5 +6,5 @@ export type CountryListingType = {
     phoneCode: string;
     currency: string;
     currencySymbol: string;
-    currencyCode: string;
+    currencyCode: string; 
   };

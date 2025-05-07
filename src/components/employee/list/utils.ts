@@ -12,41 +12,6 @@ export const breadcrumb: BreadcrumbType[] = [
   },
 ];
 
-export const employeeOverview = [
-  {
-    title: "total-employees",
-    endVal: 8956,
-    color: "primary",
-    percent: "12.09%",
-    isProgress: true,
-    icon: "ph-buildings",
-  },
-  {
-    title: "total-active-employees",
-    endVal: 4519,
-    color: "success",
-    percent: "6.57%",
-    isProgress: true,
-    icon: "ph-check",
-  },
-  {
-    title: "total-inactive-employees",
-    endVal: 2648,
-    color: "danger",
-    percent: "4.07%",
-    isProgress: true,
-    icon: "ph-x-circle",
-  },
-  {
-    title: "new-employees-registed",
-    endVal: 871,
-    color: "primary",
-    percent: "3.49%",
-    isProgress: false,
-    icon: "ph-clock",
-  },
-];
-
 export const employeeHeader: TableHeaderType[] = [
   { title: "", isCheck: true },
   { title: "employee-number" },

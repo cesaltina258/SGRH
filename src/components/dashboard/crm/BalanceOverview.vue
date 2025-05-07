@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, computed, watch } from "vue";
 import { getChartColorsArray } from "@/app/common/chartColorArray";
-import { getCharts } from "@/components/dashboard/crm/utils";
+import { getCharts } from "@/components/dashboard/utils";
 import { useLayoutStore } from "@/store/app";
 
 const state = useLayoutStore();

@@ -11,7 +11,7 @@ export default class UserService extends HttpService {
       return response.data;
 
     } catch (error) {
-      console.error("❌ Erro ao buscar utilizador:", error);
+      console.error("❌ Erro ao buscar utilizador:", error); 
       throw error; 
     }
   }

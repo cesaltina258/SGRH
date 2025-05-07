@@ -14,12 +14,12 @@ const isSubmitted = ref(false);
 const isRemember = ref(false);
 const errorMsg = ref("");
 const formData = ref({
-  username: { value: "admin", isValid: true },
+  email: { value: "admin@localhost", isValid: true },
   password: { value: "admin", isValid: true },
 });
 
 const isValidFormData = computed(() => {
-  return formData.value.username.isValid && formData.value.password.isValid;
+  return formData.value.email.isValid && formData.value.password.isValid;
 });
 
 const onSignIn = async () => {
@@ -32,14 +32,14 @@ const onSignIn = async () => {
     }
 
     const auth = appConfigs.auth;
-    const { password, username } = formData.value;
+    const { password, email } = formData.value;
     const payload: UserType = {
       password: password.value,
-      username: username.value,
+      email: email.value,
     };
 
     if (auth === "authService") {
-      const data = await authService.login(payload.username, payload.password);
+      const data = await authService.login(payload.email, payload.password);
       if (data) {
         router.push({ path: "/" });
       }
@@ -68,10 +68,10 @@ const onSignIn = async () => {
               {{ errorMsg }}
             </v-alert>
             <div class="font-weight-medium mb-1">
-              {{ $t('t-username') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-email') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="formData.username" isRequired :showError="isSubmitted" :isSubmitted="isSubmitted"
-              hideDetails placeholder="Enter username" />
+            <TextField v-model="formData.email" isRequired :showError="isSubmitted" :isSubmitted="isSubmitted"
+              hideDetails :placeholder="$t('t-enter-email1')" />
             <div class="d-flex justify-space-between align-center mt-4">
               <div class="font-weight-medium">
                 {{ $t('t-password') }} <i class="ph-asterisk ph-xs text-danger" />
@@ -80,7 +80,7 @@ const onSignIn = async () => {
                 {{ $t('t-forgot-password') }}
               </v-btn>
             </div>
-            <TextField v-model="formData.password" placeholder="Enter password" hide-details :showError="isSubmitted"
+            <TextField v-model="formData.password" :placeholder="$t('t-enter-password')" hide-details :showError="isSubmitted"
               :isSubmitted="isSubmitted" isRequired isPassword />
             <v-checkbox v-model="isRemember" hide-details color="primary" class="my-1">
               <template #label>
@@ -90,30 +90,9 @@ const onSignIn = async () => {
             <v-btn color="primary" block class="mt-2" :loading="loading" @click="onSignIn">
               {{ $t('t-sign-in') }}
             </v-btn>
-            <div class="d-flex align-center mt-10">
-              <v-divider class="border-dashed" />
-              <div class="w-50 text-center font-weight-bold mx-3">
-                {{ $t('t-sign-in-with') }}
-              </div>
-              <v-divider class="border-dashed" />
-            </div>
 
-            <div class="text-center mt-8">
-              <v-hover v-for="(item, index) in socialMedias" :key="'social-media-' + index">
-                <template v-slot:default="{ isHovering, props }">
-                  <v-btn v-bind="props" :color="item.color" density="comfortable" icon elevation="0"
-                    :variant="!isHovering ? 'tonal' : 'elevated'" rounded class="ma-1" height="40" width="40">
-                    <i :class="item.icon" />
-                  </v-btn>
-                </template>
-              </v-hover>
-            </div>
             <div class="text-center mt-8 d-flex align-center justify-center">
-              {{ $t('t-dont-have-account') }}
-              <v-btn to="/auth/signup" variant="text" color="primary"
-                class="font-weight-bold text-decoration-underline pa-0">
-                {{ $t('t-sign-up') }}
-              </v-btn>
+              
             </div>
           </v-col>
         </v-row>

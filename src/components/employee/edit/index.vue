@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import ButtonNav from "@/components/employee/create/ButtonNav.vue";
-import Step1 from "@/components/employee/create/TabGeneralInfo.vue";
-import Step2 from "@/components/employee/create/TabHealthPlan.vue";
+import Step1 from "@/components/employee/edit/TabGeneralInfo.vue";
+import Step2 from "@/components/employee/edit/TabHealthPlan.vue";
 import { useRoute } from 'vue-router';
 const step = ref(1);
 
@@ -11,7 +11,6 @@ const onStepChange = (value: number) => {
 };
 
 const route = useRoute();
-const employeeId = ref(route.params.id);
 
 </script>
 <template>
