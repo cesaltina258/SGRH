@@ -8,7 +8,6 @@ import { useI18n } from "vue-i18n";
 
 const localLoading = ref(false);
 const emit = defineEmits(["update:modelValue", "onSubmit"]);
-const errorMsg = ref("");
 
 const prop = defineProps({
   modelValue: {
@@ -43,52 +42,80 @@ const currency = ref(formData.value.currency || "");
 const currencySymbol = ref(formData.value.currencySymbol || "");
 const currencyCode = ref(formData.value.currencyCode || "");
 
+const formErrors = ref<Record<string, string>>({
+  name: '',
+  code: '',
+  iso2Code: '',
+  iso3Code: '',
+  phoneCode: '',
+  currency: '',
+  currencySymbol: '',
+  currencyCode: '',
+});
+
+
 const { t } = useI18n();
 
 // Função de validação geral
 const validateForm = () => {
+  let isValid = true;
+
+  // Limpa os erros antigos
+  Object.keys(formErrors.value).forEach(key => {
+    formErrors.value[key] = '';
+  });
+
   if (!name.value) {
-    errorMsg.value = t('t-please-enter-name');
-    return false;
+    formErrors.value.name = t('t-please-enter-name');
+    isValid = false;
   }
   if (!code.value) {
-    errorMsg.value = t('t-please-enter-code');
-    return false;
+    formErrors.value.code = t('t-please-enter-code');
+    isValid = false;
   }
   if (!iso2Code.value) {
-    errorMsg.value = t('t-please-enter-iso2-code');
-    return false;
+    formErrors.value.iso2Code = t('t-please-enter-iso2-code');
+    isValid = false;
+  } else if (iso2Code.value.length !== 2) {
+    formErrors.value.iso2Code = t('t-iso2-must-have-2-characters');
+    isValid = false;
   }
   if (!iso3Code.value) {
-    errorMsg.value = t('t-please-enter-iso3-code');
-    return false;
+    formErrors.value.iso3Code = t('t-please-enter-iso3-code');
+    isValid = false;
+  } else if (iso3Code.value.length !== 3) {
+    formErrors.value.iso3Code = t('t-iso3-must-have-3-characters');
+    isValid = false;
   }
   if (!phoneCode.value) {
-    errorMsg.value = t('t-please-enter-phone-code');
-    return false;
+    formErrors.value.phoneCode = t('t-please-enter-phone-code');
+    isValid = false;
+  } else if (!/^\+\d{1,3}$/.test(phoneCode.value)) {
+    formErrors.value.phoneCode = t('t-invalid-phone-code'); // Traduz isto no teu ficheiro pt.json
+    isValid = false;
   }
   if (!currency.value) {
-    errorMsg.value = t('t-please-enter-currency');
-    return false;
+    formErrors.value.currency = t('t-please-enter-currency');
+    isValid = false;
   }
   if (!currencySymbol.value) {
-    errorMsg.value = t('t-please-enter-currency-symbol');
-    return false;
+    formErrors.value.currencySymbol = t('t-please-enter-currency-symbol');
+    isValid = false;
   }
   if (!currencyCode.value) {
-    errorMsg.value = t('t-please-enter-currency-code');
-    return false;
+    formErrors.value.currencyCode = t('t-please-enter-currency-code');
+    isValid = false;
   }
-  return true;
+
+  return isValid;
 };
+
 
 const onSubmit = () => {
   if (!validateForm()) {
-    setTimeout(() => errorMsg.value = "", 3000);
     return;
   }
 
-  errorMsg.value = "";
   localLoading.value = true;
 
   const data = {
@@ -122,64 +149,96 @@ const onSubmit = () => {
       </template>
       <v-divider />
 
-      <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mx-5 mt-3" density="compact" />
+      <!-- <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mx-5 mt-3" density="compact" /> -->
       <v-card-text class="overflow-y-auto" :style="{
         'max-height': isCreate ? '70vh' : '45vh'
       }">
         <v-row>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-name') }}
+              {{ $t('t-name') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="name" :placeholder="$t('t-enter-name')" disabled/>
+            <TextField v-model="name" :placeholder="$t('t-enter-name')"
+              :error-messages="formErrors.name ? [formErrors.name] : []" hide-details disabled/>
+            <div v-if="formErrors.name" class="text-red text-extra-small pt-1">
+              {{ formErrors.name }}
+            </div>
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-country-code') }}
+              {{ $t('t-country-code') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="code" :placeholder="$t('t-enter-code')" disabled/>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col cols="12" lg="6">
-            <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-iso2Code') }}
+            <TextField v-model="code" :placeholder="$t('t-enter-code')"
+              :error-messages="formErrors.code ? [formErrors.code] : []" hide-details disabled/>
+            <div v-if="formErrors.code" class="text-red text-extra-small pt-1">
+              {{ formErrors.code }}
             </div>
-            <TextField v-model="iso2Code" :placeholder="$t('t-enter-iso2-code')" disabled/>
-          </v-col>
-          <v-col cols="12" lg="6">
-            <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-iso3Code') }}
-            </div>
-            <TextField v-model="iso3Code" :placeholder="$t('t-enter-iso3-code')" disabled/>
           </v-col>
         </v-row>
         <v-row>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-phone-code') }}
+              {{ $t('t-iso2Code') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="phoneCode" :placeholder="$t('t-enter-phone-code')" disabled/>
+            <TextField v-model="iso2Code" :placeholder="$t('t-enter-iso2-code')"
+              :error-messages="formErrors.iso2Code ? [formErrors.iso2Code] : []" hide-details disabled/>
+            <div v-if="formErrors.iso2Code" class="text-red text-extra-small pt-1">
+              {{ formErrors.iso2Code }}
+            </div>
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-currency') }}
+              {{ $t('t-iso3Code') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="currency" :placeholder="$t('t-enter-currency')" disabled/>
+            <TextField v-model="iso3Code" :placeholder="$t('t-enter-iso3-code')"
+              :error-messages="formErrors.iso3Code ? [formErrors.iso3Code] : []" hide-details disabled/>
+            <div v-if="formErrors.iso3Code" class="text-red text-extra-small pt-1">
+              {{ formErrors.iso3Code }}
+            </div>
           </v-col>
         </v-row>
         <v-row>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-currency-symbol') }}
+              {{ $t('t-phone-code') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="currencySymbol" :placeholder="$t('t-enter-currency-symbol')" disabled/>
+            <TextField v-model="phoneCode" :placeholder="$t('t-enter-phone-code')"
+              :error-messages="formErrors.phoneCode ? [formErrors.phoneCode] : []" hide-details disabled/>
+            <div v-if="formErrors.phoneCode" class="text-red text-extra-small pt-1">
+              {{ formErrors.phoneCode }}
+            </div>
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-currency-code') }}
+              {{ $t('t-currency') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="currencyCode" :placeholder="$t('t-enter-currency-code')" disabled/>
+            <TextField v-model="currency" :placeholder="$t('t-enter-currency')"
+              :error-messages="formErrors.currency ? [formErrors.currency] : []" hide-details disabled/>
+            <div v-if="formErrors.currency" class="text-red text-extra-small pt-1">
+              {{ formErrors.currency }}
+            </div>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="12" lg="6">
+            <div class="font-weight-bold text-caption mb-1">
+              {{ $t('t-currency-symbol') }} <i class="ph-asterisk ph-xs text-danger" />
+            </div>
+            <TextField v-model="currencySymbol" :placeholder="$t('t-enter-currency-symbol')"
+              :error-messages="formErrors.currencySymbol ? [formErrors.currencySymbol] : []" hide-details disabled/>
+            <div v-if="formErrors.currencySymbol" class="text-red text-extra-small pt-1">
+              {{ formErrors.currencySymbol }}
+            </div>
+          </v-col>
+          <v-col cols="12" lg="6">
+            <div class="font-weight-bold text-caption mb-1">
+              {{ $t('t-currency-code') }} <i class="ph-asterisk ph-xs text-danger" />
+            </div>
+            <TextField v-model="currencyCode" :placeholder="$t('t-enter-currency-code')"
+              :error-messages="formErrors.currencyCode ? [formErrors.currencyCode] : []" hide-details disabled/>
+            <div v-if="formErrors.currencyCode" class="text-red text-extra-small pt-1">
+              {{ formErrors.currencyCode }}
+            </div>
           </v-col>
         </v-row>
       </v-card-text>
@@ -194,3 +253,10 @@ const onSubmit = () => {
     </Card>
   </v-dialog>
 </template>
+
+<style>
+.text-extra-small {
+  font-size: 0.70rem;
+}
+
+</style>

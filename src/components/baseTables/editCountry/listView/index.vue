@@ -26,7 +26,8 @@ import { useProvinceStore } from "@/store/baseTables/provinceStore";
 import { useRoute } from 'vue-router';
 
 const provinceByCountryStoreID = useProvinceByCountryStoreID();
-const provinceData = ref<ProvinceListingType | null>(null);
+const provinceData = computed(() => provinceByCountryStoreID.country_by_province);
+
 
 
 const countryStoreID = useCountryStoreID();
@@ -86,7 +87,13 @@ const validateForm = () => {
   if (!form.value.code) {
     formErrors.value.code = t('t-please-enter-code');
     isValid = false;
+  } else if (form.value.code.length < 2 || form.value.code.length > 10) {
+    formErrors.value.code = t('t-code-must-be-between-2-and-10-chars');
+    isValid = false;
+  } else {
+    formErrors.value.code = '';
   }
+
   if (!form.value.iso2Code) {
     formErrors.value.iso2Code = t('t-please-enter-iso2-code');
     isValid = false;
@@ -104,6 +111,9 @@ const validateForm = () => {
   if (!form.value.phoneCode) {
     formErrors.value.phoneCode = t('t-please-enter-phone-code');
     isValid = false;
+  } else if (!/^\+\d{1,3}$/.test(form.value.phoneCode)) {
+    formErrors.value.phoneCode = t('t-invalid-phone-code'); // Traduz isto no teu ficheiro pt.json
+    isValid = false;
   }
   if (!form.value.currency) {
     formErrors.value.currency = t('t-please-enter-currency');
@@ -112,11 +122,23 @@ const validateForm = () => {
   if (!form.value.currencySymbol) {
     formErrors.value.currencySymbol = t('t-please-enter-currency-symbol');
     isValid = false;
+  } else if (form.value.currencySymbol.length < 1 || form.value.currencySymbol.length > 10) {
+    formErrors.value.currencySymbol = t('t-currency-symbol-must-be-between-1-and-10-chars');
+    isValid = false;
+  } else {
+    formErrors.value.currencySymbol = '';
   }
+
   if (!form.value.currencyCode) {
     formErrors.value.currencyCode = t('t-please-enter-currency-code');
     isValid = false;
+  } else if (form.value.currencyCode.length < 2 || form.value.currencyCode.length > 10) {
+    formErrors.value.currencyCode = t('t-currency-code-must-be-between-2-and-10-chars');
+    isValid = false;
+  } else {
+    formErrors.value.currencyCode = '';
   }
+
 
   return isValid;
 };
@@ -126,13 +148,7 @@ const deleteDialog = ref(false);
 const deleteId = ref<number | null>(null);
 const deleteLoading = ref(false);
 const isSelectAll = ref(false);
-
-const mappedData = computed(() =>
-  ((provinceData.value as any) ?? []).map((item: ProvinceListingType) => ({
-    ...item,
-    isCheck: false,
-  })).toReversed()
-);
+const manualUpdateTrigger = ref(false);
 
 const filteredData = ref<ProvinceListingType[]>([]);
 const finalData = ref<ProvinceListingType[]>([]);
@@ -154,25 +170,35 @@ watch(countryData, (val) => {
 });
 
 
-watch(mappedData, (newVal) => {
-  filteredData.value = newVal;
-  finalData.value = newVal;
+watch(provinceData, (val) => {
+  if (val) {
+    const mapped = val.map((item: ProvinceListingType) => ({
+      ...item,
+      isCheck: false
+    })).toReversed();
+
+    filteredData.value = mapped;
+    finalData.value = mapped;
+    // updateTableData(mapped);
+    
+  }
 }, { immediate: true });
+
 
 onMounted(async () => {
   if (countryId.value) {
+    // Buscar os dados do país
     const result = await countryStoreID.fetchCountryByID(countryId.value);
     countryData.value = result;
 
-    const provinceResult = await provinceByCountryStoreID.fetchProvinceByCountryID(countryId.value);
-    provinceData.value = provinceResult;
+    // Buscar as províncias
+    await provinceByCountryStoreID.fetchProvinceByCountryID(countryId.value);
+
+    // Paginar dados após carregamento
+    getPaginatedData();
   }
 });
 
-onMounted(() => {
-  countryStore.fetchCountries();
-  getPaginatedData();
-});
 
 const query = ref("");
 
@@ -213,8 +239,6 @@ const getPaginatedData = () => {
     loading.value = false;
   }, 200);
 };
-
-const isISO2 = (v: string) => /^[A-Z]{2}$/.test(v) || t('t-invalid-iso2-code');
 
 
 watch(page, (newPage: number) => {
@@ -297,7 +321,7 @@ const onSubmit = async (data: CountryListingType, callbacks?: {
     }
 
     // Recarrega os dados
-    await provinceStore.fetchProvinces();
+    provinceByCountryStoreID.fetchProvinceByCountryID(countryId.value);
 
     // Callback de sucesso (fecha a modal)
     callbacks?.onSuccess?.();
@@ -367,107 +391,133 @@ const onConfirmDelete = async () => {
 
 // fora de qualquer função
 const handleSubmit = async () => {
+  if (!validateForm()) {
+    return;
+  }
+
   try {
-    if (!form.value.id) {
-      toast.error(t('t-message-save-error'));
-      return;
-    }
-
     loading.value = true;
-
-    await countryService.updateCountry(form.value.id, form.value);
+    await countryService.updateCountry(form.value.id!, form.value);
     toast.success(t('t-toast-message-update'));
-
     await countryStore.fetchCountries();
     getPaginatedData();
-
   } catch (error) {
-    console.error("Erro ao atualizar país:", error);
     toast.error(t('t-message-save-error'));
   } finally {
     loading.value = false;
   }
 };
 
+
 </script>
+
 <template>
-  <v-card>
-    <v-card-title class="mt-2 mb-8">
-      <v-row>
-        <!-- Campo Nome -->
-        <v-col cols="12">
-          <v-row>
-            <v-col cols="12" lg="6">
-              <div class="font-weight-bold text-caption mb-1">
-                {{ $t('t-country-name') }}
-              </div>
-              <TextField v-model="form.name" :placeholder="$t('t-country-name')" :error-messages="formErrors.name" />
-            </v-col>
-
-            <v-col cols="12" lg="6">
-              <div class="font-weight-bold text-caption mb-1">
-                {{ $t('t-country-code') }}
-              </div>
-              <TextField v-model="form.code" :placeholder="$t('t-enter-code')" :error-messages="formErrors.code" />
-            </v-col>
-
-            <v-col cols="12" lg="6">
-              <div class="font-weight-bold text-caption mb-1">
-                {{ $t('t-iso2Code') }}
-              </div>
-              <TextField v-model="form.iso2Code" :placeholder="$t('t-enter-iso2-code')" />
-            </v-col>
-
-            <v-col cols="12" lg="6">
-              <div class="font-weight-bold text-caption mb-1">
-                {{ $t('t-iso3Code') }}
-              </div>
-              <TextField v-model="form.iso3Code" :placeholder="$t('t-enter-iso3-code')" />
-            </v-col>
-
-            <v-col cols="12" lg="6">
-              <div class="font-weight-bold text-caption mb-1">
-                {{ $t('t-phone-code') }}
-              </div>
-              <TextField v-model="form.phoneCode" :placeholder="$t('t-enter-phone-code')" />
-            </v-col>
-
-            <v-col cols="12" lg="6">
-              <div class="font-weight-bold text-caption mb-1">
-                {{ $t('t-currency') }}
-              </div>
-              <TextField v-model="form.currency" :placeholder="$t('t-enter-currency')" />
-            </v-col>
-
-            <v-col cols="12" lg="6">
-              <div class="font-weight-bold text-caption mb-1">
-                {{ $t('t-currency-symbol') }}
-              </div>
-              <TextField v-model="form.currencySymbol" :placeholder="$t('t-enter-currency-symbol')" />
-            </v-col>
-
-            <v-col cols="12" lg="6">
-              <div class="font-weight-bold text-caption mb-1">
-                {{ $t('t-currency-code') }}
-              </div>
-              <TextField v-model="form.currencyCode" :placeholder="$t('t-enter-currency-code')" />
-            </v-col>
-          </v-row>
+  <Card elevation="0" title-class="pb-0" class="px-4 pt-4">
+    <v-card-text class="pt-0">
+      <v-row class="">
+        <v-col cols="12" lg="6">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-country-name') }} <i class="ph-asterisk ph-xs text-danger" />
+          </div>
+          <TextField v-model="form.name" :placeholder="$t('t-country-name')"
+            :error-messages="formErrors.name ? [formErrors.name] : []" hide-details />
+          <div v-if="formErrors.name" class="text-red text-extra-small pt-1">
+            {{ formErrors.name }}
+          </div>
         </v-col>
-        <v-col cols="6">
+
+        <v-col cols="12" lg="6">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-country-code') }} <i class="ph-asterisk ph-xs text-danger" />
+          </div>
+          <TextField v-model="form.code" :placeholder="$t('t-enter-code')"
+            :error-messages="formErrors.code ? [formErrors.code] : []" hide-details />
+          <div v-if="formErrors.code" class="text-red text-extra-small pt-1">
+            {{ formErrors.code }}
+          </div>
+        </v-col>
+      </v-row>
+      <v-row class="">
+        <v-col cols="12" lg="6">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-iso2Code') }} <i class="ph-asterisk ph-xs text-danger" />
+          </div>
+          <TextField v-model="form.iso2Code" :placeholder="$t('t-enter-iso2-code')"
+            :error-messages="formErrors.iso2Code ? [formErrors.iso2Code] : []" hide-details />
+          <div v-if="formErrors.iso2Code" class="text-red text-extra-small pt-1">
+            {{ formErrors.iso2Code }}
+          </div>
+        </v-col>
+        <v-col cols="12" lg="6">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-iso3Code') }} <i class="ph-asterisk ph-xs text-danger" />
+          </div>
+          <TextField v-model="form.iso3Code" :placeholder="$t('t-enter-iso3-code')"
+            :error-messages="formErrors.iso3Code ? [formErrors.iso3Code] : []" hide-details />
+          <div v-if="formErrors.iso3Code" class="text-red text-extra-small pt-1">
+            {{ formErrors.iso3Code }}
+          </div>
+        </v-col>
+      </v-row>
+      <v-row class="">
+        <v-col cols="12" lg="6">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-phone-code') }} <i class="ph-asterisk ph-xs text-danger" />
+          </div>
+          <TextField v-model="form.phoneCode" :placeholder="$t('t-enter-phone-code')"
+            :error-messages="formErrors.phoneCode ? [formErrors.phoneCode] : []" hide-details />
+          <div v-if="formErrors.phoneCode" class="text-red text-extra-small pt-1">
+            {{ formErrors.phoneCode }}
+          </div>
+        </v-col>
+        <v-col cols="12" lg="6">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-currency') }} <i class="ph-asterisk ph-xs text-danger" />
+          </div>
+          <TextField v-model="form.currency" :placeholder="$t('t-enter-currency')"
+            :error-messages="formErrors.currency ? [formErrors.currency] : []" hide-details />
+          <div v-if="formErrors.currency" class="text-red text-extra-small pt-1">
+            {{ formErrors.currency }}
+          </div>
+        </v-col>
+      </v-row>
+
+      <v-row class="">
+        <v-col cols="12" lg="6">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-currency-symbol') }} <i class="ph-asterisk ph-xs text-danger" />
+          </div>
+          <TextField v-model="form.currencySymbol" :placeholder="$t('t-enter-currency-symbol')"
+            :error-messages="formErrors.currencySymbol ? [formErrors.currencySymbol] : []" hide-details />
+          <div v-if="formErrors.currencySymbol" class="text-red text-extra-small pt-1">
+            {{ formErrors.currencySymbol }}
+          </div>
+        </v-col>
+        <v-col cols="12" lg="6">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-currency-code') }} <i class="ph-asterisk ph-xs text-danger" />
+          </div>
+          <TextField v-model="form.currencyCode" :placeholder="$t('t-enter-currency-code')"
+            :error-messages="formErrors.currencyCode ? [formErrors.currencyCode] : []" hide-details />
+          <div v-if="formErrors.currencyCode" class="text-red text-extra-small pt-1">
+            {{ formErrors.currencyCode }}
+          </div>
+        </v-col>
+        <v-col cols="6" class="pt-10 pb-10">
           <div class="font-weight-bold text-subtitle-1 mb-1">
             {{ $t('t-province-list') }}
           </div>
         </v-col>
-        <!-- Campo de Pesquisa abaixo, alinhado à direita -->
-        <v-col cols="12" lg="3" class="ms-auto">
+        <v-col cols="12" lg="3" class="ms-auto pt-10 pb-10">
           <QuerySearch v-model="query" :placeholder="$t('t-search-for-province')" />
         </v-col>
       </v-row>
-    </v-card-title>
+    </v-card-text>
+    <v-row>
+    </v-row>
     <v-card-text class="mt-2">
       <Table v-model="page" :headerItems="listViewHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
-        :config="config" :loading="loading" is-pagination @on-select-all="onSelectAll">
+        :config="config" :loading="loading" is-pagination @on-select-all="onSelectAll" class="ma-n2">
         <template #body>
           <tr v-for="(item, index) in tableData" :key="'agent-listing-item-' + index" height="50">
             <td>
@@ -522,8 +572,7 @@ const handleSubmit = async () => {
         </div>
       </v-col>
     </v-card-actions>
-  </v-card>
-
+  </Card>
   <CreateUpdateProvinceModal v-if="provinceFormData" :country="countryId" v-model="dialog" :data="provinceFormData"
     @onSubmit="onSubmit" />
 
@@ -532,6 +581,7 @@ const handleSubmit = async () => {
   <RemoveItemConfirmationDialog v-if="deleteId" v-model="deleteDialog" @onConfirm="onConfirmDelete"
     :loading="deleteLoading" />
 </template>
+
 <style scoped>
 .animated-link {
   position: relative;
@@ -557,5 +607,9 @@ const handleSubmit = async () => {
 /* animação ao passar o mouse */
 .animated-link:hover::after {
   transform: scaleX(0);
+}
+
+.text-extra-small {
+  font-size: 0.70rem;
 }
 </style>

@@ -438,5 +438,22 @@
   "t-enter-country-name": "Insira o nome do país",
   "t-enter-country-code": "Insira o código do país",
   "t-view-country": "Consultar País",
-  "t-view-province": "Consultar Província"
+  "t-view-province": "Consultar Província",
+  "t-please-enter-iso2-code": "Por favor, insira o iso 2 code!",
+  "t-please-enter-iso3-code": "Por favor, insira o iso 3 code!",
+  "t-please-enter-name": "Por favor, insira o nome do país.",
+  "t-please-enter-code": "Por favor, insira o código do país.",
+  "t-iso2-must-have-2-characters": "O código ISO2 deve ter exatamente 2 caracteres.",
+  "t-iso3-must-have-3-characters": "O código ISO3 deve ter exatamente 3 caracteres.",
+  "t-please-enter-phone-code": "Por favor, insira o código de chamada.",
+  "t-please-enter-currency": "Por favor, insira o nome da moeda.",
+  "t-please-enter-currency-symbol": "Por favor, insira o símbolo da moeda.",
+  "t-please-enter-currency-code": "Por favor, insira o código da moeda.",
+  "t-please-enter-province-name": "Por favor, insira o nome da província.",
+  "t-please-enter-province-code": "Por favor, insira o código da província.",
+  "t-invalid-phone-code": "Código de chamada inválido.",
+  "t-code-must-be-between-2-and-10-chars": "O código deve ter entre 2 e 10 caracteres.",
+  "t-currency-code-must-be-between-2-and-10-chars": "O código da moeda deve ter entre 2 e 10 caracteres.",
+  "t-currency-symbol-must-be-between-1-and-10-chars": "O símbolo da moeda deve ter entre 1 e 10 caracteres.",
+  "t-province-code-must-be-between-2-and-10-chars": "O código da província deve ter entre 2 e 10 caracteres."
 }
