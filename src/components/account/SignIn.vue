@@ -14,12 +14,12 @@ const isSubmitted = ref(false);
 const isRemember = ref(false);
 const errorMsg = ref("");
 const formData = ref({
-  username: { value: "admin", isValid: true },
+  email: { value: "admin@localhost", isValid: true },
   password: { value: "admin", isValid: true },
 });
 
 const isValidFormData = computed(() => {
-  return formData.value.username.isValid && formData.value.password.isValid;
+  return formData.value.email.isValid && formData.value.password.isValid;
 });
 
 const onSignIn = async () => {
@@ -32,14 +32,14 @@ const onSignIn = async () => {
     }
 
     const auth = appConfigs.auth;
-    const { password, username } = formData.value;
+    const { password, email } = formData.value;
     const payload: UserType = {
       password: password.value,
-      username: username.value,
+      email: email.value,
     };
 
     if (auth === "authService") {
-      const data = await authService.login(payload.username, payload.password);
+      const data = await authService.login(payload.email, payload.password);
       if (data) {
         router.push({ path: "/" });
       }
@@ -70,7 +70,7 @@ const onSignIn = async () => {
             <div class="font-weight-medium mb-1">
               {{ $t('t-username') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="formData.username" isRequired :showError="isSubmitted" :isSubmitted="isSubmitted"
+            <TextField v-model="formData.email" isRequired :showError="isSubmitted" :isSubmitted="isSubmitted"
               hideDetails placeholder="Enter username" />
             <div class="d-flex justify-space-between align-center mt-4">
               <div class="font-weight-medium">

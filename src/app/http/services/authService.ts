@@ -1,13 +1,14 @@
 import axiosInstance from "@/app/http/axios";
 import { useAuthStore } from "@/store/authStore";
 import { getAccessToken, setAccessToken, clearTokens, setRefreshToken } from "@/app/localStorage";
+import { email } from "@vuelidate/validators";
 
 class AuthService {
 
     async login(username: string, password: string) {
         try {
           const response = await axiosInstance.post("/auth/login", {
-            username: "admin",   // string direta
+            email: "admin@localhost",   // string direta
             password: "admin"   // string direta
           });
           

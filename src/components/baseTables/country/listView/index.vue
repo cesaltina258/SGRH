@@ -167,11 +167,11 @@ const onCreateEditClick = (data: CountryListingType | null) => {
     };
   } else {
     router.push({
-    path: "/baseTable/edit-country",
-    query: {
-      id: data.id,
-    },
-  });
+      path: "/baseTable/edit-country",
+      query: {
+        id: data.id,
+      },
+    });
 
   }
 
@@ -274,17 +274,27 @@ const onConfirmDelete = async () => {
 <template>
   <v-card>
     <v-card-title class="mt-2">
-      <v-row justify="space-between">
-        <v-col lg="3">
+  <v-row justify="space-between" align="center" no-gutters>
+    <!-- Novo texto à esquerda -->
+    <v-col lg="auto" class="d-flex align-center">
+      <span class="text-body-1 font-weight-bold">{{ $t('t-country-list') }}</span>
+    </v-col>
+
+    <!-- Container dos elementos à direita -->
+    <v-col lg="8" class="d-flex justify-end">
+      <v-row justify="end" align="center" no-gutters>
+        <v-col lg="4" class="me-3">
           <QuerySearch v-model="query" :placeholder="$t('t-search-for-country')" />
         </v-col>
         <v-col lg="auto">
           <v-btn color="secondary" @click="onCreateEditClick(null)">
-            <i class="ph-globe me-1" /> {{ $t('t-add-country') }}
+            <i class="ph-plus-circle me-1" /> {{ $t('t-add-country') }}
           </v-btn>
         </v-col>
       </v-row>
-    </v-card-title>
+    </v-col>
+  </v-row>
+</v-card-title>
     <v-card-text class="mt-2">
       <Table v-model="page" :headerItems="listViewHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
         :config="config" :loading="loading" is-pagination @on-select-all="onSelectAll">

@@ -455,5 +455,6 @@
   "t-code-must-be-between-2-and-10-chars": "O código deve ter entre 2 e 10 caracteres.",
   "t-currency-code-must-be-between-2-and-10-chars": "O código da moeda deve ter entre 2 e 10 caracteres.",
   "t-currency-symbol-must-be-between-1-and-10-chars": "O símbolo da moeda deve ter entre 1 e 10 caracteres.",
-  "t-province-code-must-be-between-2-and-10-chars": "O código da província deve ter entre 2 e 10 caracteres."
+  "t-province-code-must-be-between-2-and-10-chars": "O código da província deve ter entre 2 e 10 caracteres.",
+  "t-back": "Voltar"
 }
