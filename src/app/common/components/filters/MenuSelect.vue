@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
-const prop = defineProps({
+const props = defineProps({
   placeholder: {
     type: String,
     default: "",
@@ -15,26 +15,56 @@ const prop = defineProps({
     default: false,
   },
   modelValue: {
+    type: [String, Array, Number],
+    default: "",
+  },
+  rules: {
+    type: Array,
+    default: () => [],
+  },
+  errorMessages: {
     type: [String, Array],
     default: "",
   },
 });
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue", "update:error"]);
+
+const error = ref("");
 
 const selected = computed({
   get() {
-    return prop.modelValue || "";
+    return props.modelValue;
   },
   set(selected: string | any) {
+    validate(selected);
     emit("update:modelValue", selected);
   },
 });
 
+const validate = (value: any) => {
+  if (!props.rules || props.rules.length === 0) return true;
+
+  for (const rule of props.rules) {
+    const result = rule(value);
+    if (typeof result === "string") {
+      error.value = result;
+      emit("update:error", result);
+      return false;
+    }
+  }
+
+  error.value = "";
+  emit("update:error", "");
+  return true;
+};
+
 const onClear = () => {
   emit("update:modelValue", "");
+  validate("");
 };
 </script>
+
 <template>
   <v-autocomplete
     class="menu-select-filter menu-select-autocomplete"
@@ -44,7 +74,8 @@ const onClear = () => {
     density="compact"
     clearable
     hide-selected
-    hide-details
+    :error-messages="errorMessages || error"
+    :rules="rules"
     item-title="label"
     item-value="value"
     closable-chips
@@ -55,6 +86,22 @@ const onClear = () => {
     clear-icon="ph-x"
     :item-height="30"
     @click:clear="onClear"
+    @blur="validate(selected)"
   >
+    <template #error="{ message }">
+      <div class="v-messages__message">
+        {{ message }}
+      </div>
+    </template>
   </v-autocomplete>
 </template>
+
+<style scoped>
+/* Estilo para as mensagens de validação */
+:deep(.v-messages__message) {
+  font-size: 0.65rem;
+  color: #ff5252;
+  line-height: 1.2;
+  margin-top: -3px;
+}
+</style>

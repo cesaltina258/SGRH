@@ -2,30 +2,29 @@
 // ==============================================
 // IMPORTS
 // ==============================================
-import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
-import { useRouter } from "vue-router";
-import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
-import ValidatedDatePicker  from "@/app/common/components/ValidatedDatePicker.vue";
-import { useCountryStore } from '@/store/baseTables/countryStore';
-import { useProvinceStore } from '@/store/baseTables/provinceStore';
-import { useEmployeeStore } from '@/store/employeeStore';
+import { ref, computed, watch, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { useEmployeeStore  } from "@/store/employeeStore";
+import { useCountryStore } from "@/store/baseTables/countryStore";
+import { useProvinceStore } from "@/store/baseTables/provinceStore";
 import { employeeService } from "@/app/http/httpServiceProvider";
-import { CountryListingType } from "@/components/baseTables/country/types";
-import { ProvinceListingType } from "@/components/baseTables/province/types";
-import { genderOptions, maritalStatusOptions, bloodGroupOptions, nationalityOptions } from "@/components/employee/create/utils";
-import type {
-  EmployeeInsertType
-} from "../types";
+import { genderOptions, maritalStatusOptions, bloodGroupOptions, nationalityOptions } from "@/components/employee/edit/utils";
+import type { EmployeeUpdateType } from "../types";
+import ValidatedDatePicker from "@/app/common/components/ValidatedDatePicker.vue";
+import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
 import { useToast } from 'vue-toastification';
 import { useI18n } from "vue-i18n";
+import { CountryListingType } from "@/components/baseTables/country/types";
+import { ProvinceListingType } from "@/components/baseTables/province/types";
 
 // ==============================================
-// ROUTER & EMITS
+// ROUTER & ROUTE
 // ==============================================
 const { t } = useI18n();
 const toast = useToast();
 const router = useRouter();
-const emit = defineEmits(["onStepChange"]);
+const route = useRoute();
+const employeeId = route.params.id;
 
 // ==============================================
 // STORES
@@ -37,9 +36,9 @@ const provinceStore = useProvinceStore();
 // ==============================================
 // FORM STATE
 // ==============================================
-const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
-
-const employeeData = ref<EmployeeInsertType>({
+const form = ref();
+const employeeData = ref<EmployeeUpdateType>({
+  // Inicialize com valores padrão
   employeeNumber: '',
   firstName: '',
   middleName: '',
@@ -50,7 +49,7 @@ const employeeData = ref<EmployeeInsertType>({
   bloodGroup: '',
   placeOfBirth: '',
   nationality: '',
-  incomeTaxNumber: null,
+  incomeTaxNumber: '',
   socialSecurityNumber: null,
   address: '',
   country: '',
@@ -69,19 +68,15 @@ const employeeData = ref<EmployeeInsertType>({
   passportIssuer: '',
   passportIssuanceDate: new Date().toISOString().split('T')[0],
   passportExpiryDate: new Date().toISOString().split('T')[0]
+  // ... outros campos
 });
-
-
 
 // ==============================================
 // UI STATE
 // ==============================================
-const errors = ref<Record<string, string>>({});
-//const apiError = ref<string | null>(null);
-//const showGeneralError = ref(false);
 const loading = ref(false);
-const errorMsg = ref("")
-let alertTimeout: ReturnType<typeof setTimeout> | null = null // Modificado para usar let em vez de ref
+const errorMsg = ref("");
+
 // ==============================================
 // VALIDATION RULES
 // ==============================================
@@ -140,6 +135,36 @@ const requiredRules = {
   // Adicione outras regras conforme necessário
 }
 
+
+// Adicione esta variável para controlar se é a primeira carga
+const isInitialLoad = ref(true);
+
+watch(
+  () => employeeData.value.country,
+  async (newCountryId, oldCountryId) => {
+    console.log('País alterado para:', newCountryId);
+    
+    // Só executa se não for a primeira carga E se o país realmente mudou
+    if (!isInitialLoad.value && newCountryId !== oldCountryId) {
+      if (newCountryId) {
+        try {
+          await provinceStore.fetchProvincesbyCountry(newCountryId);
+          console.log('Províncias carregadas:', provinceStore.provincesbyCountry);
+          employeeData.value.province = null; // Só reseta se o usuário mudar o país
+        } catch (error) {
+          console.error('Erro ao carregar províncias:', error);
+          showError("Falha ao carregar províncias");
+        }
+      }
+    }
+    
+    // Marca que a primeira carga já ocorreu
+    if (isInitialLoad.value) {
+      isInitialLoad.value = false;
+    }
+  }
+);
+
 // ==============================================
 // COMPUTED PROPERTIES
 // ==============================================
@@ -156,7 +181,7 @@ const countries = computed(() => {
 
 const provinces = computed(() => {
   if (!Array.isArray(provinceStore.provincesbyCountry)) return [];
-  return provinceStore.provincesbyCountry.map((province: ProvinceListingType) => ({ 
+  return provinceStore.provincesbyCountry.map((province: ProvinceListingType) => ({
     value: province.id,
     label: province.name,
     meta: {
@@ -165,119 +190,109 @@ const provinces = computed(() => {
     }
   }));
 });
-
 // ==============================================
 // LIFECYCLE HOOKS
 // ==============================================
 onMounted(async () => {
   try {
-    await countryStore.fetchCountries();
+    await Promise.all([
+      countryStore.fetchCountries(),
+      loadEmployeeData()
+    ]);
   } catch (error) {
-    console.error("Failed to load countries:", error);
-    errorMsg.value = "Falha ao carregar países";
-    alertTimeout = setTimeout(() => {
-        errorMsg.value = ""
-        alertTimeout = null
-      }, 5000)
-  }
-});
-
-// ==============================================
-// WATCHERS
-// ==============================================
-watch(() => employeeData.value.country, async (newCountryId) => {
-  if (newCountryId) {
-    try {
-      await provinceStore.fetchProvincesbyCountry(newCountryId);
-      employeeData.value.province = '';
-    } catch (error) {
-      console.error("Failed to load provinces:", error);
-      provinceStore.provincesbyCountry = [];
-      errorMsg.value = "Falha ao carregar províncias";
-      alertTimeout = setTimeout(() => {
-        errorMsg.value = ""
-        alertTimeout = null
-      }, 5000)
-    }
-  } else {
-    provinceStore.clearProvinces();
+    showError("Falha ao carregar dados iniciais");
   }
 });
 
 // ==============================================
 // METHODS
 // ==============================================
-const onBack = () => {
-  router.push({ path: `/employee/list` });
-};
-
-const submitForm = async () => {
-  if (!form.value) return
-
-  // Validação do Vuetify
-  const { valid } = await form.value.validate()
-
-  if (!valid) {
-    errorMsg.value = 'Por favor, corrija os erros destacados'
-    alertTimeout = setTimeout(() => {
-        errorMsg.value = ""
-        alertTimeout = null
-      }, 5000)
-    return
-  }
-
-  loading.value = true
+// Modifique o loadEmployeeData para carregar as províncias iniciais
+const loadEmployeeData = async () => {
+  loading.value = true;
   try {
-    const response = await employeeService.createEmployee(employeeData.value)
-
-    if (response.status === 'error') {
-      handleApiError(response)
-    } else {
-      await employeeStore.fetchEmployees()
-      toast.success(t('t-toast-message-created'));
-      router.push('/employee/list')
+    const response = await employeeService.getEmployeeById(employeeId);
+    
+    if (response.status === 'success') {
+      employeeData.value = processEmployeeData(response.data);
+      
+      // Carrega as províncias do país salvo (se existir)
+      if (employeeData.value.country) {
+        await provinceStore.fetchProvincesbyCountry(employeeData.value.country);
+      }
     }
   } catch (error) {
-    console.error("Erro ao criar funcionário:", error);
-    toast.error(t('t-message-save-error'));
-    handleApiError(error)
+    showError("Falha ao carregar dados do colaborador");
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 
+const processEmployeeData = (data: any): EmployeeUpdateType => {
+  return {
+    ...data,
+    country: data.country?.id, 
+    province: data.province?.id 
+    // ... outras datas
+  };
+};
+
+const updateEmployee = async () => {
+  if (!form.value) return;
+
+  const { valid } = await form.value.validate();
+  if (!valid) {
+    showError('Por favor, corrija os erros destacados');
+    return;
+  }
+
+  loading.value = true;
+  try {
+    const payload = preparePayload();
+    const response = await employeeService.updateEmployee(employeeId, payload);
+    
+    if (response.status === 'success') {
+      await employeeStore.fetchEmployees();
+      toast.success(t('t-toast-message-created'));
+      router.push('/employee/list');
+    } else {
+      handleApiError(response.error); 
+    }
+  } catch (error) {
+    toast.error(t('t-message-save-error'));
+    handleApiError(error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const preparePayload = () => {
+  return {
+    ...employeeData.value,
+    birthDate: formatDateForAPI(employeeData.value.birthDate),
+    // ... outras datas
+  };
+};
+
+const formatDateForAPI = (dateString: string) => dateString ? new Date(dateString).toISOString() : null;
+
+const showError = (message: string) => {
+  errorMsg.value = message;
+  setTimeout(() => errorMsg.value = "", 5000);
+};
 
 const handleApiError = (error: any) => {
-  // Limpa o timeout anterior
-  if (alertTimeout) {
-    clearTimeout(alertTimeout)
-    alertTimeout = null
-  }
+  const message = error?.response?.data?.message || 'Erro ao atualizar colaborador';
+  showError(message);
+};
 
-  // Define a mensagem de erro
- 
-  if (error.status === 'error') {
-    errorMsg.value  = error.error.message
-  }
+const onBack = () => router.push('/employee/list');
 
-  // Configura o timeout para limpar a mensagem após 3 segundos
-  alertTimeout = setTimeout(() => {
-    errorMsg.value = ""
-    alertTimeout = null
-  }, 5000)
-}
 
-onBeforeUnmount(() => {
-  if (alertTimeout) {
-    clearTimeout(alertTimeout)
-    alertTimeout = null
-  }
-})
 </script>
-
 <template>
-  <v-form ref="form" @submit.prevent="submitForm">
+  <v-form ref="form" @submit.prevent="updateEmployee">
     <!-- Personal Information Section -->
     <Card :title="$t('t-general-information')" elevation="0" title-class="pb-0">
       <!-- Alert de erro geral -->
@@ -319,7 +334,7 @@ onBeforeUnmount(() => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-gender') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <MenuSelect v-model="employeeData.gender" :items="genderOptions" :rules="requiredRules.gender"/>
+            <MenuSelect v-model="employeeData.gender" :key="employeeData.gender"  :items="genderOptions" :rules="requiredRules.gender" />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
@@ -339,7 +354,7 @@ onBeforeUnmount(() => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-birth-date') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <ValidatedDatePicker v-model="employeeData.birthDate" :teleport="true" placeholder="Select date"  :rules="requiredRules.birthDate" 
+            <ValidatedDatePicker v-model="employeeData.birthDate"  placeholder="Select date"  :rules="requiredRules.birthDate" 
                format="dd/MM/yyyy" />
           </v-col>
           <v-col cols="12" lg="4">
@@ -387,8 +402,12 @@ onBeforeUnmount(() => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-province') }}
             </div>
-            <MenuSelect v-model="employeeData.province" :items="provinces" :loading="provinceStore.loading"
-              :disabled="!employeeData.country || !Array.isArray(provinceStore.provincesbyCountry)" />
+            <MenuSelect 
+      v-model="employeeData.province" 
+      :items="provinces" 
+      :loading="provinceStore.loading"
+      :disabled="!employeeData.country || !Array.isArray(provinceStore.provincesbyCountry)" 
+    />
           </v-col>
         </v-row>
         <v-row class="mt-n6">
@@ -509,7 +528,7 @@ onBeforeUnmount(() => {
     </v-card-actions>-->
       <v-card-actions class="d-flex justify-space-between mt-3">
         <v-btn color="secondary" variant="outlined" class="me-2" @click="onBack()">
-          {{ $t('t-back') }} <i class="ph-arrow-left ms-2" />
+          {{ $t('t-back') }}  <i class="ph-arrow-left ms-2" />
         </v-btn>
         <v-btn color="success" variant="elevated" :loading="loading" type="submit">
           {{ $t('t-save') }} <i class="ph-floppy-disk ms-2" />

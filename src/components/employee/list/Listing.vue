@@ -8,15 +8,20 @@ import Table from "@/app/common/components/Table.vue";
 import TableAction from "@/app/common/components/TableAction.vue";
 import { employeeHeader } from "@/components/employee/list/utils";
 import type { EmployeeListingType } from "../types";
-import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue";
+import RemoveItemdeleteDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue"; 
+import { employeeService } from "@/app/http/httpServiceProvider";
+import { useToast } from 'vue-toastification';
+import { useI18n } from "vue-i18n";
 
 // --- STORES E ROUTER ---
 const router = useRouter();
 const employeeStore = useEmployeeStore();
+const { t } = useI18n();
+const toast = useToast();
 
 // --- REFS ---
 const query = ref("");
-const confirmationDialog = ref(false);
+const deleteDialog = ref(false);
 const deleteId = ref<number | null>(null);
 const isAllSelected = ref(false);
 const page = ref(1);
@@ -111,20 +116,29 @@ const onSelectAll = () => {
 // Ações CRUD
 const onDelete = (id: number) => {
   deleteId.value = id;
-  confirmationDialog.value = true;
+  deleteDialog.value = true;
 };
 
 const onConfirmDelete = async () => {
-  if (!deleteId.value) return;
-  
+  console.log("Delete ID:", deleteId.value);
   deleteLoading.value = true;
+
   try {
-    await employeeStore.deleteEmployee(deleteId.value);
+    await employeeService.deleteEmployee(deleteId.value!);
     await employeeStore.fetchEmployees();
-    confirmationDialog.value = false;
+    tableData.value = [];
+    getPaginatedData();
+    
+    toast.success(t('t-toast-message-deleted'));
+  } catch (error) {
+    toast.error(t('t-toast-message-deleted-erros'));
+    console.error("Delete error:", error);
   } finally {
     deleteLoading.value = false;
+    deleteDialog.value = false;
   }
+
+  
 };
 
 const onView = (id: number) => {
@@ -184,7 +198,7 @@ onMounted(async () => {
             <td>{{ item.email }}</td>
             <td>
               <TableAction 
-                @onView="onView(item.id)" 
+  
                 @onEdit="onEdit(item.id)" 
                 @onDelete="onDelete(item.id)" 
               />
@@ -204,9 +218,9 @@ onMounted(async () => {
     </v-card-text>
   </Card>
 
-  <RemoveItemConfirmationDialog 
+  <RemoveItemdeleteDialog 
     v-if="deleteId"
-    v-model="confirmationDialog"
+    v-model="deleteDialog"
     @onConfirm="onConfirmDelete"
     :loading="deleteLoading"
   />

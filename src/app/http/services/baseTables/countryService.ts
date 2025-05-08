@@ -6,7 +6,7 @@ export default class CountryService extends HttpService {
   //get de todos utilizadores
   async getCountries(): Promise<CountryListingType[]> {
     try {
-      const response = await this.get("/administration/setup/countries/");
+      const response = await this.get("/administration/setup/countries");
       //console.log('response employees',response);
       return response.data;
 

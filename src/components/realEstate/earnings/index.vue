@@ -38,7 +38,7 @@ const format = (dates: Date[]) => {
   <v-card class="mt-4">
     <v-card-text>
       <div class="real-estate-orders-calender">
-        <VueDatePicker
+        <
           v-model="date"
           range
           :teleport="true"
