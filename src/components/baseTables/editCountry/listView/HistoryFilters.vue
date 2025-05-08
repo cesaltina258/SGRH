@@ -66,12 +66,6 @@ const date = computed({
             :placeholder="$t('t-select-status')"
           />
         </v-col>
-        <v-col cols="12" lg="2">
-          <v-btn variant="tonal" class="" color="primary" block>
-            <i class="ph-funnel me-1" />
-            <span class="font-weight-bold"> {{$t('t-filter')}}</span>
-          </v-btn>
-        </v-col>
       </v-row>
     </v-card-text>
   </v-card>
