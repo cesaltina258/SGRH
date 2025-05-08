@@ -5,13 +5,9 @@ import { email } from "@vuelidate/validators";
 
 class AuthService {
 
-    async login(username: string, password: string) {
+    async login(email: string, password: string) {
         try {
-          const response = await axiosInstance.post("/auth/login", {
-            email: "admin@localhost",   // string direta
-            password: "admin"   // string direta
-          });
-          
+          const response = await axiosInstance.post("/auth/login", { email, password });
     
           console.log("🔍 Resposta do login:", response);
     

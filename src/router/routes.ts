@@ -1,6 +1,6 @@
 import { DefaultLayout, AuthLayout } from "@/layouts/index";
 
-import ECommerce from "@/views/dashboard/ECommerce.vue";
+import Dashboard from "@/views/pages/StarterKit.vue";
 import Chats from "@/views/chats/index.vue";
 import Email from "@/views/email/index.vue";
 import FileManager from "@/views/fileManager/index.vue";
@@ -78,6 +78,12 @@ const employeeRoutes = [
     component: () => import("@/views/employee/Create.vue"),
     meta: { title: "Create Employee", authRequired: true },
   },
+  {
+    path: '/employee/edit/:id',
+    name: 'EditEmployee',
+    component: () => import('@/views/employee/Edit.vue'),
+    meta: { title: "Edit Employee", requiresAuth: true }
+  }
 ].map((data) => {
   return {
     ...data,
@@ -172,8 +178,8 @@ const accountRoutes = [
 const dashboardRoutes = [
   {
     path: "/",
-    name: "ECommerce",
-    component: ECommerce,
+    name: "Dashboard",
+    component: Dashboard,
     meta: { title: "Dashboard", authRequired: true, layout: DefaultLayout },
   },
   {
