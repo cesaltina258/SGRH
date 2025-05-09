@@ -1,227 +1,162 @@
 <script lang="ts" setup>
-// --- IMPORTS ---
-import { ref, watch, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { useEmployeeStore } from "@/store/employeeStore";
-import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
-import Table from "@/app/common/components/Table.vue";
-import TableAction from "@/app/common/components/TableAction.vue";
-import { employeeHeader } from "@/components/employee/list/utils";
-import type { EmployeeListingType } from "../types";
-import RemoveItemdeleteDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue"; 
-import { employeeService } from "@/app/http/httpServiceProvider";
-import { useToast } from 'vue-toastification';
-import { useI18n } from "vue-i18n";
+import { ref, computed, watch } from "vue"
+import { useRouter } from "vue-router"
+import { useEmployeeStore } from "@/store/employeeStore"
+import { employeeService } from "@/app/http/httpServiceProvider"
+import { useToast } from 'vue-toastification'
+import { useI18n } from "vue-i18n"
 
-// --- STORES E ROUTER ---
-const router = useRouter();
-const employeeStore = useEmployeeStore();
-const { t } = useI18n();
-const toast = useToast();
+// Components
+import QuerySearch from "@/app/common/components/filters/QuerySearch.vue"
+import DataTableServer from "@/app/common/components/DataTableServer.vue"
+import TableAction from "@/app/common/components/TableAction.vue"
+import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue"
+import { employeeHeader } from "@/components/employee/list/utils"
+import Card from "@/app/common/components/Card.vue"
 
-// --- REFS ---
-const query = ref("");
-const deleteDialog = ref(false);
-const deleteId = ref<number | null>(null);
-const isAllSelected = ref(false);
-const page = ref(1);
-const loading = ref(false);
-const deleteLoading = ref(false);
-const tableData = ref<EmployeeListingType[]>([]);
+const { t } = useI18n()
+const toast = useToast()
+const router = useRouter()
+const employeeStore = useEmployeeStore()
 
-// --- CONFIG PAGINAÇÃO ---
-const itemsPerPage = 10;
-const config = ref({
-  page: page.value,
-  start: 0,
-  end: 0,
-  noOfItems: 0,
-  itemsPerPage: itemsPerPage,
-});
+// Estado do componente
+const searchQuery = ref("")
+const deleteDialog = ref(false)
+const deleteId = ref<number | null>(null)
+const deleteLoading = ref(false)
+const itemsPerPage = ref(2)
+const selectedEmployees = ref<any[]>([]) /// Armazena os funcionários selecionados
 
-// --- COMPUTED PROPERTIES ---
-// Dados mapeados com reversão para mostrar os mais recentes primeiro
-const mappedData = computed(() => 
-  employeeStore.employees.map(item => ({
-    ...item,
-    isCheck: false
-  })).toReversed()
-);
+// Computed properties
+const loading = computed(() => employeeStore.loading)
+const totalItems = computed(() => employeeStore.pagination.totalElements)
 
-// Dados filtrados pela pesquisa
-const filteredData = computed(() => {
-  if (!query.value) return mappedData.value;
-  
-  const searchTerm = query.value.toLowerCase();
-  return mappedData.value.filter(item => 
-    item.firstName?.toLowerCase().includes(searchTerm) ||
-    item.lastName?.toLowerCase().includes(searchTerm) ||
-    item.email?.toLowerCase().includes(searchTerm) ||
-    item.phone?.toLowerCase().includes(searchTerm)
-  );
-});
+// Observa mudanças nos funcionários selecionados
+watch(selectedEmployees, (newSelection) => {
+  console.log('Funcionários selecionados:', newSelection)
+}, { deep: true })
 
-// Total de itens para paginação
-const noOfItems = computed(() => filteredData.value.length);
+// Busca os funcionários com os parâmetros atuais
+const fetchEmployees = async ({ page, itemsPerPage, sortBy, search }) => {
+  await employeeStore.fetchEmployees(
+    page - 1, // Ajuste para API que começa em 0
+    itemsPerPage,
+    sortBy[0]?.key || 'createdAt',
+    sortBy[0]?.order || 'asc',
+    search
+  )
+}
 
-// --- WATCHERS ---
-// Actualiza paginação quando a página muda
-watch(page, (newPage) => {
-  config.value.page = newPage;
-  getPaginatedData();
-});
+// Navega para a página de visualização
+const onView = (id: string) => {
+  router.push(`/employee/view/${id}`)
+}
 
-// Actualiza dados quando a pesquisa muda
-watch(query, () => {
-  page.value = 1; // Reset para primeira página
-  getPaginatedData();
-});
+// Abre o diálogo de confirmação para exclusão
+const openDeleteDialog = (id: number) => {
+  deleteId.value = id
+  deleteDialog.value = true
+}
 
-// Actualiza contagem total quando os dados filtrados mudam
-watch(filteredData, () => {
-  config.value.noOfItems = noOfItems.value;
-});
+// Executa a exclusão do funcionário
+const deleteEmployee = async () => {
+  if (!deleteId.value) return
 
-// --- MÉTODOS ---
-// Obtém dados paginados
-const getPaginatedData = () => {
-  const start = (page.value - 1) * itemsPerPage;
-  const end = Math.min(start + itemsPerPage, noOfItems.value);
-
-  config.value = {
-    ...config.value,
-    start,
-    end,
-    noOfItems: noOfItems.value
-  };
-
-  loading.value = true;
-  tableData.value = [];
-
-  setTimeout(() => {
-    tableData.value = filteredData.value.slice(start, end);
-    loading.value = false;
-  }, 200);
-};
-
-// Seleciona/deseleciona todos os itens
-const onSelectAll = () => {
-  isAllSelected.value = !isAllSelected.value;
-  tableData.value = tableData.value.map(item => ({
-    ...item,
-    isChecked: isAllSelected.value
-  }));
-};
-
-// Ações CRUD
-const onDelete = (id: number) => {
-  deleteId.value = id;
-  deleteDialog.value = true;
-};
-
-const onConfirmDelete = async () => {
-  console.log("Delete ID:", deleteId.value);
-  deleteLoading.value = true;
-
+  deleteLoading.value = true
   try {
-    await employeeService.deleteEmployee(deleteId.value!);
-    await employeeStore.fetchEmployees();
-    tableData.value = [];
-    getPaginatedData();
-    
-    toast.success(t('t-toast-message-deleted'));
+    await employeeService.deleteEmployee(deleteId.value)
+    toast.success(t('t-toast-message-deleted'))
+    await employeeStore.fetchEmployees(0, itemsPerPage.value)
   } catch (error) {
-    toast.error(t('t-toast-message-deleted-erros'));
-    console.error("Delete error:", error);
+    toast.error(t('t-toast-message-deleted-error'))
   } finally {
-    deleteLoading.value = false;
-    deleteDialog.value = false;
+    deleteLoading.value = false
+    deleteDialog.value = false
   }
+}
 
-  
-};
-
-const onView = (id: number) => {
-  router.push({ path: `/employee/overview/${id}` });
-};
-
-const onEdit = (id: number) => {
-  router.push({ path: `/employee/edit/${id}` });
-};
-
-// --- LIFECYCLE HOOKS ---
-onMounted(async () => {
-  loading.value = true;
-  try {
-    await employeeStore.fetchEmployees();
-    getPaginatedData();
-  } finally {
-    loading.value = false;
+const toggleSelection = (item) => {
+  const index = selectedEmployees.value.findIndex(selected => selected.id === item.id);
+  if (index === -1) {
+    selectedEmployees.value = [...selectedEmployees.value, item];
+  } else {
+    selectedEmployees.value = selectedEmployees.value.filter(selected => selected.id !== item.id);
   }
-});
+};
+
+
 </script>
 
 <template>
   <Card :title="$t('t-employee-list')" class="mt-7">
     <template #title-action>
       <v-row justify="end" align="center" no-gutters>
-        <v-col lg="3">
-          <QuerySearch v-model="query" :placeholder="$t('t-search-employee')" />
+        <v-col cols="12" sm="6" md="4">
+          <QuerySearch v-model="searchQuery" :placeholder="$t('t-search-employee')" />
         </v-col>
-        <v-col lg="auto" class="ms-3">
-          <v-btn color="secondary" to="/employee/create">
+        <v-col cols="12" sm="6" md="auto" class="ms-sm-3 mt-sm-0 mt-2">
+          <v-btn color="secondary" to="/employee/create" block>
             <i class="ph-plus-circle" /> {{ $t('t-add-employee') }}
           </v-btn>
         </v-col>
       </v-row>
     </template>
+
     <v-card-text>
-      <Table 
-        :config="config" 
-        v-model:page="page"
-        :headerItems="employeeHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
+      <DataTableServer
+        v-model="selectedEmployees"
+        :headers="employeeHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
+        :items="employeeStore.employees"
         :items-per-page="itemsPerPage"
+        :total-items="totalItems"
         :loading="loading"
-         @on-select-all="onSelectAll"
-        is-pagination
+        :search-query="searchQuery"
+        @load-items="fetchEmployees"
+        item-value="id"
+        show-select
       >
-        <template #body>
-          <tr v-for="(item, index) in tableData" :key="'employee-' + index" height="40">
+      <template #body="{ items }">
+          <tr v-for="item in items" :key="item.id" height="50">
             <td>
-              <v-checkbox v-model="item.isChecked" hide-details color="primary" />
+              <v-checkbox
+                :model-value="selectedEmployees.some(selected => selected.id === item.id)"
+                @update:model-value="toggleSelection(item)"
+                hide-details
+                density="compact"
+              />
             </td>
             <td class="text-primary cursor-pointer" @click="onView(item.id)">
-              #{{ item.employeeNumber }}
+              #{{ item.employeeNumber || 'N/A' }}
             </td>
             <td>{{ item.firstName }} {{ item.lastName }}</td>
-            <td>{{ item.phone }}</td>
-            <td>{{ item.email }}</td>
+            <td>{{ item.phone || 'N/A' }}</td>
+            <td>{{ item.email || 'N/A' }}</td>
             <td>
               <TableAction 
-  
-                @onEdit="onEdit(item.id)" 
-                @onDelete="onDelete(item.id)" 
+                @onEdit="() => router.push(`/employee/edit/${item.id}`)"
+                @onDelete="() => openDeleteDialog(item.id)"
               />
             </td>
           </tr>
         </template>
-      </Table>
-      
-      <div v-if="!tableData.length && !loading" class="text-center py-10">
-        <v-avatar size="80" color="primary" variant="text">
-          <i class="ph-magnifying-glass" style="font-size: 30px" color="primary" />
-        </v-avatar>
-        <div class="font-weight-bold text-subtitle-1 mb-1">
-          {{ $t('t-search-not-found-message') }}
-        </div>
-      </div>
+
+        <template #no-data>
+          <div class="text-center py-10">
+            <v-avatar size="80" color="primary" variant="tonal">
+              <i class="ph-magnifying-glass" style="font-size: 30px" />
+            </v-avatar>
+            <div class="text-subtitle-1 font-weight-bold mt-3">
+              {{ $t('t-search-not-found-message') }}
+            </div>
+          </div>
+        </template>
+      </DataTableServer>
     </v-card-text>
   </Card>
 
-  <RemoveItemdeleteDialog 
-    v-if="deleteId"
+  <RemoveItemConfirmationDialog
     v-model="deleteDialog"
-    @onConfirm="onConfirmDelete"
+    @onConfirm="deleteEmployee"
     :loading="deleteLoading"
   />
 </template>
