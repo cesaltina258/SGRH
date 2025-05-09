@@ -472,5 +472,14 @@
   "t-province-code-must-be-between-2-and-10-chars": "O código da província deve ter entre 2 e 10 caracteres.",
   "t-back": "Voltar",
   "t-field-required": "Campo obrigatório!",
-  "t-change": "Alterar Senha"
+  "t-change": "Alterar Senha",
+  "t-dialog-locker": "Confirmar bloqueio",
+  "t-dialog-text-confirm-locker": "Tem certeza que deseja bloquear este registo?",
+  "t-yes-locker-it": "Sim, bloquear",
+  "t-locker": "Bloquear",
+  "t-message-locker-error": "Erro ao bloquear registo!",
+  "t-message-locker": "Registo bloqueado com sucesso!",
+  "t-toast-message-user-locked": "Conta bloqueada com sucesso",
+  "t-message-account-already-locked": "A conta já está bloqueada!",
+  "t-toast-message-user-already-locked": "A conta já está bloqueada!"
 }

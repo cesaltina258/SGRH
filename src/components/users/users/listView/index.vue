@@ -20,6 +20,7 @@ import ChangePasswordModal from "@/components/users/users/ChangePasswordModal.vu
 import { changePasswordType } from "@/components/users/types";
 import { onBeforeUnmount } from "vue";
 import { changePasswordListingType } from "@/components/users/types";
+import LockerAccountConfirmationDialog from "@/components/users/users/LockerAccountConfirmationDialog.vue";
 
 
 const { t } = useI18n();
@@ -41,9 +42,25 @@ const isSelectAll = ref(false);
 const changePasswordUserId = ref<number | null>(null);
 // Junto com as outras refs
 const changePasswordUser = ref<changePasswordListingType | null>(null);
+const lockerDialog = ref(false);
+const lockerId = ref<number | null>(null);
+const lockerLoading = ref(false);
+
 
 const errorMsg = ref("");
 let alertTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  const onLocker = (id: number) => {
+  const user = userStore.users.find((u) => u.id === id);
+
+  if (user?.accountLocked) {
+    toast.warning(t('t-toast-message-user-already-locked'));
+    return;
+  }
+
+  lockerId.value = id;
+  lockerDialog.value = true;
+};
 
 
 const handleApiError = (error: any) => {
@@ -54,7 +71,7 @@ const handleApiError = (error: any) => {
 
   // Se o erro vier em formato de resposta do backend
   const message =
-    error?.response?.data?.error.errors.passwordsMatching[0]    ||
+    error?.response?.data?.error.errors.passwordsMatching[0] ||
     error?.message ||
     t("t-message-save-error");
 
@@ -310,6 +327,27 @@ const onChangePassword = (data: UserListingType | null) => {
   passwordDialog.value = true;
 };
 
+const onConfirmLockerAccount = async () => {
+  lockerLoading.value = true;
+
+  try {
+    await userService.lockerUser(lockerId.value!); // Certifique-se que o método existe
+    toast.success(t("t-toast-message-user-locked"));
+
+    await userStore.fetchUsers();
+    getPaginatedData();
+  } catch (error) {
+    toast.error(t("t-message-locker-error"));
+    console.error("Erro ao bloquear conta:", error);
+  } finally {
+    lockerLoading.value = false;
+    lockerDialog.value = false;
+    lockerId.value = null;
+  }
+};
+
+
+
 //Delete do utilizador
 watch(deleteDialog, (newVal: boolean) => {
   if (!newVal) {
@@ -356,11 +394,14 @@ const onSelect = (option: string, data: UserListingType) => {
       onDelete(data.id);
       break;
     case "change":
-      onChangePassword(data); // <-- correto
+      onChangePassword(data);
       break;
-
+    case "locker":
+      onLocker(data.id); // <- agora usa a modal
+      break;
   }
 };
+
 
 </script>
 <template>
@@ -427,4 +468,8 @@ const onSelect = (option: string, data: UserListingType) => {
 
   <RemoveItemConfirmationDialog v-if="deleteId" v-model="deleteDialog" @onConfirm="onConfirmDelete"
     :loading="deleteLoading" />
+
+  <LockerAccountConfirmationDialog v-if="lockerId" v-model="lockerDialog" @onConfirm="onConfirmLockerAccount"
+    :loading="lockerLoading" />
+
 </template>
