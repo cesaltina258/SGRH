@@ -420,5 +420,6 @@
   "t-invalid-id-card-expiry-date": "Data de validade do bilhete de identidade inválida!",
   "t-invalid-id-card-issuance-date": "Data de emissão do bilhete de identidade inválida!",
   "t-back": "Voltar",
-  "t-enter-email1": "Insira seu e-mail"
+  "t-enter-email1": "Insira seu e-mail",
+  "t-please-enter-maximum-20-characters": "Por favor, insira no máximo 20 caracteres!"
 }

@@ -6,7 +6,7 @@ export default class UserService extends HttpService {
   //get de todos utilizadores
   async getUsers(): Promise<UserListingType[]> {
     try {
-      const response = await this.get("/administration/users/");
+      const response = await this.get("/administration/users");
       //console.log('response users',response);
       return response.data;
 
@@ -18,7 +18,7 @@ export default class UserService extends HttpService {
 
   async createUser(userData: UserInsertType): Promise<UserInsertType> {
     try {
-      const response = await this.post("/administration/users/", userData);
+      const response = await this.post("/administration/users", userData);
       console.log('response create user',response);
       return response; // Retorna os dados do utilizador criado
 

@@ -6,27 +6,41 @@ export default class EmployeeService extends HttpService {
 
   //get de todos utilizadores
   async getEmployees(
-    page: number = 0, 
-    size: number = 10, 
-    sort: string = 'createdAt,desc',
+    page: number = 0,
+    size: number = 10,
+    sortColumn: string = 'createdAt',
+    direction: string = 'asc', // Valor padrão alterado para 'asc' conforme seu exemplo
     search?: string
-  ): Promise<{ content: EmployeeListingType[], metadata: any }> {
+  ): Promise<{ content: EmployeeListingType[], meta: any }> {
     try {
-      const response = await this.get("/human-resource/employees", {
-        params: {
-          page,
-          size,
-          sort,
-          ...(search && { search })
-        }
-      });
+      // Construção manual da query string para controle total
+      const queryParams = [
+        `page=${page}`,
+        `size=${size}`,
+        `sortColumn=${sortColumn}`, // Apenas o nome da coluna
+        `direction=${direction}`    // Direção separada
+      ];
+  
+      if (search) {
+        queryParams.push(`search=${encodeURIComponent(search)}`);
+      }
+  
+      const queryString = queryParams.join('&');
+      const url = `/human-resource/employees?${queryString}`;
+  
+      console.log('URL da requisição:', url); // Para debug
+  
+      const response = await this.get(url);
+
+      console.log('Resposta da requisição:', response); // Para debug
       
       return {
-        content: response.data.content,
-        metadata: response.data.metadata
+        content: response.data || [],
+        meta: response.meta || []
       };
+      
     } catch (error) {
-      console.error("❌ Erro ao buscar colaboradores:", error); 
+      console.error("❌ Erro ao buscar colaboradores:", error);
       throw error;
     }
   }
@@ -51,7 +65,7 @@ export default class EmployeeService extends HttpService {
         status: 'error',
         error: {
           message: 'Network error',
-          detail: 'Could not connect to server' 
+          detail: 'Could not connect to server'
         }
       };
     }
@@ -86,58 +100,58 @@ export default class EmployeeService extends HttpService {
     };
   }
 
-    async updateEmployee(id: string, employeeData: EmployeeUpdateType): Promise<EmployeeListingType> {
-      try {
-        // Corpo da requisição conforme especificado
-        const payload = {
-          employeeNumber: employeeData.employeeNumber,
-          firstName: employeeData.firstName,
-          middleName: employeeData.middleName,
-          lastName: employeeData.lastName,
-          gender: employeeData.gender,
-          maritalStatus: employeeData.maritalStatus,
-          birthDate: employeeData.birthDate,
-          bloodGroup: employeeData.bloodGroup,
-          placeOfBirth: employeeData.placeOfBirth,
-          nationality: employeeData.nationality,
-          incomeTaxNumber: employeeData.incomeTaxNumber,
-          socialSecurityNumber: employeeData.socialSecurityNumber,
-          address: employeeData.address,
-          country: employeeData.country,
-          province: employeeData.province,
-          postalCode: employeeData.postalCode,
-          email: employeeData.email,
-          phone: employeeData.phone,
-          mobile: employeeData.mobile,
-          emergencyContactName: employeeData.emergencyContactName,
-          emergencyContactPhone: employeeData.emergencyContactPhone,
-          idCardNumber: employeeData.idCardNumber,
-          idCardIssuer: employeeData.idCardIssuer,
-          idCardExpiryDate: employeeData.idCardExpiryDate,
-          idCardIssuanceDate: employeeData.idCardIssuanceDate,
-          passportNumber: employeeData.passportNumber,
-          passportIssuer: employeeData.passportIssuer,
-          passportExpiryDate: employeeData.passportExpiryDate,
-          passportIssuanceDate: employeeData.passportIssuanceDate
-        };
-  
-        const response = await this.put<EmployeeUpdateType>(`/human-resource/employees/${id}`, payload);
-        return response;
+  async updateEmployee(id: string, employeeData: EmployeeUpdateType): Promise<EmployeeListingType> {
+    try {
+      // Corpo da requisição conforme especificado
+      const payload = {
+        employeeNumber: employeeData.employeeNumber,
+        firstName: employeeData.firstName,
+        middleName: employeeData.middleName,
+        lastName: employeeData.lastName,
+        gender: employeeData.gender,
+        maritalStatus: employeeData.maritalStatus,
+        birthDate: employeeData.birthDate,
+        bloodGroup: employeeData.bloodGroup,
+        placeOfBirth: employeeData.placeOfBirth,
+        nationality: employeeData.nationality,
+        incomeTaxNumber: employeeData.incomeTaxNumber,
+        socialSecurityNumber: employeeData.socialSecurityNumber,
+        address: employeeData.address,
+        country: employeeData.country,
+        province: employeeData.province,
+        postalCode: employeeData.postalCode,
+        email: employeeData.email,
+        phone: employeeData.phone,
+        mobile: employeeData.mobile,
+        emergencyContactName: employeeData.emergencyContactName,
+        emergencyContactPhone: employeeData.emergencyContactPhone,
+        idCardNumber: employeeData.idCardNumber,
+        idCardIssuer: employeeData.idCardIssuer,
+        idCardExpiryDate: employeeData.idCardExpiryDate,
+        idCardIssuanceDate: employeeData.idCardIssuanceDate,
+        passportNumber: employeeData.passportNumber,
+        passportIssuer: employeeData.passportIssuer,
+        passportExpiryDate: employeeData.passportExpiryDate,
+        passportIssuanceDate: employeeData.passportIssuanceDate
+      };
 
-      } catch (error) {
-        console.error("❌ Erro ao actualizar utilizador:", error);
-        throw error;
-      }
-    }
+      const response = await this.put<EmployeeUpdateType>(`/human-resource/employees/${id}`, payload);
+      return response;
 
-    async deleteEmployee(id: number): Promise<void> {
-      try {
-        await this.delete(`/human-resource/employees/${id}`);
-      } catch (error) {
-        console.error("❌ Erro ao deletar colaborador:", error);
-        throw error;
-      }
+    } catch (error) {
+      console.error("❌ Erro ao actualizar utilizador:", error);
+      throw error;
     }
+  }
+
+  async deleteEmployee(id: number): Promise<void> {
+    try {
+      await this.delete(`/human-resource/employees/${id}`);
+    } catch (error) {
+      console.error("❌ Erro ao deletar colaborador:", error);
+      throw error;
+    }
+  }
 
 
 }
