@@ -43,7 +43,7 @@ const onOptionClick = (value: string) => {
     <v-list
       v-model="selectedOption"
       density="compact"
-      width="140"
+      width="150"
       :lines="false"
     >
       <v-list-item

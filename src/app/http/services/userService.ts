@@ -1,12 +1,12 @@
 import HttpService from "@/app/http/httpService";
-import type { UserInsertType, UserListingType, UserUpdateType } from "@/components/users/types";
+import type { UserInsertType, UserListingType, UserUpdateType, changePasswordType } from "@/components/users/types";
 
 export default class UserService extends HttpService {
 
   //get de todos utilizadores
   async getUsers(): Promise<UserListingType[]> {
     try {
-      const response = await this.get("/administration/users/");
+      const response = await this.get("/administration/users");
       //console.log('response users',response);
       return response.data;
 
@@ -18,7 +18,7 @@ export default class UserService extends HttpService {
 
   async createUser(userData: UserInsertType): Promise<UserInsertType> {
     try {
-      const response = await this.post("/administration/users/", userData);
+      const response = await this.post("/administration/users", userData);
       console.log('response create user',response);
       return response; // Retorna os dados do utilizador criado
 
@@ -51,6 +51,23 @@ export default class UserService extends HttpService {
       return response;
     } catch (error) {
       console.error("❌ Erro ao actualizar utilizador:", error);
+      throw error;
+    }
+  }
+
+  async changePasswordUser(id: number, userData: changePasswordType): Promise<UserListingType> {
+    try {
+      // Corpo da requisição conforme especificado
+      const payload = {
+        newPassword: userData.newPassword,
+        confirmPassword: userData.confirmPassword,
+        passwordsMatching: userData.passwordsMatching,
+      };
+
+      const response = await this.put<UserListingType>(`/administration/users/change-password/${id}`, payload);
+      return response;
+    } catch (error) {
+      console.error("❌ Erro ao mudar password:", error);
       throw error;
     }
   }
