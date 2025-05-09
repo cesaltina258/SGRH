@@ -15,7 +15,7 @@ export default class FakeBackendService {
         {
           username: "admin",
           email: "admin@themesbrand.com",
-          password: "123456",
+          password: "admin",
         },
       ];
       usersLocalStorage.setItems(this.users);

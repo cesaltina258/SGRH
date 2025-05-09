@@ -2,7 +2,7 @@
 import { socialMedias } from "@/components/auth/utils";
 import { ref, computed } from "vue";
 import appConfigs from "@/app/appConfigurations";
-import { fakeBackendService } from "@/app/http/httpServiceProvider";
+import { authService } from "@/app/http/httpServiceProvider";
 import { useRouter } from "vue-router";
 import { UserType } from "@/app/http/types";
 
@@ -14,7 +14,7 @@ const isRemember = ref(false);
 const errorMsg = ref("");
 const formData = ref({
   username: { value: "admin", isValid: true },
-  password: { value: "123456", isValid: true },
+  password: { value: "admin", isValid: true },
 });
 
 const isValidFormData = computed(() => {
@@ -37,8 +37,8 @@ const onSignIn = async () => {
       username: username.value,
     };
 
-    if (auth === "fakebackend") {
-      const data = await fakeBackendService.login(payload);
+    if (auth === "authService") {
+      const data = await authService.login(payload);
       if (data) {
         router.push({ path: "/" });
       }

@@ -110,6 +110,18 @@ const baseTableRoutes = [
     component: () => import("@/views/baseTables/documentType/Overview.vue"),
     meta: { title: "Overview", authRequired: true },
   },
+  {
+    path: `${baseTablePrefix}/country/list`,
+    name: "CountryListView",
+    component: () => import("@/views/baseTables/country/ListView.vue"),
+    meta: { title: "CountryListView", authRequired: true },
+  },
+  {
+    path: `${baseTablePrefix}/edit-country`,
+    name: "EditCountry",
+    component: () => import("@/views/baseTables/editCountry/ListView.vue"),
+    meta: { title: "EditCountry", authRequired: true },
+  },
 ].map((data) => {
   return {
     ...data,

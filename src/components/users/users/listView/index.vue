@@ -12,9 +12,15 @@ import { formateDate } from "@/app/common/dateFormate";
 import { useRouter } from "vue-router";
 import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue";
 import { useUserStore } from "@/store/userStore";
-import { userService } from "@/app/http/httpServiceProvider"; 
+import { userService } from "@/app/http/httpServiceProvider";
 import { useToast } from 'vue-toastification';
 import { useI18n } from "vue-i18n";
+import { Options } from "@/components/users/users/listView/utils";
+import ChangePasswordModal from "@/components/users/users/ChangePasswordModal.vue";
+import { changePasswordType } from "@/components/users/types";
+import { onBeforeUnmount } from "vue";
+import { changePasswordListingType } from "@/components/users/types";
+import LockerAccountConfirmationDialog from "@/components/users/users/LockerAccountConfirmationDialog.vue";
 
 
 const { t } = useI18n();
@@ -27,11 +33,62 @@ const router = useRouter();
 const dialog = ref(false);
 const viewDialog = ref(false);
 const userData = ref<UserListingType | null>(null);
+const passwordDialog = ref(false);
 
 const deleteDialog = ref(false);
 const deleteId = ref<number | null>(null);
 const deleteLoading = ref(false);
 const isSelectAll = ref(false);
+const changePasswordUserId = ref<number | null>(null);
+// Junto com as outras refs
+const changePasswordUser = ref<changePasswordListingType | null>(null);
+const lockerDialog = ref(false);
+const lockerId = ref<number | null>(null);
+const lockerLoading = ref(false);
+
+
+const errorMsg = ref("");
+let alertTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  const onLocker = (id: number) => {
+  const user = userStore.users.find((u) => u.id === id);
+
+  if (user?.accountLocked) {
+    toast.warning(t('t-toast-message-user-already-locked'));
+    return;
+  }
+
+  lockerId.value = id;
+  lockerDialog.value = true;
+};
+
+
+const handleApiError = (error: any) => {
+  if (alertTimeout) {
+    clearTimeout(alertTimeout);
+    alertTimeout = null;
+  }
+
+  // Se o erro vier em formato de resposta do backend
+  const message =
+    error?.response?.data?.error.errors.passwordsMatching[0] ||
+    error?.message ||
+    t("t-message-save-error");
+
+  errorMsg.value = message;
+
+  alertTimeout = setTimeout(() => {
+    errorMsg.value = "";
+    alertTimeout = null;
+  }, 5000);
+};
+
+onBeforeUnmount(() => {
+  if (alertTimeout) {
+    clearTimeout(alertTimeout);
+    alertTimeout = null;
+  }
+});
 
 const mappedData = computed(() =>
   userStore.users.map((item) => ({
@@ -155,7 +212,7 @@ const onCreateEditClick = (data: UserListingType | null) => {
       lastName: "",
       email: "",
       username: "",
-      password:"",
+      password: "",
 
     };
   } else {
@@ -167,6 +224,7 @@ const onCreateEditClick = (data: UserListingType | null) => {
 
   dialog.value = true;
 };
+
 
 const onSubmit = async (data: UserListingType, callbacks?: {
   onSuccess?: () => void,
@@ -185,7 +243,7 @@ const onSubmit = async (data: UserListingType, callbacks?: {
 
     // Recarrega os dados
     await userStore.fetchUsers();
-    
+
     // Callback de sucesso (fecha a modal)
     callbacks?.onSuccess?.();
   } catch (error) {
@@ -198,6 +256,28 @@ const onSubmit = async (data: UserListingType, callbacks?: {
   }
 };
 
+
+const onSubmitChangePassword = async (data: changePasswordType, callbacks?: {
+  onSuccess?: () => void,
+  onFinally?: () => void
+}) => {
+  try {
+    if (!changePasswordUserId.value) {
+      toast.error(t('t-message-user-not-selected'));
+      return;
+    }
+
+    await userService.changePasswordUser(changePasswordUserId.value, data);
+    toast.success(t('t-toast-message-created'));
+    callbacks?.onSuccess?.();
+  } catch (error) {
+    console.error("Erro ao alterar senha:", error);
+    toast.error(t('t-message-save-error'));
+    handleApiError(error);
+  } finally {
+    callbacks?.onFinally?.();
+  }
+};
 
 //Consulta do utilizador
 watch(viewDialog, (newVal: boolean) => {
@@ -214,16 +294,58 @@ const onViewClick = (data: UserListingType | null) => {
       lastName: "",
       email: "",
       username: "",
-      password:"",
+      password: "",
 
     };
   } else {
     //console.log('data userdata', data);
     userData.value = data;
-    //console.log('userData.value', userData.value);
+    console.log('userData.value', userData.value);
   }
   viewDialog.value = true;
 };
+
+watch(passwordDialog, (val) => {
+  if (!val) {
+    changePasswordUser.value = null;
+    errorMsg.value = ""; // limpa o erro ao fechar
+  }
+});
+
+const onChangePassword = (data: UserListingType | null) => {
+  if (!data) return;
+
+  // Transforma o UserListingType num objeto do tipo changePasswordListingType
+  changePasswordUser.value = {
+    id: data.id,
+    newPassword: "",
+    confirmPassword: "",
+    passwordsMatching: true,
+  };
+
+  changePasswordUserId.value = data.id;
+  passwordDialog.value = true;
+};
+
+const onConfirmLockerAccount = async () => {
+  lockerLoading.value = true;
+
+  try {
+    await userService.lockerUser(lockerId.value!); // Certifique-se que o método existe
+    toast.success(t("t-toast-message-user-locked"));
+
+    await userStore.fetchUsers();
+    getPaginatedData();
+  } catch (error) {
+    toast.error(t("t-message-locker-error"));
+    console.error("Erro ao bloquear conta:", error);
+  } finally {
+    lockerLoading.value = false;
+    lockerDialog.value = false;
+    lockerId.value = null;
+  }
+};
+
 
 
 //Delete do utilizador
@@ -234,7 +356,7 @@ watch(deleteDialog, (newVal: boolean) => {
 });
 const onDelete = (id: number) => {
   deleteId.value = id;
-  //console.log('delete id', deleteId.value);
+  console.log('delete id', deleteId.value);
   deleteDialog.value = true;
 };
 
@@ -249,7 +371,7 @@ const onConfirmDelete = async () => {
     );
     finalData.value = [...filteredData.value];
     updateTableData(filteredData.value);
-    
+
     toast.success(t('t-toast-message-deleted'));
   } catch (error) {
     toast.error(t('t-toast-message-deleted-erros'));
@@ -258,9 +380,28 @@ const onConfirmDelete = async () => {
     deleteLoading.value = false;
     deleteDialog.value = false;
   }
-
-  
 };
+
+const onSelect = (option: string, data: UserListingType) => {
+  switch (option) {
+    case "view":
+      onViewClick(data);
+      break;
+    case "edit":
+      onCreateEditClick(data);
+      break;
+    case "delete":
+      onDelete(data.id);
+      break;
+    case "change":
+      onChangePassword(data);
+      break;
+    case "locker":
+      onLocker(data.id); // <- agora usa a modal
+      break;
+  }
+};
+
 
 </script>
 <template>
@@ -293,8 +434,13 @@ const onConfirmDelete = async () => {
             <td>
               <Status :status="item.enabled ? 'active' : 'unactive'" />
             </td>
+            <!-- <td>
+              <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)"
+                @onDelete="onDelete(item.id)" />
+            </td> -->
             <td>
-              <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)" @onDelete="onDelete(item.id)" />
+              <ListMenuWithIcon :menuItems="Options.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
+                @onSelect="onSelect($event, item)" />
             </td>
           </tr>
         </template>
@@ -313,9 +459,17 @@ const onConfirmDelete = async () => {
     </v-card-text>
   </v-card>
 
+  <ChangePasswordModal v-if="changePasswordUser" v-model="passwordDialog" :data="changePasswordUser" :error="errorMsg"
+    @onSubmit="onSubmitChangePassword" />
+
   <CreateUpdateUserModal v-if="userData" v-model="dialog" :data="userData" @onSubmit="onSubmit" />
 
   <ViewUserModal v-if="userData" v-model="viewDialog" :data="userData" />
 
-  <RemoveItemConfirmationDialog v-if="deleteId" v-model="deleteDialog" @onConfirm="onConfirmDelete" :loading="deleteLoading" />
+  <RemoveItemConfirmationDialog v-if="deleteId" v-model="deleteDialog" @onConfirm="onConfirmDelete"
+    :loading="deleteLoading" />
+
+  <LockerAccountConfirmationDialog v-if="lockerId" v-model="lockerDialog" @onConfirm="onConfirmLockerAccount"
+    :loading="lockerLoading" />
+
 </template>

@@ -15,11 +15,11 @@ export const useProvinceStore = defineStore('provinces', {
     async fetchProvinces() {
       this.loading = true;
       this.error = null;
+
       try {
-        const data = await provinceService.getProvinces();
-        console.log('response store provinces', data);
-        this.provinces = data;
-        //localStorage.setItem("list-users", JSON.stringify(this.users));
+        const response = await provinceService.getProvinces();
+        this.provinces = response.data;
+        console.log('response provinces', response);
       } catch (err: any) {
         this.error = err.message || 'Erro ao buscar províncias';
         console.error("❌ Erro ao buscar províncias:", err);
@@ -48,4 +48,3 @@ export const useProvinceStore = defineStore('provinces', {
     },
   },
 });
-  

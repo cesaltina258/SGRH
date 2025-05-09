@@ -136,7 +136,6 @@ const onConfirm = (customer: HistoryType) => {
   <CreateEditContactDialog v-if="customerDetail" v-model="dialog" :customerDetail="customerDetail"
     @onConfirm="onConfirm" />
 
-
   <v-card-actions class="d-flex justify-space-between">
     <v-btn color="primary" variant="text" @click="emit('onStepChange', 1)">
       <i class="ph-arrow-left me-2" /> {{$t('t-back-to-health-plan')}}
