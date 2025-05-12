@@ -40,14 +40,8 @@ export const Options: OptionType[] = [
   },
   {
     title: "change",
-    icon: "ph-arrows-clockwise",
+    icon: "ph-arrows-clockwise", // este é o mais próximo da imagem
     value: "change",
   },
-  {
-    title: "locker",
-    icon: "ph-lock", // ícone que representa bloqueio/segurança
-    value: "locker",
-  },
 ];
-
 
