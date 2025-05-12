@@ -72,4 +72,13 @@ export default class UserService extends HttpService {
     }
   }
 
+  async enableUser(id: number): Promise<void> {
+    try {
+      await this.put(`/administration/users/enable/${id}`);
+    } catch (error) {
+      console.error("❌ Erro account lock:", error);
+      throw error;
+    }
+  }
+
 }

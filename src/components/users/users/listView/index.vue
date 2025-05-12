@@ -20,7 +20,7 @@ import ChangePasswordModal from "@/components/users/users/ChangePasswordModal.vu
 import { changePasswordType } from "@/components/users/types";
 import { onBeforeUnmount } from "vue";
 import { changePasswordListingType } from "@/components/users/types";
-import LockerAccountConfirmationDialog from "@/components/users/users/LockerAccountConfirmationDialog.vue";
+import EnableAccountConfirmationDialog from "@/components/users/users/EnableAccountConfirmationDialog.vue";
 
 
 const { t } = useI18n();
@@ -29,6 +29,7 @@ const toast = useToast();
 
 const userStore = useUserStore();
 
+const lockerAction = ref<"enable" | "disable">("enable"); // ou string se preferir
 const router = useRouter();
 const dialog = ref(false);
 const viewDialog = ref(false);
@@ -50,17 +51,15 @@ const lockerLoading = ref(false);
 const errorMsg = ref("");
 let alertTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  const onLocker = (id: number) => {
+const onEnable = (id: number) => {
   const user = userStore.users.find((u) => u.id === id);
-
-  if (user?.accountLocked) {
-    toast.warning(t('t-toast-message-user-already-locked'));
-    return;
-  }
+  if (!user) return;
 
   lockerId.value = id;
+  lockerAction.value = user.enabled ? "disable" : "enable";
   lockerDialog.value = true;
 };
+
 
 
 const handleApiError = (error: any) => {
@@ -327,24 +326,42 @@ const onChangePassword = (data: UserListingType | null) => {
   passwordDialog.value = true;
 };
 
-const onConfirmLockerAccount = async () => {
+const onConfirmEnableAccount = async () => {
   lockerLoading.value = true;
 
   try {
-    await userService.lockerUser(lockerId.value!); // Certifique-se que o método existe
-    toast.success(t("t-toast-message-user-locked"));
+    const user = userStore.users.find((u) => u.id === lockerId.value);
+    if (!user) {
+      toast.error(t("t-message-user-not-found"));
+      return;
+    }
 
+    const wasEnabled = user.enabled;
+
+    // Chamada da API
+    await userService.enableUser(lockerId.value!);
+
+    // Atualiza a lista de utilizadores
     await userStore.fetchUsers();
     getPaginatedData();
+
+    // Toast com base no estado anterior
+    if (wasEnabled) {
+      toast.success(t("t-toast-message-user-disabled"));
+
+    } else {
+      toast.success(t("t-toast-message-user-enabled"));
+    }
   } catch (error) {
-    toast.error(t("t-message-locker-error"));
-    console.error("Erro ao bloquear conta:", error);
+    toast.error(t("t-message-enable-error"));
+    console.error("Erro ao alterar estado da conta:", error);
   } finally {
     lockerLoading.value = false;
     lockerDialog.value = false;
     lockerId.value = null;
   }
 };
+
 
 
 
@@ -396,10 +413,25 @@ const onSelect = (option: string, data: UserListingType) => {
     case "change":
       onChangePassword(data);
       break;
-    case "locker":
-      onLocker(data.id); // <- agora usa a modal
+    case "enable":
+      onEnable(data.id); // <- agora usa a modal
       break;
   }
+};
+
+const getDynamicOptions = (user: UserListingType) => {
+  return Options.map(option => {
+    if (option.value === "enable") {
+      return {
+        ...option,
+        title: user.enabled ? t("t-disable") : t("t-enable")  // Traduções devem existir
+      };
+    }
+    return {
+      ...option,
+      title: t(`t-${option.title}`)
+    };
+  });
 };
 
 
@@ -430,17 +462,14 @@ const onSelect = (option: string, data: UserListingType) => {
               {{ item.firstName }} {{ item.lastName }}
             </td>
             <td>{{ item.email }}</td>
-            <td>{{ item.username }}</td>
             <td>
               <Status :status="item.enabled ? 'active' : 'unactive'" />
             </td>
-            <!-- <td>
-              <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)"
-                @onDelete="onDelete(item.id)" />
-            </td> -->
             <td>
-              <ListMenuWithIcon :menuItems="Options.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
-                @onSelect="onSelect($event, item)" />
+              <Status :status="item.accountLocked ? 'block' : 'unblock'" />
+            </td>
+            <td>
+              <ListMenuWithIcon :menuItems="getDynamicOptions(item)" @onSelect="onSelect($event, item)" />
             </td>
           </tr>
         </template>
@@ -469,7 +498,7 @@ const onSelect = (option: string, data: UserListingType) => {
   <RemoveItemConfirmationDialog v-if="deleteId" v-model="deleteDialog" @onConfirm="onConfirmDelete"
     :loading="deleteLoading" />
 
-  <LockerAccountConfirmationDialog v-if="lockerId" v-model="lockerDialog" @onConfirm="onConfirmLockerAccount"
-    :loading="lockerLoading" />
+  <EnableAccountConfirmationDialog v-if="lockerId" v-model="lockerDialog" :action="lockerAction"
+    @onConfirm="onConfirmEnableAccount" :loading="lockerLoading" />
 
 </template>

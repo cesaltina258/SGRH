@@ -472,5 +472,19 @@
   "t-province-code-must-be-between-2-and-10-chars": "O código da província deve ter entre 2 e 10 caracteres.",
   "t-back": "Voltar",
   "t-please-enter-maximum-20-characters": "Por favor, insira no máximo 20 caracteres!",
-  "t-change": "Alterar Senha"
+  "t-change": "Alterar Senha",
+  "t-blocked?": "Bloqueado?",
+  "t-Block": "Bloqueado ",
+  "t-unblocked": "Desbloqueado",
+  "t-unblock": "Desbloqueado",
+  "t-enable": "Ativar",
+  "t-disable": "Desativar",
+  "t-dialog-confirm-enable": "Confimar activação",
+  "t-dialog-confirm-disable": "Confimar desativação",
+  "t-dialog-text-confirm-enable": "Tem certeza que deseja activar este registo?",
+  "t-dialog-text-confirm-disable": "Tem certeza que deseja desactivar este registo?",
+  "t-yes-disable-it": "Sim, desactivar",
+  "t-yes-enable-it": "Sim, activar",
+  "t-toast-message-user-enabled": "Utilizador activado com sucesso!",
+  "t-toast-message-user-disabled": "Utilizador desactivado com sucesso!"
 }

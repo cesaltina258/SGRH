@@ -17,8 +17,8 @@ export const listViewHeader: TableHeaderType[] = [
   { title: "", isCheck: true },
   { title: "full-name" },
   { title: "email" },
-  { title: "username" },
   { title: "status" },
+  { title: "blocked?" },
   { title: "action" },
 ];
 
@@ -44,9 +44,9 @@ export const Options: OptionType[] = [
     value: "change",
   },
   {
-    title: "locker",
-    icon: "ph-lock", // ícone que representa bloqueio/segurança
-    value: "locker",
+    title: "enable",
+    icon: "ph-lock-open", // ícone que representa bloqueio/segurança
+    value: "enable",
   },
 ];
 
