@@ -17,7 +17,7 @@ export const useEmployeeStore = defineStore('employees', {
 
   actions: {
     async fetchEmployees(
-      page: number = this.pagination.currentPage,
+      page: number = this.pagination.currentPage, 
       size: number = this.pagination.itemsPerPage,
       sortColumn: string = 'createdAt',
       direction: string = 'asc',

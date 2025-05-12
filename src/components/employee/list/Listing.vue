@@ -8,7 +8,7 @@ import { useI18n } from "vue-i18n"
 
 // Components
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue"
-import DataTableServer from "@/app/common/components/DataTableServer.vue"
+import DataTableServer from "@/app/common/components/DataTableServer.vue" 
 import TableAction from "@/app/common/components/TableAction.vue"
 import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue"
 import { employeeHeader } from "@/components/employee/list/utils"
