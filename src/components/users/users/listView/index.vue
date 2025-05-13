@@ -1,8 +1,7 @@
 <script lang="ts" setup>
 import { ref, watch, computed, onMounted } from "vue";
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
-import Table from "@/app/common/components/Table.vue";
-import { listViewHeader } from "@/components/users/users/listView/utils";
+import { userHeader } from "@/components/users/users/listView/utils";
 import { UserListingType, UserInsertType } from "@/components/users/types";
 import Status from "@/app/common/components/Status.vue";
 import TableAction from "@/app/common/components/TableAction.vue";
@@ -15,7 +14,8 @@ import { useUserStore } from "@/store/userStore";
 import { userService } from "@/app/http/httpServiceProvider";
 import { useToast } from 'vue-toastification';
 import { useI18n } from "vue-i18n";
-import { Options } from "@/components/users/users/listView/utils";
+import DataTableServer from "@/app/common/components/DataTableServer.vue"
+import CreateEditDialog from "@/components/realEstate/CreateEditDialog.vue";import { Options } from "@/components/users/users/listView/utils";
 import ChangePasswordModal from "@/components/users/users/ChangePasswordModal.vue";
 import { changePasswordType } from "@/components/users/types";
 import { onBeforeUnmount } from "vue";
@@ -30,7 +30,6 @@ const toast = useToast();
 const userStore = useUserStore();
 
 const lockerAction = ref<"enable" | "disable">("enable"); // ou string se preferir
-const router = useRouter();
 const dialog = ref(false);
 const viewDialog = ref(false);
 const userData = ref<UserListingType | null>(null);
@@ -197,22 +196,63 @@ watch(query, (newQuery: string) => {
 
 //Criação e edição do utilizador
 
+
+// Estado do componente
+const searchQuery = ref("")
+const searchProps = "firstName,lastName,email" // Campos de pesquisa
+const itemsPerPage = ref(2)
+const selectedUsers = ref<any[]>([]) /// Armazena os funcionários selecionados
+
+
+// Computed properties
+const loadingList = computed(() => userStore.loading)
+const totalItems = computed(() => userStore.pagination.totalElements)
+
+// Observa mudanças nos funcionários selecionados
+watch(selectedUsers, (newSelection) => {
+  console.log('Funcionários selecionados:', newSelection)
+}, { deep: true })
+
+
+const fetchUsers = async ({ page, itemsPerPage, sortBy, search }) => {
+  await userStore.fetchUsers(
+    page - 1, // Ajuste para API que começa em 0
+    itemsPerPage,
+    sortBy[0]?.key || 'createdAt',
+    sortBy[0]?.order || 'asc',
+    search, // query_values
+    searchProps // query_props
+  )
+}
+
+const toggleSelection = (item) => {
+  const index = selectedUsers.value.findIndex(selected => selected.id === item.id);
+  if (index === -1) {
+    selectedUsers.value = [...selectedUsers.value, item];
+  } else {
+    selectedUsers.value = selectedUsers.value.filter(selected => selected.id !== item.id);
+  }
+};
+
+
+//Editar ou Criar utilizador
 watch(dialog, (newVal: boolean) => {
   if (!newVal) {
     userData.value = null;
   }
 });
 
+
 const onCreateEditClick = (data: UserListingType | null) => {
+  console.log('data user---------------', data);
+
   if (!data) {
     userData.value = {
       id: -1,
       firstName: "",
       lastName: "",
       email: "",
-      username: "",
       password: "",
-
     };
   } else {
     //console.log('data userdata', data);
@@ -241,7 +281,7 @@ const onSubmit = async (data: UserListingType, callbacks?: {
     }
 
     // Recarrega os dados
-    await userStore.fetchUsers();
+    await userStore.fetchUsers(0, itemsPerPage.value)
 
     // Callback de sucesso (fecha a modal)
     callbacks?.onSuccess?.();
@@ -292,7 +332,6 @@ const onViewClick = (data: UserListingType | null) => {
       firstName: "",
       lastName: "",
       email: "",
-      username: "",
       password: "",
 
     };
@@ -383,11 +422,7 @@ const onConfirmDelete = async () => {
   try {
     await userService.deleteUser(deleteId.value!);
 
-    filteredData.value = filteredData.value.filter(
-      (item) => item.id !== deleteId.value
-    );
-    finalData.value = [...filteredData.value];
-    updateTableData(filteredData.value);
+    await userStore.fetchUsers(0, itemsPerPage.value)
 
     toast.success(t('t-toast-message-deleted'));
   } catch (error) {
@@ -441,7 +476,7 @@ const getDynamicOptions = (user: UserListingType) => {
     <v-card-title class="mt-2">
       <v-row justify="space-between">
         <v-col lg="3">
-          <QuerySearch v-model="query" :placeholder="$t('t-search-for-users')" />
+          <QuerySearch v-model="searchQuery" :placeholder="$t('t-search-for-users')" />
         </v-col>
         <v-col lg="auto">
           <v-btn color="secondary" @click="onCreateEditClick(null)">
@@ -451,15 +486,31 @@ const getDynamicOptions = (user: UserListingType) => {
       </v-row>
     </v-card-title>
     <v-card-text class="mt-2">
-      <Table v-model="page" :headerItems="listViewHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
-        :config="config" :loading="loading" is-pagination @on-select-all="onSelectAll">
-        <template #body>
-          <tr v-for="(item, index) in tableData" :key="'agent-listing-item-' + index" height="50">
+      <DataTableServer
+        v-model="selectedUsers"
+        :headers="userHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
+        :items="userStore.users"
+        :items-per-page="itemsPerPage"
+        :total-items="totalItems"
+        :loading="loadingList"
+        :search-query="searchQuery"
+        :search-props="searchProps" 
+        @load-items="fetchUsers"
+        item-value="id"
+        show-select
+      >
+      <template #body="{ items }">
+          <tr v-for="item in items" :key="item.id" height="50">
             <td>
-              <v-checkbox v-model="item.isCheck" hide-details color="primary" />
+              <v-checkbox
+                :model-value="selectedUsers.some(selected => selected.id === item.id)"
+                @update:model-value="toggleSelection(item)"
+                hide-details
+                density="compact"
+              />
             </td>
             <td>
-              {{ item.firstName }} {{ item.lastName }}
+              {{ item.firstName }} {{ item.lastName }} 
             </td>
             <td>{{ item.email }}</td>
             <td>
@@ -473,9 +524,10 @@ const getDynamicOptions = (user: UserListingType) => {
             </td>
           </tr>
         </template>
-      </Table>
 
-      <div v-if="!filteredData.length" class="text-center pa-7">
+      </DataTableServer>
+
+      <div v-if="!fetchUsers.length" class="text-center pa-7">
         <div class="mb-3">
           <v-avatar color="primary" variant="tonal" size="x-large">
             <i class="ph-magnifying-glass ph-lg"></i>
