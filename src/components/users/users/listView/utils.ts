@@ -14,7 +14,7 @@ export const breadcrumb: BreadcrumbType[] = [
 ];
 
 export const userHeader: DataTableHeaderType[] = [
-  { title: "full-name", key: "firstName", sortable: true, align: "right" },
+  { title: "full-name", key: "firstName", sortable: true },
   { title: "email", key: "email" , sortable: true },
   { title: "status" , sortable: false },
   { title: "blocked?", sortable: false },

@@ -487,4 +487,18 @@
   "t-yes-enable-it": "Sim, activar",
   "t-toast-message-user-enabled": "Utilizador activado com sucesso!",
   "t-toast-message-user-disabled": "Utilizador desactivado com sucesso!"
+  "t-please-enter-maximum-20-characters": "Por favor, insira no máximo 20 caracteres!",
+  "t-footer-text": "Desenhado & Desenvolvido por MD Consultores",
+  "t-enter-the-6-digit-code": "Por favor, digite o código de 6 dígitos enviado para",
+  "t-verification-failed": "Verificação Falhou!",
+  "t-please-enter-the-code": "Por favor, insira o código",
+  "t-please-enter-the-code-sent-to": "Por favor, insira o código enviado para",
+  "t-create-new-password": "Criar Nova Senha",
+  "t-password-reset-success": "Senha redefinida com sucesso!",
+  "t-email-sent-success": "E-mail enviado com sucesso!",
+  "t-sending-reset-code": "Enviando código de redefinição...",
+  "t-validanting-code": "Validando código...",
+  "t-please-enter-complete-code": "Por favor, insira o código completo",
+  "t-reseting-password": "Redefinindo senha..."
+
 }
