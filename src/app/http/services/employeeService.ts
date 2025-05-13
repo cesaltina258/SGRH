@@ -10,7 +10,8 @@ export default class EmployeeService extends HttpService {
     size: number = 10,
     sortColumn: string = 'createdAt',
     direction: string = 'asc', // Valor padrão alterado para 'asc' conforme seu exemplo
-    search?: string
+    query_value?: string,
+    query_props?: string
   ): Promise<{ content: EmployeeListingType[], meta: any }> {
     try {
       // Construção manual da query string para controle total
@@ -21,8 +22,9 @@ export default class EmployeeService extends HttpService {
         `direction=${direction}`    // Direção separada
       ];
   
-      if (search) {
-        queryParams.push(`search=${encodeURIComponent(search)}`);
+      if (query_value && query_props) {
+        queryParams.push(`query_props=${encodeURIComponent(query_props)}`);
+        queryParams.push(`query_value=${encodeURIComponent(query_value)}`);
       }
   
       const queryString = queryParams.join('&');
