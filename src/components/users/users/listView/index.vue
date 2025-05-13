@@ -11,11 +11,17 @@ import { formateDate } from "@/app/common/dateFormate";
 import { useRouter } from "vue-router";
 import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue";
 import { useUserStore } from "@/store/userStore";
-import { userService } from "@/app/http/httpServiceProvider"; 
+import { userService } from "@/app/http/httpServiceProvider";
 import { useToast } from 'vue-toastification';
 import { useI18n } from "vue-i18n";
 import DataTableServer from "@/app/common/components/DataTableServer.vue"
-import CreateEditDialog from "@/components/realEstate/CreateEditDialog.vue";
+import CreateEditDialog from "@/components/realEstate/CreateEditDialog.vue";import { Options } from "@/components/users/users/listView/utils";
+import ChangePasswordModal from "@/components/users/users/ChangePasswordModal.vue";
+import { changePasswordType } from "@/components/users/types";
+import { onBeforeUnmount } from "vue";
+import { changePasswordListingType } from "@/components/users/types";
+import EnableAccountConfirmationDialog from "@/components/users/users/EnableAccountConfirmationDialog.vue";
+
 
 const { t } = useI18n();
 //criacao da mensagem toast
@@ -23,13 +29,173 @@ const toast = useToast();
 
 const userStore = useUserStore();
 
+const lockerAction = ref<"enable" | "disable">("enable"); // ou string se preferir
 const dialog = ref(false);
 const viewDialog = ref(false);
 const userData = ref<UserListingType | null>(null);
+const passwordDialog = ref(false);
 
 const deleteDialog = ref(false);
 const deleteId = ref<number | null>(null);
 const deleteLoading = ref(false);
+const isSelectAll = ref(false);
+const changePasswordUserId = ref<number | null>(null);
+// Junto com as outras refs
+const changePasswordUser = ref<changePasswordListingType | null>(null);
+const lockerDialog = ref(false);
+const lockerId = ref<number | null>(null);
+const lockerLoading = ref(false);
+
+
+const errorMsg = ref("");
+let alertTimeout: ReturnType<typeof setTimeout> | null = null;
+
+const onEnable = (id: number) => {
+  const user = userStore.users.find((u) => u.id === id);
+  if (!user) return;
+
+  lockerId.value = id;
+  lockerAction.value = user.enabled ? "disable" : "enable";
+  lockerDialog.value = true;
+};
+
+
+
+const handleApiError = (error: any) => {
+  if (alertTimeout) {
+    clearTimeout(alertTimeout);
+    alertTimeout = null;
+  }
+
+  // Se o erro vier em formato de resposta do backend
+  const message =
+    error?.response?.data?.error.errors.passwordsMatching[0] ||
+    error?.message ||
+    t("t-message-save-error");
+
+  errorMsg.value = message;
+
+  alertTimeout = setTimeout(() => {
+    errorMsg.value = "";
+    alertTimeout = null;
+  }, 5000);
+};
+
+onBeforeUnmount(() => {
+  if (alertTimeout) {
+    clearTimeout(alertTimeout);
+    alertTimeout = null;
+  }
+});
+
+const mappedData = computed(() =>
+  userStore.users.map((item) => ({
+    ...item,
+    isCheck: false,
+  })).toReversed()
+);
+
+const filteredData = ref<UserListingType[]>([]);
+const finalData = ref<UserListingType[]>([]);
+
+watch(mappedData, (newVal) => {
+  filteredData.value = newVal;
+  finalData.value = newVal;
+}, { immediate: true });
+
+onMounted(() => {
+  userStore.fetchUsers();
+  getPaginatedData();
+});
+
+const query = ref("");
+
+const page = ref(1);
+const noOfItems = computed(() => {
+  return finalData.value.length;
+});
+const tableData = ref<UserListingType[]>([]);
+const loading = ref(false);
+
+const config = ref({
+  page: page.value,
+  start: 0,
+  end: 0,
+  noOfItems: noOfItems.value,
+  itemsPerPage: 10,
+});
+
+const getPaginatedData = () => {
+  const { itemsPerPage, page } = config.value;
+  const start = (page - 1) * itemsPerPage;
+  let end = start + itemsPerPage;
+  end = end <= noOfItems.value ? end : noOfItems.value;
+
+  config.value = {
+    ...config.value,
+    start,
+    end,
+  };
+
+  const data = finalData.value.slice(config.value.start, config.value.end);
+
+  loading.value = true;
+  tableData.value = [];
+
+  setTimeout(() => {
+    tableData.value = data;
+    loading.value = false;
+  }, 200);
+};
+
+
+
+watch(page, (newPage: number) => {
+  config.value.page = newPage;
+  getPaginatedData();
+});
+
+watch(filteredData, (newData: UserListingType[]) => {
+  updateTableData(newData);
+});
+
+const updateTableData = (newVal: UserListingType[]) => {
+  loading.value = true;
+  const { itemsPerPage } = config.value;
+
+  const start = 1;
+  let end = start + itemsPerPage;
+  end = end <= newVal.length ? end : newVal.length;
+  tableData.value = [];
+
+  setTimeout(() => {
+    tableData.value = newVal;
+    config.value = {
+      ...config.value,
+      start,
+      end,
+      noOfItems: newVal.length,
+    };
+    loading.value = false;
+  }, 200);
+};
+
+watch(query, (newQuery: string) => {
+  filteredData.value = finalData.value.filter((item) => {
+    const val = newQuery.toLowerCase();
+    if (
+      item.firstName.toLowerCase().includes(val) ||
+      item.email.includes(val) ||
+      item.username.includes(val)
+    ) {
+      return item;
+    }
+  });
+  updateTableData(filteredData.value);
+});
+
+//Criação e edição do utilizador
+
 
 // Estado do componente
 const searchQuery = ref("")
@@ -86,7 +252,7 @@ const onCreateEditClick = (data: UserListingType | null) => {
       firstName: "",
       lastName: "",
       email: "",
-      password:"",
+      password: "",
     };
   } else {
     //console.log('data userdata', data);
@@ -97,6 +263,7 @@ const onCreateEditClick = (data: UserListingType | null) => {
 
   dialog.value = true;
 };
+
 
 const onSubmit = async (data: UserListingType, callbacks?: {
   onSuccess?: () => void,
@@ -115,7 +282,7 @@ const onSubmit = async (data: UserListingType, callbacks?: {
 
     // Recarrega os dados
     await userStore.fetchUsers(0, itemsPerPage.value)
-    
+
     // Callback de sucesso (fecha a modal)
     callbacks?.onSuccess?.();
   } catch (error) {
@@ -128,6 +295,28 @@ const onSubmit = async (data: UserListingType, callbacks?: {
   }
 };
 
+
+const onSubmitChangePassword = async (data: changePasswordType, callbacks?: {
+  onSuccess?: () => void,
+  onFinally?: () => void
+}) => {
+  try {
+    if (!changePasswordUserId.value) {
+      toast.error(t('t-message-user-not-selected'));
+      return;
+    }
+
+    await userService.changePasswordUser(changePasswordUserId.value, data);
+    toast.success(t('t-toast-message-created'));
+    callbacks?.onSuccess?.();
+  } catch (error) {
+    console.error("Erro ao alterar senha:", error);
+    toast.error(t('t-message-save-error'));
+    handleApiError(error);
+  } finally {
+    callbacks?.onFinally?.();
+  }
+};
 
 //Consulta do utilizador
 watch(viewDialog, (newVal: boolean) => {
@@ -143,16 +332,76 @@ const onViewClick = (data: UserListingType | null) => {
       firstName: "",
       lastName: "",
       email: "",
-      password:"",
+      password: "",
 
     };
   } else {
     //console.log('data userdata', data);
     userData.value = data;
-    //console.log('userData.value', userData.value);
+    console.log('userData.value', userData.value);
   }
   viewDialog.value = true;
 };
+
+watch(passwordDialog, (val) => {
+  if (!val) {
+    changePasswordUser.value = null;
+    errorMsg.value = ""; // limpa o erro ao fechar
+  }
+});
+
+const onChangePassword = (data: UserListingType | null) => {
+  if (!data) return;
+
+  // Transforma o UserListingType num objeto do tipo changePasswordListingType
+  changePasswordUser.value = {
+    id: data.id,
+    newPassword: "",
+    confirmPassword: "",
+    passwordsMatching: true,
+  };
+
+  changePasswordUserId.value = data.id;
+  passwordDialog.value = true;
+};
+
+const onConfirmEnableAccount = async () => {
+  lockerLoading.value = true;
+
+  try {
+    const user = userStore.users.find((u) => u.id === lockerId.value);
+    if (!user) {
+      toast.error(t("t-message-user-not-found"));
+      return;
+    }
+
+    const wasEnabled = user.enabled;
+
+    // Chamada da API
+    await userService.enableUser(lockerId.value!);
+
+    // Atualiza a lista de utilizadores
+    await userStore.fetchUsers();
+    getPaginatedData();
+
+    // Toast com base no estado anterior
+    if (wasEnabled) {
+      toast.success(t("t-toast-message-user-disabled"));
+
+    } else {
+      toast.success(t("t-toast-message-user-enabled"));
+    }
+  } catch (error) {
+    toast.error(t("t-message-enable-error"));
+    console.error("Erro ao alterar estado da conta:", error);
+  } finally {
+    lockerLoading.value = false;
+    lockerDialog.value = false;
+    lockerId.value = null;
+  }
+};
+
+
 
 
 //Delete do utilizador
@@ -163,7 +412,7 @@ watch(deleteDialog, (newVal: boolean) => {
 });
 const onDelete = (id: number) => {
   deleteId.value = id;
-  //console.log('delete id', deleteId.value);
+  console.log('delete id', deleteId.value);
   deleteDialog.value = true;
 };
 
@@ -174,7 +423,7 @@ const onConfirmDelete = async () => {
     await userService.deleteUser(deleteId.value!);
 
     await userStore.fetchUsers(0, itemsPerPage.value)
-    
+
     toast.success(t('t-toast-message-deleted'));
   } catch (error) {
     toast.error(t('t-toast-message-deleted-erros'));
@@ -183,9 +432,43 @@ const onConfirmDelete = async () => {
     deleteLoading.value = false;
     deleteDialog.value = false;
   }
-
-  
 };
+
+const onSelect = (option: string, data: UserListingType) => {
+  switch (option) {
+    case "view":
+      onViewClick(data);
+      break;
+    case "edit":
+      onCreateEditClick(data);
+      break;
+    case "delete":
+      onDelete(data.id);
+      break;
+    case "change":
+      onChangePassword(data);
+      break;
+    case "enable":
+      onEnable(data.id); // <- agora usa a modal
+      break;
+  }
+};
+
+const getDynamicOptions = (user: UserListingType) => {
+  return Options.map(option => {
+    if (option.value === "enable") {
+      return {
+        ...option,
+        title: user.enabled ? t("t-disable") : t("t-enable")  // Traduções devem existir
+      };
+    }
+    return {
+      ...option,
+      title: t(`t-${option.title}`)
+    };
+  });
+};
+
 
 </script>
 <template>
@@ -234,7 +517,10 @@ const onConfirmDelete = async () => {
               <Status :status="item.enabled ? 'active' : 'unactive'" />
             </td>
             <td>
-              <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)" @onDelete="onDelete(item.id)" />
+              <Status :status="item.accountLocked ? 'block' : 'unblock'" />
+            </td>
+            <td>
+              <ListMenuWithIcon :menuItems="getDynamicOptions(item)" @onSelect="onSelect($event, item)" />
             </td>
           </tr>
         </template>
@@ -253,9 +539,17 @@ const onConfirmDelete = async () => {
     </v-card-text>
   </v-card>
 
+  <ChangePasswordModal v-if="changePasswordUser" v-model="passwordDialog" :data="changePasswordUser" :error="errorMsg"
+    @onSubmit="onSubmitChangePassword" />
+
   <CreateUpdateUserModal v-if="userData" v-model="dialog" :data="userData" @onSubmit="onSubmit" />
 
   <ViewUserModal v-if="userData" v-model="viewDialog" :data="userData" />
 
-  <RemoveItemConfirmationDialog v-if="deleteId" v-model="deleteDialog" @onConfirm="onConfirmDelete" :loading="deleteLoading" />
+  <RemoveItemConfirmationDialog v-if="deleteId" v-model="deleteDialog" @onConfirm="onConfirmDelete"
+    :loading="deleteLoading" />
+
+  <EnableAccountConfirmationDialog v-if="lockerId" v-model="lockerDialog" :action="lockerAction"
+    @onConfirm="onConfirmEnableAccount" :loading="lockerLoading" />
+
 </template>

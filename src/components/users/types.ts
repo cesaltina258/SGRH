@@ -30,3 +30,23 @@ export type UserUpdateType = {
   email?: string;
   username?: string;
 }
+
+export type OptionType = {
+  title: string;
+  value: string;
+  icon?: string;
+  to?: string;
+};
+
+export type changePasswordType = {
+  newPassword: string;
+  confirmPassword: string;
+  passwordsMatching: boolean;
+}
+
+export type changePasswordListingType = {
+  id: number;
+  newPassword: string;
+  confirmPassword: string;
+  passwordsMatching: boolean;
+}

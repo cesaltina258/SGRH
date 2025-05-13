@@ -15,10 +15,9 @@ export const useCountryStore = defineStore('countries', {
       this.error = null;
       this.loading = true;
       try {
-        const data = await countryService.getCountries();
-        console.log('response store countries', data);
-        this.countries = data;
-        //localStorage.setItem("list-users", JSON.stringify(this.users));
+        const response = await countryService.getCountries();
+        this.countries = response.data;
+        console.log('response countries', response);
       } catch (err: any) {
         this.error = err.message || 'Erro ao buscar países';
         console.error("❌ Erro ao buscar países:", err);
@@ -29,4 +28,3 @@ export const useCountryStore = defineStore('countries', {
     },
   },
 });
-  

@@ -1,6 +1,7 @@
 import axiosInstance from "@/app/http/axios";
 import { useAuthStore } from "@/store/authStore";
 import { getAccessToken, setAccessToken, clearTokens, setRefreshToken } from "@/app/localStorage";
+import { email } from "@vuelidate/validators";
 
 class AuthService {
 
@@ -43,9 +44,10 @@ class AuthService {
           return response.data;
     
         } catch (error: any) {
-          console.error("❌ Erro no login:", error.message || error);
-          throw error;
-        }
+            console.error("❌ Erro no login:", error.response?.data || error.message || error);
+            throw error;
+          }
+          
       }
 
     async getUserProfile() {
