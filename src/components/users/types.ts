@@ -12,7 +12,7 @@ export type UserListingType  = {
   lastName: string;
   password: string;
   email: string;
-  username: string;
+  username?: string;
   enabled: boolean;
   accountLocked: boolean;
   twoFactor: boolean;

@@ -18,18 +18,8 @@ export const employeeHeader: DataTableHeaderType[] = [
   { title: "employee-number", key: "employeeNumber", sortable: true },
   { title: "employee-name", key: "firstName", sortable: true },
   { title: "phone-number", key: "phone", sortable: true },
-  { title: "email", key: "email", sortable: true },
+  { title: "email", key: "email", sortable: true }, 
   { title: "action", sortable: false },
 ];
 
 
-export const invoicesList = [
-  {
-    id: 1,
-    invoice_no: "24301901",
-    logo_img: "assets/images/logo-light.png",
-    customer: "Themesbrand",
-    email: "themesbrand@steex.com",
-  }
- 
-];

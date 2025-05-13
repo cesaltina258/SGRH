@@ -39,7 +39,6 @@ const id =  ref(formData.value.id || "");
 const firstName = ref(formData.value.firstName || ""); 
 const lastName = ref(formData.value.lastName || "");
 const email = ref(formData.value.email || "");
-const username = ref(formData.value.username || "");
 //const enable = ref(formData.value.enable || true);
 
 // Remove as refs de password se  for criação
@@ -89,11 +88,6 @@ const onSubmit = () => {
     return;
   }
 
-  if (username.value === '') {
-    errorMsg.value = t('t-please-enter-username');
-    setTimeout(() => errorMsg.value = "", 3000);
-    return;
-  }
 
 
   // Validações específicas para criação
@@ -149,7 +143,6 @@ const onSubmit = () => {
     firstName: firstName.value,
     lastName: lastName.value,
     email: typeof email.value === 'object' ? email.value.value : email.value,
-    username: username.value,
     ...(isCreate.value && { // Apenas inclui password se for criação
       password: typeof password.value === 'object' ? password.value.value : password.value,
       password_confirm: typeof password_confirm.value === 'object' ? password_confirm.value.value : password_confirm.value
@@ -202,10 +195,6 @@ const onSubmit = () => {
           {{ $t('t-email') }} <i class="ph-asterisk ph-xs text-danger" />
         </div>
         <TextField v-model="email" !isEmail :placeholder="$t('t-enter-email-form')" />
-        <div class="font-weight-bold text-caption mb-1">
-          {{ $t('t-username') }} <i class="ph-asterisk ph-xs text-danger" />
-        </div>
-        <TextField v-model="username" :placeholder="$t('t-enter-username')" />
         <v-row v-if="isCreate">
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption  mb-1">

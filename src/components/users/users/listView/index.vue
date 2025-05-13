@@ -1,8 +1,7 @@
 <script lang="ts" setup>
 import { ref, watch, computed, onMounted } from "vue";
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
-import Table from "@/app/common/components/Table.vue";
-import { listViewHeader } from "@/components/users/users/listView/utils";
+import { userHeader } from "@/components/users/users/listView/utils";
 import { UserListingType, UserInsertType } from "@/components/users/types";
 import Status from "@/app/common/components/Status.vue";
 import TableAction from "@/app/common/components/TableAction.vue";
@@ -15,7 +14,8 @@ import { useUserStore } from "@/store/userStore";
 import { userService } from "@/app/http/httpServiceProvider"; 
 import { useToast } from 'vue-toastification';
 import { useI18n } from "vue-i18n";
-
+import DataTableServer from "@/app/common/components/DataTableServer.vue"
+import CreateEditDialog from "@/components/realEstate/CreateEditDialog.vue";
 
 const { t } = useI18n();
 //criacao da mensagem toast
@@ -23,7 +23,6 @@ const toast = useToast();
 
 const userStore = useUserStore();
 
-const router = useRouter();
 const dialog = ref(false);
 const viewDialog = ref(false);
 const userData = ref<UserListingType | null>(null);
@@ -31,132 +30,63 @@ const userData = ref<UserListingType | null>(null);
 const deleteDialog = ref(false);
 const deleteId = ref<number | null>(null);
 const deleteLoading = ref(false);
-const isSelectAll = ref(false);
 
-const mappedData = computed(() =>
-  userStore.users.map((item) => ({
-    ...item,
-    isCheck: false,
-  })).toReversed()
-);
+// Estado do componente
+const searchQuery = ref("")
+const searchProps = "firstName,lastName,email" // Campos de pesquisa
+const itemsPerPage = ref(2)
+const selectedUsers = ref<any[]>([]) /// Armazena os funcionários selecionados
 
-const filteredData = ref<UserListingType[]>([]);
-const finalData = ref<UserListingType[]>([]);
 
-watch(mappedData, (newVal) => {
-  filteredData.value = newVal;
-  finalData.value = newVal;
-}, { immediate: true });
+// Computed properties
+const loadingList = computed(() => userStore.loading)
+const totalItems = computed(() => userStore.pagination.totalElements)
 
-onMounted(() => {
-  userStore.fetchUsers();
-  getPaginatedData();
-});
+// Observa mudanças nos funcionários selecionados
+watch(selectedUsers, (newSelection) => {
+  console.log('Funcionários selecionados:', newSelection)
+}, { deep: true })
 
-const query = ref("");
 
-const page = ref(1);
-const noOfItems = computed(() => {
-  return finalData.value.length;
-});
-const tableData = ref<UserListingType[]>([]);
-const loading = ref(false);
+const fetchUsers = async ({ page, itemsPerPage, sortBy, search }) => {
+  await userStore.fetchUsers(
+    page - 1, // Ajuste para API que começa em 0
+    itemsPerPage,
+    sortBy[0]?.key || 'createdAt',
+    sortBy[0]?.order || 'asc',
+    search, // query_values
+    searchProps // query_props
+  )
+}
 
-const config = ref({
-  page: page.value,
-  start: 0,
-  end: 0,
-  noOfItems: noOfItems.value,
-  itemsPerPage: 10,
-});
-
-const getPaginatedData = () => {
-  const { itemsPerPage, page } = config.value;
-  const start = (page - 1) * itemsPerPage;
-  let end = start + itemsPerPage;
-  end = end <= noOfItems.value ? end : noOfItems.value;
-
-  config.value = {
-    ...config.value,
-    start,
-    end,
-  };
-
-  const data = finalData.value.slice(config.value.start, config.value.end);
-
-  loading.value = true;
-  tableData.value = [];
-
-  setTimeout(() => {
-    tableData.value = data;
-    loading.value = false;
-  }, 200);
+const toggleSelection = (item) => {
+  const index = selectedUsers.value.findIndex(selected => selected.id === item.id);
+  if (index === -1) {
+    selectedUsers.value = [...selectedUsers.value, item];
+  } else {
+    selectedUsers.value = selectedUsers.value.filter(selected => selected.id !== item.id);
+  }
 };
 
 
-
-watch(page, (newPage: number) => {
-  config.value.page = newPage;
-  getPaginatedData();
-});
-
-watch(filteredData, (newData: UserListingType[]) => {
-  updateTableData(newData);
-});
-
-const updateTableData = (newVal: UserListingType[]) => {
-  loading.value = true;
-  const { itemsPerPage } = config.value;
-
-  const start = 1;
-  let end = start + itemsPerPage;
-  end = end <= newVal.length ? end : newVal.length;
-  tableData.value = [];
-
-  setTimeout(() => {
-    tableData.value = newVal;
-    config.value = {
-      ...config.value,
-      start,
-      end,
-      noOfItems: newVal.length,
-    };
-    loading.value = false;
-  }, 200);
-};
-
-watch(query, (newQuery: string) => {
-  filteredData.value = finalData.value.filter((item) => {
-    const val = newQuery.toLowerCase();
-    if (
-      item.firstName.toLowerCase().includes(val) ||
-      item.email.includes(val) ||
-      item.username.includes(val)
-    ) {
-      return item;
-    }
-  });
-  updateTableData(filteredData.value);
-});
-
-//Criação e edição do utilizador
-
+//Editar ou Criar utilizador
 watch(dialog, (newVal: boolean) => {
   if (!newVal) {
     userData.value = null;
   }
 });
 
+
 const onCreateEditClick = (data: UserListingType | null) => {
+  console.log('data user---------------', data);
+
   if (!data) {
     userData.value = {
       id: -1,
       firstName: "",
       lastName: "",
       email: "",
-      username: "",
       password:"",
-
     };
   } else {
     //console.log('data userdata', data);
@@ -184,7 +114,7 @@ const onSubmit = async (data: UserListingType, callbacks?: {
     }
 
     // Recarrega os dados
-    await userStore.fetchUsers();
+    await userStore.fetchUsers(0, itemsPerPage.value)
     
     // Callback de sucesso (fecha a modal)
     callbacks?.onSuccess?.();
@@ -213,7 +143,6 @@ const onViewClick = (data: UserListingType | null) => {
       firstName: "",
       lastName: "",
       email: "",
-      username: "",
       password:"",
 
     };
@@ -244,11 +173,7 @@ const onConfirmDelete = async () => {
   try {
     await userService.deleteUser(deleteId.value!);
 
-    filteredData.value = filteredData.value.filter(
-      (item) => item.id !== deleteId.value
-    );
-    finalData.value = [...filteredData.value];
-    updateTableData(filteredData.value);
+    await userStore.fetchUsers(0, itemsPerPage.value)
     
     toast.success(t('t-toast-message-deleted'));
   } catch (error) {
@@ -268,7 +193,7 @@ const onConfirmDelete = async () => {
     <v-card-title class="mt-2">
       <v-row justify="space-between">
         <v-col lg="3">
-          <QuerySearch v-model="query" :placeholder="$t('t-search-for-users')" />
+          <QuerySearch v-model="searchQuery" :placeholder="$t('t-search-for-users')" />
         </v-col>
         <v-col lg="auto">
           <v-btn color="secondary" @click="onCreateEditClick(null)">
@@ -278,18 +203,33 @@ const onConfirmDelete = async () => {
       </v-row>
     </v-card-title>
     <v-card-text class="mt-2">
-      <Table v-model="page" :headerItems="listViewHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
-        :config="config" :loading="loading" is-pagination @on-select-all="onSelectAll">
-        <template #body>
-          <tr v-for="(item, index) in tableData" :key="'agent-listing-item-' + index" height="50">
+      <DataTableServer
+        v-model="selectedUsers"
+        :headers="userHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
+        :items="userStore.users"
+        :items-per-page="itemsPerPage"
+        :total-items="totalItems"
+        :loading="loadingList"
+        :search-query="searchQuery"
+        :search-props="searchProps" 
+        @load-items="fetchUsers"
+        item-value="id"
+        show-select
+      >
+      <template #body="{ items }">
+          <tr v-for="item in items" :key="item.id" height="50">
             <td>
-              <v-checkbox v-model="item.isCheck" hide-details color="primary" />
+              <v-checkbox
+                :model-value="selectedUsers.some(selected => selected.id === item.id)"
+                @update:model-value="toggleSelection(item)"
+                hide-details
+                density="compact"
+              />
             </td>
             <td>
-              {{ item.firstName }} {{ item.lastName }}
+              {{ item.firstName }} {{ item.lastName }} 
             </td>
             <td>{{ item.email }}</td>
-            <td>{{ item.username }}</td>
             <td>
               <Status :status="item.enabled ? 'active' : 'unactive'" />
             </td>
@@ -298,9 +238,10 @@ const onConfirmDelete = async () => {
             </td>
           </tr>
         </template>
-      </Table>
 
-      <div v-if="!filteredData.length" class="text-center pa-7">
+      </DataTableServer>
+
+      <div v-if="!fetchUsers.length" class="text-center pa-7">
         <div class="mb-3">
           <v-avatar color="primary" variant="tonal" size="x-large">
             <i class="ph-magnifying-glass ph-lg"></i>

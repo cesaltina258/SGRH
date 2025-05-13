@@ -94,7 +94,11 @@
     itemValue: {
       type: [String, Function],
       default: 'id'
-    }
+    },
+    searchProps: {
+    type: String,
+    default: ''
+  }
   })
   
   const emit = defineEmits([
@@ -163,7 +167,8 @@
       page: newPage,
       itemsPerPage: newItemsPerPage,
       sortBy,
-      search: props.searchQuery
+      search: props.searchQuery,
+      searchProps: props.searchProps
     })
   }
   </script>

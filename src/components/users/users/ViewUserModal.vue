@@ -80,10 +80,6 @@ const { t } = useI18n();
           {{ $t('t-email') }} <i class="ph-asterisk ph-xs text-danger" />
         </div>
         <TextField v-model="email" !isEmail :placeholder="$t('t-enter-email-form')" disabled/>
-        <div class="font-weight-bold text-caption mb-1">
-          {{ $t('t-username') }} <i class="ph-asterisk ph-xs text-danger" />
-        </div>
-        <TextField v-model="username" :placeholder="$t('t-enter-username')" disabled />
         <v-row v-if="isCreate">
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption  mb-1">
