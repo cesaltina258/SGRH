@@ -21,6 +21,7 @@ const employeeStore = useEmployeeStore()
 
 // Estado do componente
 const searchQuery = ref("")
+const searchProps = "firstName,lastName,email,employeeNumber,phone" // Campos de pesquisa
 const deleteDialog = ref(false)
 const deleteId = ref<number | null>(null)
 const deleteLoading = ref(false)
@@ -43,7 +44,8 @@ const fetchEmployees = async ({ page, itemsPerPage, sortBy, search }) => {
     itemsPerPage,
     sortBy[0]?.key || 'createdAt',
     sortBy[0]?.order || 'asc',
-    search
+    search, // query_values
+    searchProps // query_props
   )
 }
 

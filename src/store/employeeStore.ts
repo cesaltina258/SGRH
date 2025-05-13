@@ -5,7 +5,7 @@ import type { EmployeeListingType } from '@/components/employee/types';
 export const useEmployeeStore = defineStore('employees', { 
   state: () => ({
     employees: [] as EmployeeListingType[],
-    pagination: {
+    pagination: { 
       totalElements: 0,
       currentPage: 0,
       itemsPerPage: 2, // Aumentei o padrão para 10
@@ -21,7 +21,8 @@ export const useEmployeeStore = defineStore('employees', {
       size: number = this.pagination.itemsPerPage,
       sortColumn: string = 'createdAt',
       direction: string = 'asc',
-      search?: string
+      query_value?: string,  
+      query_props?: string   
     ) {
       this.loading = true;
       this.error = null;
@@ -32,7 +33,8 @@ export const useEmployeeStore = defineStore('employees', {
           size,
           sortColumn,
           direction,
-          search
+          query_value,
+          query_props
         );
 
         this.employees = content;

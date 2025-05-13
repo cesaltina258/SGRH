@@ -420,5 +420,9 @@
   "t-please-select-marital-status": "Please select marital status!",
   "t-invalid-id-card-expiry-date": "Invalid ID card expiry date!",
   "t-invalid-id-card-issuance-date": "Invalid ID card issuance date!",
-  "t-back": "Back"
+  "t-back": "Back",
+  "t-footer-text": "Design & Develop by MD Consultores",
+  "t-enter-the-6-digit-code": "Please enter the 6-digit code sent to",
+  "t-verification-failed": "Verification Failed!",
+  "t-create-new-password": "Create new password "
 }
