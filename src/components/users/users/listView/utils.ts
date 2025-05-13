@@ -44,7 +44,7 @@ export const Options: OptionType[] = [
   },
   {
     title: "enable",
-    icon: "ph-lock-open", // ícone que representa bloqueio/segurança
+    icon: "ph-lock", // ícone que representa bloqueio/segurança
     value: "enable",
   },
 ];
