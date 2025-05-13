@@ -486,8 +486,7 @@
   "t-yes-disable-it": "Sim, desactivar",
   "t-yes-enable-it": "Sim, activar",
   "t-toast-message-user-enabled": "Utilizador activado com sucesso!",
-  "t-toast-message-user-disabled": "Utilizador desactivado com sucesso!"
-  "t-please-enter-maximum-20-characters": "Por favor, insira no máximo 20 caracteres!",
+  "t-toast-message-user-disabled": "Utilizador desactivado com sucesso!",
   "t-footer-text": "Desenhado & Desenvolvido por MD Consultores",
   "t-enter-the-6-digit-code": "Por favor, digite o código de 6 dígitos enviado para",
   "t-verification-failed": "Verificação Falhou!",
