@@ -1,6 +1,7 @@
 // stores/userStore.ts
 import { defineStore } from 'pinia';
 import { userService } from "@/app/http/httpServiceProvider";
+import { authService } from "@/app/http/httpServiceProvider";
 import type { UserType1 } from '@/app/http/types';
 
 export const useUserStore = defineStore('users', {
@@ -58,4 +59,30 @@ export const useUserStore = defineStore('users', {
     }
   }
 });
+
+export const useProfileStore = defineStore('profile', {
+  state: () => ({
+    profile: [] as UserType1[],
+    error: null as string | null,
+    loading: false,
+  }),
+  actions: {
+    async fetchProfile() {
+      this.error = null;
+      this.loading = true;
+      try {
+        const response = await authService.getUserProfile();
+        this.profile = response.data;
+        console.log('response profile', response);
+      } catch (err: any) {
+        this.error = err.message || 'Erro ao buscar profile';
+        console.error("❌ Erro ao buscar profile:", err);
+      }
+      finally {
+        this.loading = false;
+      }
+    },
+  },
+});
+
   

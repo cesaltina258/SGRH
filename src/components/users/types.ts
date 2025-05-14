@@ -50,3 +50,11 @@ export type changePasswordListingType = {
   confirmPassword: string;
   passwordsMatching: boolean;
 }
+
+
+export type updatePasswordListingType = {
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+  passwordsMatching: boolean;
+}
