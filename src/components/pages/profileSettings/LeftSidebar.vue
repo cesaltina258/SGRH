@@ -41,7 +41,7 @@ const formatDate = (dateString: string | undefined) => {
         </v-avatar>
 
         <div class="text-subtitle-1 mt-3 mb-2 font-weight-bold">
-          @{{ user?.username || $t('t-user') }} <i class="bx  text-info bx-xs"></i>
+          {{ user?.firstName + ' ' + user?.lastName  || $t('t-name') }} <i class="bx  text-info bx-xs"></i>
         </div>
         <div class="text-muted"> {{ user?.function_name || $t('t-role') }} </div>
       </div>
@@ -60,13 +60,12 @@ const formatDate = (dateString: string | undefined) => {
             cols
             class="text-end text-muted"
           >
-          {{ user?.first_name + ' ' + user?.last_name  || $t('t-name') }}
+          {{ user?.firstName + ' ' + user?.lastName  || $t('t-name') }}
           </v-col>
         </v-row>
         <v-row
           justify="space-between"
           no-gutters
-          class="mb-2"
         >
         <v-col cols class="font-weight-bold"> {{ $t('t-role') }} </v-col>
           <v-col
@@ -81,13 +80,13 @@ const formatDate = (dateString: string | undefined) => {
           no-gutters
           class="mb-2"
         >
-        <v-col cols class="font-weight-bold"> {{ $t('t-repartition') }} </v-col>
+        <!-- <v-col cols class="font-weight-bold"> {{ $t('t-repartition') }} </v-col>
           <v-col
             cols
             class="text-end text-muted"
           >
           {{ user?.repartition_name || $t('t-division') }}
-          </v-col>
+          </v-col> -->
         </v-row>
         <v-row
           justify="space-between"
@@ -99,10 +98,10 @@ const formatDate = (dateString: string | undefined) => {
             cols
             class="text-end text-muted"
           >
-          {{ formatDate(user?.created_at)|| $t('t-joining-date') }}
+          {{ formatDate(user?.lastSucessfulLogin)|| $t('t-joining-date') }}
           </v-col>
         </v-row>
-        <div class="dashed-border mt-6"></div>
+        <div class="mt-4"></div>
       </v-card-text>
     </Card>
     
