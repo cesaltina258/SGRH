@@ -38,7 +38,6 @@ const passwordDialog = ref(false);
 const deleteDialog = ref(false);
 const deleteId = ref<number | null>(null);
 const deleteLoading = ref(false);
-const isSelectAll = ref(false);
 const changePasswordUserId = ref<number | null>(null);
 // Junto com as outras refs
 const changePasswordUser = ref<changePasswordListingType | null>(null);
@@ -88,115 +87,6 @@ onBeforeUnmount(() => {
   }
 });
 
-const mappedData = computed(() =>
-  userStore.users.map((item) => ({
-    ...item,
-    isCheck: false,
-  })).toReversed()
-);
-
-const filteredData = ref<UserListingType[]>([]);
-const finalData = ref<UserListingType[]>([]);
-
-watch(mappedData, (newVal) => {
-  filteredData.value = newVal;
-  finalData.value = newVal;
-}, { immediate: true });
-
-onMounted(() => {
-  userStore.fetchUsers();
-  getPaginatedData();
-});
-
-const query = ref("");
-
-const page = ref(1);
-const noOfItems = computed(() => {
-  return finalData.value.length;
-});
-const tableData = ref<UserListingType[]>([]);
-const loading = ref(false);
-
-const config = ref({
-  page: page.value,
-  start: 0,
-  end: 0,
-  noOfItems: noOfItems.value,
-  itemsPerPage: 10,
-});
-
-const getPaginatedData = () => {
-  const { itemsPerPage, page } = config.value;
-  const start = (page - 1) * itemsPerPage;
-  let end = start + itemsPerPage;
-  end = end <= noOfItems.value ? end : noOfItems.value;
-
-  config.value = {
-    ...config.value,
-    start,
-    end,
-  };
-
-  const data = finalData.value.slice(config.value.start, config.value.end);
-
-  loading.value = true;
-  tableData.value = [];
-
-  setTimeout(() => {
-    tableData.value = data;
-    loading.value = false;
-  }, 200);
-};
-
-
-
-watch(page, (newPage: number) => {
-  config.value.page = newPage;
-  getPaginatedData();
-});
-
-watch(filteredData, (newData: UserListingType[]) => {
-  updateTableData(newData);
-});
-
-const updateTableData = (newVal: UserListingType[]) => {
-  loading.value = true;
-  const { itemsPerPage } = config.value;
-
-  const start = 1;
-  let end = start + itemsPerPage;
-  end = end <= newVal.length ? end : newVal.length;
-  tableData.value = [];
-
-  setTimeout(() => {
-    tableData.value = newVal;
-    config.value = {
-      ...config.value,
-      start,
-      end,
-      noOfItems: newVal.length,
-    };
-    loading.value = false;
-  }, 200);
-};
-
-watch(query, (newQuery: string) => {
-  filteredData.value = finalData.value.filter((item) => {
-    const val = newQuery.toLowerCase();
-    if (
-      item.firstName.toLowerCase().includes(val) ||
-      item.email.includes(val) ||
-      item.username.includes(val)
-    ) {
-      return item;
-    }
-  });
-  updateTableData(filteredData.value);
-});
-
-//Criação e edição do utilizador
-
-
 // Estado do componente
 const searchQuery = ref("")
 const searchProps = "firstName,lastName,email" // Campos de pesquisa
@@ -242,10 +132,7 @@ watch(dialog, (newVal: boolean) => {
   }
 });
 
-
 const onCreateEditClick = (data: UserListingType | null) => {
-  console.log('data user---------------', data);
-
   if (!data) {
     userData.value = {
       id: -1,
@@ -255,12 +142,9 @@ const onCreateEditClick = (data: UserListingType | null) => {
       password: "",
     };
   } else {
-    //console.log('data userdata', data);
     userData.value = data;
     //console.log('userData.value', userData.value);
-
   }
-
   dialog.value = true;
 };
 
@@ -382,7 +266,6 @@ const onConfirmEnableAccount = async () => {
 
     // Atualiza a lista de utilizadores
     await userStore.fetchUsers();
-    getPaginatedData();
 
     // Toast com base no estado anterior
     if (wasEnabled) {
@@ -422,15 +305,27 @@ const onConfirmDelete = async () => {
   try {
     await userService.deleteUser(deleteId.value!);
 
-    await userStore.fetchUsers(0, itemsPerPage.value)
+    // 1. Remove o usuário deletado da seleção se estiver selecionado
+    selectedUsers.value = selectedUsers.value.filter(user => user.id !== deleteId.value);
 
+    // 2. Recarrega os dados mantendo a paginação atual
+    await userStore.fetchUsers(0, itemsPerPage.value);
+
+    // 3. Feedback visual
     toast.success(t('t-toast-message-deleted'));
+    
   } catch (error) {
     toast.error(t('t-toast-message-deleted-erros'));
     console.error("Delete error:", error);
+    
+    // Opcional: Mostrar detalhes do erro se disponível
+    const errorMessage = error.response?.data?.message || t('t-message-delete-error-unknown');
+    toast.error(errorMessage);
+    
   } finally {
     deleteLoading.value = false;
     deleteDialog.value = false;
+    deleteId.value = null; // Limpa o ID após a operação
   }
 };
 
