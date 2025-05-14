@@ -2,21 +2,62 @@
 import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
 import { skillsOptions } from "@/components/pages/profileSettings/utils";
 import { ref } from "vue";
+import { useAuthStore } from "@/store/authStore";
+import { storeToRefs } from "pinia";
+import { onMounted } from "vue";
+import { watch } from "vue";
+
+const authStore = useAuthStore();
+// Para garantir reatividade, usamos storeToRefs
+const { user } = storeToRefs(authStore);
 
 const formData = ref({
-  fname: "Richard",
-  lname: "Marshall",
-  phone: "617 219 6245",
-  email: "richardmarshall@steex.com",
-  dob: "06/24/2023",
-  joiningDate: "10/30/2023",
-  skills: ["javascript", "php"],
-  city: "Phoenix",
-  country: "USA",
-  zip: "00012",
-  description:
-    "A Web Developer creates and designs different websites for clients. They are responsible for their aesthetic as well as their function. Professionals in this field may also need to be able to ensure sites are compatible with multiple types of media. Web Developers need to have a firm understanding of programming and graphical design. Having a strong resume that emphasizes these attributes makes it significantly easier to get hired as a Web Developer. As a web designer, my objective is to make a positive impact on clients, co-workers, and the Internet using my skills and experience to design compelling and attractive websites. Solving code problems. Editing & Design with designing team in the company to build perfect web designs.",
+  fname: "",
+  lname: "",
+  phone: "",
+  email: "",
+  dob: "07/19/2000",
+  joiningDate: "09/10/2022",
+  skills: [],
+  city: "",
+  country: "",
+  zip: "",
+  description: "",
 });
+
+onMounted(() => {
+  if (user.value) {
+    formData.value.fname = user.value.firstName || "";
+    formData.value.lname = user.value.lastName || "";
+    formData.value.phone = user.value.phone || "";
+    formData.value.email = user.value.email || "";
+    formData.value.dob = user.value.dob || "07/19/2000"; // valor padrão, se necessário
+    formData.value.joiningDate = user.value.lastSucessfulLogin  || "09/10/2022";
+    formData.value.city = user.value.city || "";
+    formData.value.country = user.value.country || "";
+    formData.value.zip = user.value.zip || "";
+    formData.value.skills = user.value.skills || [];
+    formData.value.description = user.value.description || "";
+  }
+});
+
+watch(user, (newUser) => {
+  if (newUser) {
+    formData.value = {
+      fname: newUser.firstName || "",
+      lname: newUser.lastName || "",
+      phone: newUser.phone || "",
+      email: newUser.email || "",
+      dob: newUser.dob || "07/19/2000",
+      joiningDate: newUser.lastSucessfulLogin  || "09/10/2022",
+      skills: newUser.skills || [],
+      city: newUser.city || "",
+      country: newUser.country || "",
+      zip: newUser.zip || "",
+      description: newUser.description || "",
+    };
+  }
+}, { immediate: true }); // executa no início também
 
 const onCancel = () => {
   formData.value = {
@@ -73,7 +114,7 @@ const onCancel = () => {
         <v-col cols="12" lg="6">
           <div class="font-weight-bold mb-1">{{$t('t-date-of-birth')}}</div>
           <VueDatePicker
-            v-model="formData.dob"
+            v-model="formData.joiningDate"
             :teleport="true"
             :enable-time-picker="false"
           />

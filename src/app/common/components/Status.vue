@@ -28,10 +28,11 @@ const successChips: { text: string; value: string }[] = [
   { value: "paid", text: "Paid" },
   { value: "low", text: "Low" },
   { value: "Successful", text: "Successful" },
+  { value: "unblock", text: "unblock" },
 ];
 const dangerChips: { text: string; value: string }[] = [
   { value: "ood", text: "Out of Delivery" },
-  { value: "unActive", text: "unactive" },
+  { value: "unactive", text: "unactive" },
   { value: "block", text: "Block" },
   { value: "close", text: "Close" },
   { value: "intermediate", text: "Intermediate" },

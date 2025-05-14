@@ -5,33 +5,56 @@ import type { EmployeeListingType } from '@/components/employee/types';
 export const useEmployeeStore = defineStore('employees', { 
   state: () => ({
     employees: [] as EmployeeListingType[],
-    totalElements: 0,
-    currentPage: 0,
-    itemsPerPage: 10,
-    sort: 'createdAt,desc',
-    searchQuery: '',
-    error: null as string | null,
+    pagination: { 
+      totalElements: 0,
+      currentPage: 0,
+      itemsPerPage: 2, // Aumentei o padrão para 10
+      totalPages: 0
+    },
+    loading: false,
+    error: null as string | null
   }),
+
   actions: {
     async fetchEmployees(
-      page: number = this.currentPage,
-      size: number = this.itemsPerPage,
-      sort: string = this.sort,
-      search?: string
+      page: number = this.pagination.currentPage, 
+      size: number = this.pagination.itemsPerPage,
+      sortColumn: string = 'createdAt',
+      direction: string = 'asc',
+      query_value?: string,  
+      query_props?: string   
     ) {
+      this.loading = true;
       this.error = null;
+      
       try {
-        const { content, metadata } = await employeeService.getEmployees(page, size, sort, search);
+        const { content, meta } = await employeeService.getEmployees(
+          page,
+          size,
+          sortColumn,
+          direction,
+          query_value,
+          query_props
+        );
+
         this.employees = content;
-        this.totalElements = metadata.totalElements;
-        this.currentPage = metadata.page;
-        this.itemsPerPage = metadata.size;
-        this.sort = sort;
-        this.searchQuery = search || '';
+        this.pagination = {
+          totalElements: meta.totalElements,
+          currentPage: meta.page,
+          itemsPerPage: meta.size,
+          totalPages: meta.totalPages || Math.ceil(meta.totalElements / meta.size)
+        };
+        console.log('Colaboradores:', this.employees);
+        console.log('Meta:', this.pagination);
+        
       } catch (err: any) {
         this.error = err.message || 'Erro ao buscar colaboradores';
         console.error("❌ Erro ao buscar colaboradores:", err);
+        this.employees = [];
+        this.pagination.totalElements = 0;
+      } finally {
+        this.loading = false;
       }
-    },
-  },
+    }
+  }
 });

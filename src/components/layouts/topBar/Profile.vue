@@ -15,7 +15,7 @@ export default {
     const authStore = useAuthStore(); 
     const router = useRouter(); 
 
-    const userName = computed(() => authStore.user?.username || "Utilizador");
+    const userName = computed(() => authStore.user?.firstName || "Utilizador");
     const userRole = computed(() => authStore.user?.function_name || "Sem função");
 
     function logout() {

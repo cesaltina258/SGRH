@@ -15,6 +15,10 @@ const prop = defineProps({
     type: Number,
     default: 550,
   },
+  action: {
+    type: String,
+    required: true,
+  },
 });
 
 const dialogValue = computed({
@@ -38,11 +42,17 @@ const dialogValue = computed({
         </div>
         <div class="mt-4">
           <h4 class="text-h6 font-weight-bold">
-            <slot name="title"> {{ $t('t-dialog-locker') }}</slot>
+            <slot name="text">
+              {{ action === 'enable'
+                ? $t('t-dialog-confirm-enable')
+                : $t('t-dialog-confirm-disable') }}
+            </slot>
           </h4>
           <p class="text-muted mx-4 mb-0 text-subtitle-1">
             <slot name="text">
-              {{ $t('t-dialog-text-confirm-locker') }}
+              {{ action === 'enable'
+                ? $t('t-dialog-text-confirm-enable')
+                : $t('t-dialog-text-confirm-disable') }}
             </slot>
           </p>
         </div>
@@ -52,7 +62,7 @@ const dialogValue = computed({
           {{ $t('t-close') }}
         </v-btn>
         <v-btn color="danger" flat variant="elevated" :loading="loading" :disabled="loading" @click="emit('onConfirm')">
-          {{ $t('t-yes-locker-it') }}
+          {{ action === 'enable' ? $t('t-yes-enable-it') : $t('t-yes-disable-it') }}
         </v-btn>
       </v-card-actions>
     </v-card>

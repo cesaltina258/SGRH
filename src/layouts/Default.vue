@@ -26,11 +26,11 @@ const isHorizontal = computed(() => {
         <v-container fluid>
           <v-row>
             <v-col class="pa-0">
-              {{ new Date().getFullYear() }} © Steex.
+              {{ new Date().getFullYear() }} © SIGRH.
             </v-col>
             <v-col class="pa-0">
               <div class="text-sm-end d-none d-sm-block">
-                Design &amp; Develop by Themesbrand
+                {{ $t("t-footer-text") }}
               </div>
             </v-col>
           </v-row>

@@ -88,6 +88,7 @@ let alertTimeout: ReturnType<typeof setTimeout> | null = null // Modificado para
 const requiredRules = {
   employeeNumber: [
     (v: string) => !!v || t('t-please-enter-employee-number'),
+    (v: string) => (v && v.length <= 20) || t('t-please-enter-maximum-20-characters'),
   ],
   firstName: [
     (v: string) => !!v || t('t-please-enter-employee-firstname'),

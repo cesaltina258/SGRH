@@ -53,7 +53,7 @@ class AuthService {
     async getUserProfile() {
         try {
             const response = await axiosInstance.get("/administration/users/own-profile");
-            //console.log("👤 Perfil do usuário:", response.data);
+            console.log("👤 Perfil do usuário:", response.data);
 
             return response.data.data;
 
@@ -92,6 +92,37 @@ class AuthService {
             clearTokens();
         }
     }
+
+    async forgotPassword(email: string) {
+        try {
+            const response = await axiosInstance.post("/auth/forget-password", { email });
+            return response.data;
+        } catch (error) {
+            console.error("Erro ao enviar email de recuperação:", error);
+            throw error;
+        }
+    }
+
+    async verifyEmail(email: string, code: string) {
+        try {
+            const response = await axiosInstance.post("/auth/verify-forget-password", { email, code });
+            return response.data;
+        } catch (error) {
+            console.error("Erro ao verificar email:", error);
+            throw error;
+        }
+    }
+
+    async resetPassword( password: string, confirmPassword: string) {
+        try {
+            const response = await axiosInstance.post("/auth/reset-password", {  password, confirmPassword });
+            return response.data;
+        } catch (error) {
+            console.error("Erro ao redefinir senha:", error);
+            throw error;
+        }
+    }
+
 
 }
 

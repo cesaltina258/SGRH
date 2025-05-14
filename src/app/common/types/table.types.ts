@@ -4,6 +4,14 @@ export type TableHeaderType = {
   isCheck?: boolean;
 };
 
+export type DataTableHeaderType = {
+  title: string;
+  align?: string;
+  isCheck?: boolean;
+  key?: string;
+  sortable?: boolean;
+};
+
 export type TableConfigType = {
   page: number;
   start: number;

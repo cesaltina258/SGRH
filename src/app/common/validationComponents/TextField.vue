@@ -42,17 +42,29 @@ const isValidation = computed(() => {
 const fieldValue = computed({
   get() {
     if (isValidation.value) {
-      return (props.modelValue && props.modelValue.value) || "";
+      // Se for um objeto (com value e isValid), retorna apenas o value
+      return (props.modelValue && typeof props.modelValue === 'object' && 'value' in props.modelValue) 
+        ? props.modelValue.value 
+        : props.modelValue || "";
     } else {
       return props.modelValue || "";
     }
   },
   set(newValue: string) {
     if (isValidation.value) {
-      emit("update:modelValue", {
-        value: newValue,
-        isValid: isValid.value
-      });
+      // Se for um objeto, mantém a estrutura {value, isValid}
+      if (props.modelValue && typeof props.modelValue === 'object' && 'value' in props.modelValue) {
+        emit("update:modelValue", {
+          ...props.modelValue, // Mantém outras propriedades
+          value: newValue,
+          isValid: isValid.value
+        });
+      } else {
+        emit("update:modelValue", {
+          value: newValue,
+          isValid: isValid.value
+        });
+      }
     } else {
       emit("update:modelValue", newValue);
     }

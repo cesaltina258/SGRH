@@ -12,7 +12,7 @@ export type UserListingType  = {
   lastName: string;
   password: string;
   email: string;
-  username: string;
+  username?: string;
   enabled: boolean;
   accountLocked: boolean;
   twoFactor: boolean;
@@ -46,6 +46,14 @@ export type changePasswordType = {
 
 export type changePasswordListingType = {
   id: number;
+  newPassword: string;
+  confirmPassword: string;
+  passwordsMatching: boolean;
+}
+
+
+export type updatePasswordListingType = {
+  oldPassword: string;
   newPassword: string;
   confirmPassword: string;
   passwordsMatching: boolean;
