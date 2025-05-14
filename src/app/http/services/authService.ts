@@ -53,7 +53,7 @@ class AuthService {
     async getUserProfile() {
         try {
             const response = await axiosInstance.get("/administration/users/own-profile");
-            //console.log("👤 Perfil do usuário:", response.data);
+            console.log("👤 Perfil do usuário:", response.data);
 
             return response.data.data;
 

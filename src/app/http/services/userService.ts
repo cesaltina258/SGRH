@@ -1,5 +1,7 @@
 import HttpService from "@/app/http/httpService";
-import type { UserInsertType, UserListingType, UserUpdateType, changePasswordType } from "@/components/users/types";
+import type { UserInsertType, UserListingType, UserUpdateType, changePasswordType,
+  updatePasswordListingType
+ } from "@/components/users/types";
 
 export default class UserService extends HttpService {
 
@@ -110,5 +112,24 @@ export default class UserService extends HttpService {
       throw error;
     }
   }
+
+  async updatePassword(userData: updatePasswordListingType): Promise<updatePasswordListingType> {
+      try {
+        // Corpo da requisição conforme especificado
+        const payload = {
+          oldPassword: userData.oldPassword,
+          newPassword: userData.newPassword,
+          confirmPassword: userData.confirmPassword,
+          passwordsMatching: userData.passwordsMatching,
+        };
+        
+  
+        const response = await this.put<updatePasswordListingType>(`/administration/users/change-own-password`, payload);
+        return response;
+      } catch (error) {
+        console.error("❌ Erro ao actualizar Password:", error);
+        throw error;
+      }
+    }
 
 }
