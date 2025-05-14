@@ -45,12 +45,12 @@ export const useUserStore = defineStore('users', {
           itemsPerPage: meta.size,
           totalPages: meta.totalPages || Math.ceil(meta.totalElements / meta.size)
         };
-        console.log('Colaboradores:', this.users);
+        console.log('Utilizadores:', this.users);
         console.log('Meta:', this.pagination);
         
       } catch (err: any) {
-        this.error = err.message || 'Erro ao buscar colaboradores';
-        console.error("❌ Erro ao buscar colaboradores:", err);
+        this.error = err.message || 'Erro ao buscar utilizadores';
+        console.error("❌ Erro ao buscar utilizadores:", err);
         this.users = [];
         this.pagination.totalElements = 0;
       } finally {

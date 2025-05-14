@@ -526,6 +526,12 @@ const authRoutes = [
     meta: { title: "Two Step Verification", authRequired: false },
   },
   {
+    path: `${authPrefix}/verify-email`,
+    name: "VerificationEmail",
+    component: () => import("@/views/authentication/TwoStepVerification.vue"),
+    meta: { title: "Two Step Verification", authRequired: false },
+  },
+  {
     path: `${authPrefix}/404`,
     name: "Error404",
     component: () => import("@/views/authentication/error/404.vue"),

@@ -524,7 +524,6 @@ const getDynamicOptions = (user: UserListingType) => {
             </td>
           </tr>
         </template>
-
       </DataTableServer>
 
       <div v-if="!fetchUsers.length" class="text-center pa-7">
