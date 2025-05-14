@@ -47,7 +47,20 @@ const validateForm = () => {
 
 const handleApiError = (error: any) => {
   if (alertTimeout) clearTimeout(alertTimeout);
-  errorMsg.value = error?.error?.message || t('t-verification-password-error');
+
+  const responseErrors = error?.response?.data?.error?.errors || t("t-verification-password-error");
+  const fallbackMessage = (error as any)?.response?.data?.error?.detail || (error as any)?.response?.data?.error?.message || t("t-not-match-passwords");
+
+  // Prioriza o erro de "passwordsMatching", se existir
+  if (responseErrors?.passwordsMatching?.[0]) {
+    errorMsg.value = responseErrors.passwordsMatching[0];
+  } 
+  else if (fallbackMessage) {
+    errorMsg.value = fallbackMessage;
+  } else {
+    errorMsg.value = fallbackMessage; // Mensagem genérica opcional
+  }
+
   alertTimeout = setTimeout(() => {
     errorMsg.value = "";
     alertTimeout = null;
@@ -56,16 +69,6 @@ const handleApiError = (error: any) => {
 
 const submitForm = async () => {
   isSubmitted.value = true;
-
-  // Verificação extra para garantir que senhas coincidem
-  if (formData.value.newPswd.value !== formData.value.confirmPswd.value) {
-    errorMsg.value = t("t-not-match-passwords");
-    alertTimeout = setTimeout(() => {
-      errorMsg.value = "";
-      alertTimeout = null;
-    }, 5000);
-    return;
-  }
 
   if (!validateForm()) {
     errorMsg.value = t("t-form-invalid");

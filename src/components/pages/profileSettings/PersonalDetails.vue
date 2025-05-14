@@ -96,27 +96,11 @@ const onCancel = () => {
           />
         </v-col>
         <v-col cols="12" lg="6">
-          <div class="font-weight-bold mb-1">{{$t('t-phone-number')}}</div>
-          <TextField
-            v-model="formData.phone"
-            placeholder="Enter your Phone number"
-            hide-details
-          />
-        </v-col>
-        <v-col cols="12" lg="6">
           <div class="font-weight-bold mb-1">{{$t('t-email')}}</div>
           <TextField
             v-model="formData.email"
             placeholder="Enter your Email address"
             hide-details
-          />
-        </v-col>
-        <v-col cols="12" lg="6">
-          <div class="font-weight-bold mb-1">{{$t('t-date-of-birth')}}</div>
-          <VueDatePicker
-            v-model="formData.joiningDate"
-            :teleport="true"
-            :enable-time-picker="false"
           />
         </v-col>
         <v-col cols="12" lg="6">
@@ -129,22 +113,6 @@ const onCancel = () => {
         </v-col>
       </v-row>
       <v-row>
-        <v-col cols="12" lg="6">
-          <div class="font-weight-bold mb-1">{{$t('t-country')}}</div>
-          <TextField
-            v-model="formData.country"
-            placeholder="Enter your Country"
-            hide-details
-          />
-        </v-col>
-        <v-col cols="12" lg="6">
-          <div class="font-weight-bold mb-1">{{$t('t-province')}}</div>
-          <TextField
-            v-model="formData.city"
-            placeholder="Enter your City"
-            hide-details
-          />
-        </v-col>
       </v-row>
     </v-card-text>
     <v-card-actions class="d-flex justify-end">
