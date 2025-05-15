@@ -8,7 +8,7 @@ export default class UserService extends HttpService {
   //get de todos utilizadores
   async getUsers(
     page: number = 0,
-    size: number = 10,
+    size: number = 2,
     sortColumn: string = 'createdAt',
     direction: string = 'asc', // Valor padrão alterado para 'asc' conforme seu exemplo
     query_value?: string,
