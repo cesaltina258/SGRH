@@ -43,7 +43,7 @@ const provinceData = computed(() => provinceByCountryStoreID.province_by_country
 const countryStoreID = useCountryStoreID();
 const provinceStore = useProvinceStore();
 const countryData = ref<CountryListingType | null>(null);
-const itemsPerPage = ref(2);
+const itemsPerPage = ref(10);
 const searchProps = "name,code";
 const selectedProvinces = ref<ProvinceListingType[]>([]);
 const loading = ref(false);

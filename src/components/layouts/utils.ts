@@ -206,6 +206,7 @@ export const menuItems: MenuItemType[] = [
       { label: "institution-types", link: "/auth/signup" },
       { label: "state-types", link: "/auth/pass-reset" },
       { label: "countries", link: "/baseTable/country/list" },
+      { label: "currencies", link: "/baseTable/currency/list" },
     ],
   },
   /*{

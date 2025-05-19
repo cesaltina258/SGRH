@@ -138,7 +138,7 @@ export const useProvinceByCountryStoreID = defineStore('province_by_country', {
     pagination: {
       totalElements: 0,
       currentPage: 0,
-      itemsPerPage: 2,
+      itemsPerPage: 10,
       totalPages: 0
     },
     loading: false,

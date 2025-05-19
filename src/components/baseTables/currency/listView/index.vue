@@ -2,17 +2,17 @@
 import { ref, watch, computed, onMounted } from "vue";
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
 import Table from "@/app/common/components/Table.vue";
-import { listViewHeader } from "@/components/baseTables/country/listView/utils";
-import { CountryListingType, CountryInsertType } from "@/components/baseTables/country/types";
+import { listViewHeader } from "@/components/baseTables/currency/listView/utils";
+import { CurrencyListingType, CurrencyInsertType } from "@/components/baseTables/currency/types";
 import Status from "@/app/common/components/Status.vue";
 import TableAction from "@/app/common/components/TableAction.vue";
-import CreateUpdateCountryModal from "@/components/baseTables/country/CreateUpdateCountryModal.vue";
-import ViewCountryModal from "@/components/baseTables/country/ViewCountryModal.vue";
+import CreateUpdateCurrencyModal from "@/components/baseTables/currency/CreateUpdateCurrencyModal.vue";
+import ViewCurrencyModal from "@/components/baseTables/currency/ViewCurrencyModal.vue";
 import { formateDate } from "@/app/common/dateFormate";
 import { useRouter } from "vue-router";
 import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue";
-import { useCountryStore } from "@/store/baseTables/countryStore";
-import { countryService } from "@/app/http/httpServiceProvider";
+import { currencyService } from "@/app/http/httpServiceProvider";
+import { useCurrencyStore } from "@/store/baseTables/currencyStore";
 import { useToast } from 'vue-toastification';
 import { useI18n } from "vue-i18n";
 import DataTableServer from "@/app/common/components/DataTableServer.vue";
@@ -22,45 +22,47 @@ const { t } = useI18n();
 //criacao da mensagem toast
 const toast = useToast();
 
-const countryStore = useCountryStore();
+const currencyStore = useCurrencyStore();
 
 const router = useRouter();
 const dialog = ref(false);
 const viewDialog = ref(false);
-const countryData = ref<CountryListingType | null>(null);
+const currencyData = ref<CurrencyListingType | null>(null);
 
 const deleteDialog = ref(false);
 const deleteId = ref<number | null>(null);
 const deleteLoading = ref(false);
 const isSelectAll = ref(false);
 
-onMounted(() => {
-  fetchCountries({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: [], search: "" });
-});
-
 // Campos para pesquisa
 const searchQuery = ref("");
-const searchProps = "name,code,iso2Code,iso3Code,phoneCode,currency,currencySymbol,currencyCode";
+const searchProps = "name,symbol";
 
 // Paginação
 const itemsPerPage = ref(10);
-const loadingList = computed(() => countryStore.loading);
-const totalItems = computed(() => countryStore.pagination.totalElements);
-const selectedCountries = ref<any[]>([])
+const loadingList = computed(() => currencyStore.loading);
+const totalItems = computed(() => currencyStore.pagination.totalElements);
+const selectedCurrencies = ref<any[]>([])
+
+onMounted(() => {
+  fetchCurrencies({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: [], search: "" });
+});
+
+
 
 // Carregamento inicial
 onMounted(() => {
-  fetchCountries({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: [], search: "" });
+  fetchCurrencies({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: [], search: "" });
 });
 
 // Observa mudanças nos funcionários selecionados
-watch(selectedCountries, (newSelection) => {
+watch(selectedCurrencies, (newSelection) => {
   console.log('Funcionários selecionados:', newSelection)
 }, { deep: true })
 
 // Função de carregamento da tabela
-const fetchCountries = async ({ page, itemsPerPage, sortBy, search }) => {
-  await countryStore.fetchCountries(
+const fetchCurrencies = async ({ page, itemsPerPage, sortBy, search }) => {
+  await currencyStore.fetchCurrencies(
     page - 1,
     itemsPerPage,
     sortBy[0]?.key || "name",
@@ -71,60 +73,48 @@ const fetchCountries = async ({ page, itemsPerPage, sortBy, search }) => {
 };
 
 const toggleSelection = (item) => {
-  const index = selectedCountries.value.findIndex(selected => selected.id === item.id);
+  const index = selectedCurrencies.value.findIndex(selected => selected.id === item.id);
   if (index === -1) {
-    selectedCountries.value = [...selectedCountries.value, item];
+    selectedCurrencies.value = [...selectedCurrencies.value, item];
   } else {
-    selectedCountries.value = selectedCountries.value.filter(selected => selected.id !== item.id);
+    selectedCurrencies.value = selectedCurrencies.value.filter(selected => selected.id !== item.id);
   }
 };
 
 watch(dialog, (newVal: boolean) => {
   if (!newVal) {
-    countryData.value = null;
+    currencyData.value = null;
   }
 });
 
-const onCreateEditClick = (data: CountryListingType | null) => {
+const onCreateEditClick = (data: CurrencyListingType | null) => {
   if (!data) {
-    countryData.value = {
+    currencyData.value = {
       id: -1,
       name: "",
-      code: "",
-      iso2Code: "",
-      iso3Code: "",
-      phoneCode: "",
-      currency: "",
-      currencySymbol: "",
-      currencyCode: "",
+      symbol: "",
     };
   } else {
-    router.push({
-      path: "/baseTable/edit-country",
-      query: {
-        id: data.id,
-      },
-    });
-
+    currencyData.value = data;
   }
 
   dialog.value = true;
 };
 
-const onSubmit = async (data: CountryListingType, callbacks?: {
+const onSubmit = async (data: CurrencyListingType, callbacks?: {
   onSuccess?: () => void,
   onFinally?: () => void
 }) => {
   try {
     if (!data.id) {
-      await countryService.createCountry(data);
+      await currencyService.createCurrency(data);
       toast.success(t('t-toast-message-created'));
     } else {
-      await countryService.updateCountry(data.id, data);
+      await currencyService.updateCurrency(data.id, data);
       toast.success(t('t-toast-message-update'));
     }
 
-    await fetchCountries({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: [], search: searchQuery.value });
+    await fetchCurrencies({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: [], search: searchQuery.value });
 
     // Callback de sucesso (fecha a modal)
     callbacks?.onSuccess?.();
@@ -141,26 +131,20 @@ const onSubmit = async (data: CountryListingType, callbacks?: {
 //Consulta do utilizador
 watch(viewDialog, (newVal: boolean) => {
   if (!newVal) {
-    countryData.value = null;
+    currencyData.value = null;
   }
 });
 
-const onViewClick = (data: CountryListingType | null) => {
+const onViewClick = (data: CurrencyListingType | null) => {
   if (!data) {
-    countryData.value = {
+    currencyData.value = {
       id: -1,
       name: "",
-      code: "",
-      iso2Code: "",
-      iso3Code: "",
-      phoneCode: "",
-      currency: "",
-      currencySymbol: "",
-      currencyCode: "",
+      symbol: "",
 
     };
   } else {
-    countryData.value = data;
+    currencyData.value = data;
 
   }
 
@@ -183,9 +167,9 @@ const onConfirmDelete = async () => {
   deleteLoading.value = true;
 
   try {
-    await countryService.deleteCountry(deleteId.value!);
+    await currencyService.deleteCurrency(deleteId.value!);
 
-    await fetchCountries({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: [], search: searchQuery.value });
+    await fetchCurrencies({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: [], search: searchQuery.value });
 
     toast.success(t('t-toast-message-deleted'));
   } catch (error) {
@@ -194,7 +178,6 @@ const onConfirmDelete = async () => {
     deleteLoading.value = false;
     deleteDialog.value = false;
   }
-
 
 };
 
@@ -205,18 +188,18 @@ const onConfirmDelete = async () => {
       <v-row justify="space-between" align="center" no-gutters>
         <!-- Novo texto à esquerda -->
         <v-col lg="auto" class="d-flex align-center">
-          <span class="text-body-1 font-weight-bold">{{ $t('t-country-list') }}</span>
+          <span class="text-body-1 font-weight-bold">{{ $t('t-currency-list') }}</span>
         </v-col>
 
         <!-- Container dos elementos à direita -->
         <v-col lg="8" class="d-flex justify-end">
           <v-row justify="end" align="center" no-gutters>
             <v-col lg="4" class="me-3">
-              <QuerySearch v-model="searchQuery" :placeholder="$t('t-search-for-country')" />
+              <QuerySearch v-model="searchQuery" :placeholder="$t('t-search-for-currency')" />
             </v-col>
             <v-col lg="auto">
               <v-btn color="secondary" @click="onCreateEditClick(null)">
-                <i class="ph-plus-circle me-1" /> {{ $t('t-add-country') }}
+                <i class="ph-plus-circle me-1" /> {{ $t('t-add-currency') }}
               </v-btn>
             </v-col>
           </v-row>
@@ -225,22 +208,16 @@ const onConfirmDelete = async () => {
     </v-card-title>
     <v-card-text class="mt-2">
       <DataTableServer :headers="listViewHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
-        :items="countryStore.countries" :items-per-page="itemsPerPage" :total-items="totalItems" :loading="loadingList"
-        :search-query="searchQuery" :search-props="searchProps" item-value="id" @load-items="fetchCountries">
+        :items="currencyStore.currencies" :items-per-page="itemsPerPage" :total-items="totalItems" :loading="loadingList"
+        :search-query="searchQuery" :search-props="searchProps" item-value="id" @load-items="fetchCurrencies">
         <template #body="{ items }">
           <tr v-for="item in items" :key="item.id" height="50">
             <td>
-              <v-checkbox :model-value="selectedCountries.some(selected => selected.id === item.id)"
+              <v-checkbox :model-value="selectedCurrencies.some(selected => selected.id === item.id)"
                 @update:model-value="toggleSelection(item)" hide-details density="compact" />
             </td>
-            <td>{{ item.name }}</td>
-            <td>{{ item.code }}</td>
-            <td>{{ item.iso2Code }}</td>
-            <td>{{ item.iso3Code }}</td>
-            <td>{{ item.phoneCode }}</td>
-            <td>{{ item.currency }}</td>
-            <td>{{ item.currencySymbol }}</td>
-            <td>{{ item.currencyCode }}</td>
+            <td style="padding-right: 200px;">{{ item.name }}</td>
+            <td style="padding-right: 200px;">{{ item.symbol }}</td>
             <!-- <td>
               <Status :status="item.enabled ? 'active' : 'unactive'" />
             </td> -->
@@ -252,7 +229,7 @@ const onConfirmDelete = async () => {
         </template>
       </DataTableServer>
 
-      <div v-if="!countryStore.countries.length" class="text-center pa-7">
+      <div v-if="!currencyStore.currencies.length" class="text-center pa-7">
         <div class="mb-3">
           <v-avatar color="primary" variant="tonal" size="x-large">
             <i class="ph-magnifying-glass ph-lg"></i>
@@ -265,9 +242,9 @@ const onConfirmDelete = async () => {
     </v-card-text>
   </v-card>
 
-  <CreateUpdateCountryModal v-if="countryData" v-model="dialog" :data="countryData" @onSubmit="onSubmit" />
+  <CreateUpdateCurrencyModal v-if="currencyData" v-model="dialog" :data="currencyData" @onSubmit="onSubmit" />
 
-  <ViewCountryModal v-if="countryData" v-model="viewDialog" :data="countryData" />
+  <ViewCurrencyModal v-if="currencyData" v-model="viewDialog" :data="currencyData" />
 
   <RemoveItemConfirmationDialog v-if="deleteId" v-model="deleteDialog" @onConfirm="onConfirmDelete"
     :loading="deleteLoading" />

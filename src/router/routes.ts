@@ -122,6 +122,13 @@ const baseTableRoutes = [
     component: () => import("@/views/baseTables/editCountry/ListView.vue"),
     meta: { title: "EditCountry", authRequired: true },
   },
+  {
+    path: `${baseTablePrefix}/currency/list`,
+    name: "CurrencyListView",
+    component: () => import("@/views/baseTables/currency/ListView.vue"),
+    meta: { title: "CurrencyListView", authRequired: true },
+  },
+
 ].map((data) => {
   return {
     ...data,

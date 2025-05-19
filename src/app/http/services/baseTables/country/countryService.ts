@@ -7,7 +7,7 @@ export default class CountryService extends HttpService {
   //get de todos utilizadores
   async getCountries(
     page: number = 0,
-    size: number = 2,
+    size: number = 10,
     sortColumn: string = 'name',
     direction: string = 'asc',
     query_value?: string,
@@ -124,7 +124,7 @@ export default class CountryService extends HttpService {
   async getProvincesByCountryID(
     id: number,
     page: number = 0,
-    size: number = 2,
+    size: number = 10,
     sortColumn: string = 'name',
     direction: string = 'asc',
     query_value?: string,
