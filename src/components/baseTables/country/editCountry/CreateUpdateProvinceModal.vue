@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { PropType, computed, ref } from "vue";
-import { ProvinceInsertType } from "@/components/baseTables/editCountry/listView/types";
+import { ProvinceInsertType } from "@/components/baseTables/country/editCountry/listView/types";
 import { useI18n } from "vue-i18n";
 
 const localLoading = ref(false);

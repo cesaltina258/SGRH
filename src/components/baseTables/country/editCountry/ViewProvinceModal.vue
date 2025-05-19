@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { PropType, computed, ref } from "vue";
-import { ProvinceInsertType } from "@/components/baseTables/editCountry/listView/types";
+import { ProvinceInsertType } from "@/components/baseTables/country/editCountry/listView/types";
 import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
 import { statusOptions } from "@/components/realEstate/agent/utils";
 import { colors } from "@/components/ui/utils";

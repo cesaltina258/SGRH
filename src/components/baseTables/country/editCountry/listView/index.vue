@@ -1,16 +1,16 @@
 <script lang="ts" setup>
 
 import { ref, watch, computed, onMounted } from "vue";
-import Filters from "@/components/baseTables/editCountry/listView/HistoryFilters.vue";
+import Filters from "@/components/baseTables/country/editCountry/listView/HistoryFilters.vue";
 import { filters, interactions } from "@/components/institution/createInstitution/utils";
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
 import Table from "@/app/common/components/Table.vue";
-import { listViewHeader } from "@/components/baseTables/editCountry/listView/utils";
+import { listViewHeader } from "@/components/baseTables/country/editCountry/listView/utils";
 import { CountryListingType, CountryInsertType } from "@/components/baseTables/country/types";
 import Status from "@/app/common/components/Status.vue";
 import TableAction from "@/app/common/components/TableAction.vue";
-import CreateUpdateProvinceModal from "@/components/baseTables/editCountry/CreateUpdateProvinceModal.vue";
-import ViewProvinceModal from "@/components/baseTables/editCountry/ViewProvinceModal.vue";
+import CreateUpdateProvinceModal from "@/components/baseTables/country/editCountry/CreateUpdateProvinceModal.vue";
+import ViewProvinceModal from "@/components/baseTables/country/editCountry/ViewProvinceModal.vue";
 import { formateDate } from "@/app/common/dateFormate";
 import { useRouter } from "vue-router";
 import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue";
@@ -18,33 +18,87 @@ import { useCountryStore } from "@/store/baseTables/countryStore";
 import { countryService } from "@/app/http/httpServiceProvider";
 import { useToast } from 'vue-toastification';
 import { useI18n } from "vue-i18n";
-import { useCountryStoreID } from "@/store/baseTables/countryStoreID";
-import { useProvinceByCountryStoreID } from "@/store/baseTables/provinceStoreByCountryID";
-import { ProvinceListingType } from "@/components/baseTables/editCountry/listView/types";
-import { provinceService } from "@/app/http/httpServiceProvider";
-import { useProvinceStore } from "@/store/baseTables/provinceStore";
+import { useCountryStoreID } from "@/store/baseTables/countryStore";
+import { useProvinceByCountryStoreID } from "@/store/baseTables/countryStore";
+import { ProvinceListingType } from "@/components/baseTables/country/editCountry/listView/types";
+import { useProvinceStore } from "@/store/baseTables/countryStore";
 import { useRoute } from 'vue-router';
-import { provinceOptions } from "@/components/baseTables/editCountry/listView/utils";
+import { provinceOptions } from "@/components/baseTables/country/editCountry/listView/utils";
+import DataTableServer from "@/app/common/components/DataTableServer.vue";
+import { ProvinceOption } from "@/components/baseTables/country/editCountry/listView/types";
 
 
+
+const { t } = useI18n();
+//criacao da mensagem toast
+const toast = useToast();
+const countryStore = useCountryStore();
+const router = useRouter();
+const dialog = ref(false);
+const viewDialog = ref(false);
+const provinceFormData = ref<ProvinceListingType | null>(null);
 const customerFilters = ref<any>(filters);
 const provinceByCountryStoreID = useProvinceByCountryStoreID();
-const provinceData = computed(() => provinceByCountryStoreID.country_by_province);
+const provinceData = computed(() => provinceByCountryStoreID.province_by_country);
+const countryStoreID = useCountryStoreID();
+const provinceStore = useProvinceStore();
+const countryData = ref<CountryListingType | null>(null);
+const itemsPerPage = ref(2);
+const searchProps = "name,code";
+const selectedProvinces = ref<ProvinceListingType[]>([]);
+const loading = ref(false);
+const loadingList = computed(() => provinceByCountryStoreID.loading);
+const totalItems = computed(() => provinceByCountryStoreID.pagination.totalElements);
+const route = useRoute();
+const countryId = computed(() => Number(route.query.id));
+const deleteDialog = ref(false);
+const deleteId = ref<number | null>(null);
+const deleteLoading = ref(false);
+const isSelectAll = ref(false);
+const manualUpdateTrigger = ref(false);
+
+const filteredData = ref<ProvinceListingType[]>([]);
+const finalData = ref<ProvinceListingType[]>([]);
 
 const query = computed(() => {
   return customerFilters.value.query;
 });
 
-const countryStoreID = useCountryStoreID();
-const provinceStore = useProvinceStore();
-const countryData = ref<CountryListingType | null>(null);
+const searchQuery = computed({
+  get: () => customerFilters.value.query,
+  set: (val) => {
+    customerFilters.value.query = val;
+  },
+});
 
-const route = useRoute();
-const countryId = computed(() => Number(route.query.id));
+const toggleSelection = (item: ProvinceListingType) => {
+  const index = selectedProvinces.value.findIndex(selected => selected.id === item.id);
+  if (index >= 0) {
+    selectedProvinces.value.splice(index, 1); // remove
+  } else {
+    selectedProvinces.value.push(item); // adiciona
+  }
+};
 
 const onBack = () => {
   router.push({ path: `/baseTable/country/list` });
 };
+
+const fetchProvinces = async ({ page, itemsPerPage, sortBy, search }: ProvinceOption) => {
+  await provinceByCountryStoreID.fetchProvincesByCountryID(
+    countryId.value,
+    page - 1,
+    itemsPerPage,
+    sortBy[0]?.key || "name",
+    sortBy[0]?.order || "asc",
+    search,
+    searchProps
+  );
+};
+
+onMounted(() => {
+  fetchProvinces({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: [], search: "" });
+});
 
 const formErrors = ref<Record<string, string>>({
   name: '',
@@ -57,17 +111,6 @@ const formErrors = ref<Record<string, string>>({
   currencyCode: '',
 });
 
-
-const { t } = useI18n();
-//criacao da mensagem toast
-const toast = useToast();
-
-const countryStore = useCountryStore();
-
-const router = useRouter();
-const dialog = ref(false);
-const viewDialog = ref(false);
-const provinceFormData = ref<ProvinceListingType | null>(null);
 
 const form = ref({
   id: null as number | null,
@@ -148,19 +191,8 @@ const validateForm = () => {
     formErrors.value.currencyCode = '';
   }
 
-
   return isValid;
 };
-
-
-const deleteDialog = ref(false);
-const deleteId = ref<number | null>(null);
-const deleteLoading = ref(false);
-const isSelectAll = ref(false);
-const manualUpdateTrigger = ref(false);
-
-const filteredData = ref<ProvinceListingType[]>([]);
-const finalData = ref<ProvinceListingType[]>([]);
 
 watch(countryData, (val) => {
   if (val) {
@@ -201,81 +233,11 @@ onMounted(async () => {
     countryData.value = result;
 
     // Buscar as províncias
-    await provinceByCountryStoreID.fetchProvinceByCountryID(countryId.value);
+    await provinceByCountryStoreID.fetchProvincesByCountryID(countryId.value);
 
-    // Paginar dados após carregamento
-    getPaginatedData();
   }
 });
 
-const page = ref(1);
-const noOfItems = computed(() => {
-  return finalData.value.length;
-});
-const tableData = ref<ProvinceListingType[]>([]);
-const loading = ref(false);
-
-const config = ref({
-  page: page.value,
-  start: 0,
-  end: 0,
-  noOfItems: noOfItems.value,
-  itemsPerPage: 10,
-});
-
-const getPaginatedData = () => {
-  const { itemsPerPage, page } = config.value;
-  const start = (page - 1) * itemsPerPage;
-  let end = start + itemsPerPage;
-  end = end <= noOfItems.value ? end : noOfItems.value;
-
-  config.value = {
-    ...config.value,
-    start,
-    end,
-  };
-
-  const data = finalData.value.slice(config.value.start, config.value.end);
-
-  loading.value = true;
-  tableData.value = [];
-
-  setTimeout(() => {
-    tableData.value = data;
-    loading.value = false;
-  }, 200);
-};
-
-
-watch(page, (newPage: number) => {
-  config.value.page = newPage;
-  getPaginatedData();
-});
-
-watch(filteredData, (newData: ProvinceListingType[]) => {
-  updateTableData(newData);
-});
-
-const updateTableData = (newVal: ProvinceListingType[]) => {
-  loading.value = true;
-  const { itemsPerPage } = config.value;
-
-  const start = 1;
-  let end = start + itemsPerPage;
-  end = end <= newVal.length ? end : newVal.length;
-  tableData.value = [];
-
-  setTimeout(() => {
-    tableData.value = newVal;
-    config.value = {
-      ...config.value,
-      start,
-      end,
-      noOfItems: newVal.length,
-    };
-    loading.value = false;
-  }, 200);
-};
 
 watch(query, (newQuery: string) => {
   filteredData.value = finalData.value.filter((item) => {
@@ -287,7 +249,6 @@ watch(query, (newQuery: string) => {
       return item;
     }
   });
-  updateTableData(filteredData.value);
 });
 
 //Criação e edição do utilizador
@@ -319,15 +280,15 @@ const onSubmit = async (data: CountryListingType, callbacks?: {
 }) => {
   try {
     if (!data.id) {
-      await provinceService.createProvince(data);
+      await countryService.createProvince(data);
       toast.success(t('t-toast-message-created'));
     } else {
-      await provinceService.updateProvince(data.id, data);
+      await countryService.updateProvince(data.id, data);
       toast.success(t('t-toast-message-update'));
     }
 
     // Recarrega os dados
-    provinceByCountryStoreID.fetchProvinceByCountryID(countryId.value);
+    provinceByCountryStoreID.fetchProvincesByCountryID(countryId.value);
 
     // Callback de sucesso (fecha a modal)
     callbacks?.onSuccess?.();
@@ -378,15 +339,9 @@ const onConfirmDelete = async () => {
   deleteLoading.value = true;
 
   try {
-    await provinceService.deleteProvince(deleteId.value!);
-
-    filteredData.value = filteredData.value.filter(
-      (item) => item.id !== deleteId.value
-    );
-    finalData.value = [...filteredData.value];
-    updateTableData(filteredData.value);
-
+    await countryService.deleteProvince(deleteId.value!);
     toast.success(t('t-toast-message-deleted'));
+    provinceByCountryStoreID.fetchProvincesByCountryID(countryId.value);
   } catch (error) {
     toast.error(t('t-toast-message-deleted-erros'));
   } finally {
@@ -401,34 +356,19 @@ const handleSubmit = async () => {
     return;
   }
 
+  loading.value = true; // Ativa o loading
+
   try {
-    loading.value = true;
     await countryService.updateCountry(form.value.id!, form.value);
     toast.success(t('t-toast-message-update'));
     await countryStore.fetchCountries();
-    getPaginatedData();
   } catch (error) {
     toast.error(t('t-message-save-error'));
   } finally {
-    loading.value = false;
-  }
-};
-
-const onSelect = (option: string, data: ProvinceListingType) => {
-  switch (option) {
-    case "view":
-      onViewClick(data);
-      break;
-    case "edit":
-      onCreateEditClick(data);
-      break;
-    case "delete":
-      onDelete(data.id);
-      break;
+    loading.value = false; // Desativa o loading
   }
 };
 </script>
-
 <template>
   <Card title="">
     <v-card-text>
@@ -538,32 +478,27 @@ const onSelect = (option: string, data: ProvinceListingType) => {
       <v-row class="mt-5">
         <v-col cols="12" lg="12">
           <Filters v-model="customerFilters" />
-          <!-- <Listing class="mt-5" :interactions="filteredData" @onView="onView" @onEdit="onEdit" />
-           -->
           <v-card class="mt-5">
             <v-card-text>
-              <Table v-model="page"
-                :headerItems="listViewHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))" :config="config"
-                :loading="loading" is-pagination @on-select-all="onSelectAll" class="ma-n2">
-                <template #body>
-                  <tr v-for="(item, index) in tableData" :key="'agent-listing-item-' + index" height="50">
+              <DataTableServer :headers="listViewHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
+                :items="provinceByCountryStoreID.province_by_country" :items-per-page="itemsPerPage"
+                :total-items="totalItems" :loading="loadingList" :search-query="searchQuery" :search-props="searchProps"
+                item-value="id" @load-items="fetchProvinces">
+                <template #body="{ items }">
+                  <tr v-for="item in items" :key="item.id">
                     <td>
-                      <v-checkbox v-model="item.isCheck" hide-details color="primary" />
+                      <v-checkbox :model-value="selectedProvinces.some(selected => selected.id === item.id)"
+                        @update:model-value="toggleSelection(item)" hide-details density="compact" />
                     </td>
                     <td style="padding-right: 200px;">{{ item.name }}</td>
                     <td style="padding-right: 200px;">{{ item.code }}</td>
-                    <!-- <td>
-                      <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)"
-                        @onDelete="onDelete(item.id)" />
-                    </td> -->
                     <td>
-                      <ListMenuWithIcon
-                        :menuItems="provinceOptions.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
-                        @onSelect="onSelect($event, item)" />
+                      <TableAction @onView="onViewClick(item)" @onEdit="onCreateEditClick(item)"
+                        @onDelete="onDelete(item.id)" />
                     </td>
                   </tr>
                 </template>
-              </Table>
+              </DataTableServer>
               <div v-if="!filteredData.length" class="text-center">
                 <v-avatar size="80" color="primary" variant="text">
                   <i class="ph-magnifying-glass" style="font-size: 30px" color="primary" />

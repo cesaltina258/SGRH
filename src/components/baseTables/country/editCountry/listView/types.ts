@@ -21,3 +21,11 @@ export type OptionType = {
   icon?: string;
   to?: string;
 };
+
+export type ProvinceOption = {
+  page: number;
+  itemsPerPage: number;
+  sortBy: { key: string; order: 'asc' | 'desc' }[];
+  search: string;
+}
+

@@ -1,6 +1,6 @@
 import { BreadcrumbType } from "@/app/common/types/breadcrumb.type";
 import { TableHeaderType } from "@/app/common/types/table.types";
-import { OptionType } from "@/components/baseTables/editCountry/listView/types";
+import { OptionType } from "@/components/baseTables/country/editCountry/listView/types";
 
 export const breadcrumb: BreadcrumbType[] = [
   {
@@ -18,10 +18,9 @@ export const breadcrumb: BreadcrumbType[] = [
 ];
 
 export const listViewHeader: TableHeaderType[] = [
-  { title: "", isCheck: true },
-  { title: "province-name" },
-  { title: "province-code" },
-  { title: "action" },
+  { title: "province-name", key: "name", sortable: true },
+  { title: "province-code",  key: "code", sortable: true },
+  { title: "action", sortable: false },
 ];
 
 export const provinceOptions: OptionType[] = [
