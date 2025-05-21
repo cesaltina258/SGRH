@@ -2,9 +2,9 @@
 import { ref } from "vue";
 import ButtonNav from "@/components/institution/createInstitution/ButtonNav.vue";
 import Step1 from "@/components/institution/createInstitution/TabGeneralInfo.vue";
-import Step2 from "@/components/institution/createInstitution/TabContacts.vue";
+import Step4 from "@/components/institution/createInstitution/TabContacts.vue";
 import Step3 from "@/components/institution/createInstitution/TabHealthPlan.vue";
-import Step4 from "@/components/institution/createInstitution/TabInteractionHistory.vue";
+import Step2 from "@/components/institution/createInstitution/TabInteractionHistory.vue";
 const step = ref(1);
 
 const onStepChange = (value: number) => {

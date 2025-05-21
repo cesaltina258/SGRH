@@ -133,7 +133,7 @@ export const menuItems: MenuItemType[] = [
       { label: "overview", link: "/tickets/overview" },
     ],
   },*/
- /* {
+  {
     label: "healthcare-management",
     isHeader: true,
     id: "HeaderMenu",
@@ -151,7 +151,7 @@ export const menuItems: MenuItemType[] = [
     id: "sidebarBilling",
     prefix: "/invoices",
     link: "/invoices/list"
-  },*/
+  },
   /*{
     label: "real-estate",
     icon: "ph-buildings",

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import ImageUploader from "@/app/common/components/ImageUploader.vue";
 import { propertyTypes } from "@/components/realEstate/grid/utils";
 import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
@@ -14,6 +15,13 @@ const address = ref("");
 const phone_number = ref("");
 const email = ref("");
 const website = ref("");
+
+
+const router = useRouter();
+
+const onBack = () => {
+  router.push({ path: `/institution/list` });
+};
 
 </script>
 
@@ -38,7 +46,7 @@ const website = ref("");
           <TextField v-model="nuit" :placeholder="$t('t-enter-nuit')" hide-details />
         </v-col>
       </v-row>
-      <v-row class="">
+      <v-row class="mt-n6">
         <v-col cols="12" lg="6">
           <div class="font-weight-bold mb-2">
             {{ $t('t-address') }} <i class="ph-asterisk ph-xs text-danger" />
@@ -66,17 +74,20 @@ const website = ref("");
           <TextField v-model="website" :placeholder="$t('t-enter-website')" hide-details />
         </v-col>
       </v-row>
-      <v-row class="">
+      <!--<v-row class="">
         <v-col cols="12" lg="12">
           <div class="font-weight-bold mb-2">
             {{ $t('t-contract') }} <i class="ph-asterisk ph-xs text-danger" />
           </div>
           <ImageUploader v-model="img" />
         </v-col>
-      </v-row>
+      </v-row>-->
     </v-card-text>
 
-    <v-card-actions class="d-flex justify-end">
+    <v-card-actions class="d-flex justify-space-between mt-3">
+      <v-btn color="secondary" variant="outlined" class="me-2" @click="onBack()">
+          {{ $t('t-back') }} <i class="ph-arrow-left ms-2" />
+        </v-btn>
       <v-btn color="success" variant="elevated" @click="emit('onStepChange', 2)">
         {{ $t('t-save-and-proceed') }} <i class="ph-arrow-right ms-2" />
       </v-btn>

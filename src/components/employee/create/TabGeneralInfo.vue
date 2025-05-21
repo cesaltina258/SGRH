@@ -25,7 +25,18 @@ import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 const toast = useToast();
 const router = useRouter();
-const emit = defineEmits(["onStepChange"]);
+
+const emit = defineEmits(['onStepChange', 'save']);
+const props = defineProps({
+  modelValue: {
+    type: Object as () => EmployeeInsertType,
+    required: true
+  },
+  loading: {
+    type: Boolean,
+    default: false
+  }
+});
 
 // ==============================================
 // STORES
@@ -39,38 +50,14 @@ const provinceStore = useProvinceStore();
 // ==============================================
 const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 
-const employeeData = ref<EmployeeInsertType>({
-  employeeNumber: '',
-  firstName: '',
-  middleName: '',
-  lastName: '',
-  gender: '',
-  maritalStatus: null,
-  birthDate: new Date().toISOString().split('T')[0],
-  bloodGroup: '',
-  placeOfBirth: '',
-  nationality: '',
-  incomeTaxNumber: null,
-  socialSecurityNumber: null,
-  address: '',
-  country: '',
-  province: '',
-  postalCode: '',
-  email: '',
-  phone: '',
-  mobile: '',
-  emergencyContactName: '',
-  emergencyContactPhone: '',
-  idCardNumber: null,
-  idCardIssuer: '',
-  idCardExpiryDate: new Date().toISOString().split('T')[0],
-  idCardIssuanceDate: new Date().toISOString().split('T')[0],
-  passportNumber: null,
-  passportIssuer: '',
-  passportIssuanceDate: new Date().toISOString().split('T')[0],
-  passportExpiryDate: new Date().toISOString().split('T')[0]
+const employeeData = computed({
+  get() {
+    return props.modelValue;
+  },
+  set(value) {
+    emit('update:modelValue', value);
+  }
 });
-
 
 
 // ==============================================
@@ -81,7 +68,7 @@ const errors = ref<Record<string, string>>({});
 //const showGeneralError = ref(false);
 const loading = ref(false);
 const errorMsg = ref("")
-let alertTimeout: ReturnType<typeof setTimeout> | null = null // Modificado para usar let em vez de ref
+let alertTimeout: ReturnType<typeof setTimeout> | null = null 
 // ==============================================
 // VALIDATION RULES
 // ==============================================
@@ -138,7 +125,6 @@ const requiredRules = {
       return date <= minDate || t('t-invalid-id-card-issuance-date');
     }
   ],
-  // Adicione outras regras conforme necessário
 }
 
 // ==============================================
@@ -156,6 +142,7 @@ const countries = computed(() => {
 });
 
 const provinces = computed(() => {
+  console.log('entrei no computed---tab---')
   if (!Array.isArray(provinceStore.provincesbyCountry)) return [];
   return provinceStore.provincesbyCountry.map((province: ProvinceListingType) => ({ 
     value: province.id,
@@ -173,6 +160,13 @@ const provinces = computed(() => {
 onMounted(async () => {
   try {
     await countryStore.fetchCountries();
+    // Carrega províncias se já houver um país selecionado
+    console.log('employee-------tab-------', employeeData.value)
+    if (employeeData.value.country) {
+      console.log("employeeData.value.country.id-------tab-------",employeeData.value.country)
+      console.log("employeeData.value.province.id-------tab-------",employeeData.value.province)
+      await provinceStore.fetchProvincesbyCountry(employeeData.value.country);
+    }
   } catch (error) {
     console.error("Failed to load countries:", error);
     errorMsg.value = "Falha ao carregar países";
@@ -186,22 +180,37 @@ onMounted(async () => {
 // ==============================================
 // WATCHERS
 // ==============================================
-watch(() => employeeData.value.country, async (newCountryId) => {
-  if (newCountryId) {
-    try {
-      await provinceStore.fetchProvincesbyCountry(newCountryId);
-      employeeData.value.province = '';
-    } catch (error) {
-      console.error("Failed to load provinces:", error);
-      provinceStore.provincesbyCountry = [];
-      errorMsg.value = "Falha ao carregar províncias";
-      alertTimeout = setTimeout(() => {
-        errorMsg.value = ""
-        alertTimeout = null
-      }, 5000)
+watch(() => employeeData.value.country, async (newCountryId, oldCountryId) => {
+  // Só executa se o país realmente mudou
+  if (newCountryId !== oldCountryId) {
+    if (newCountryId) {
+      try {
+        await provinceStore.fetchProvincesbyCountry(newCountryId);
+        // Mantém a província atual apenas se for do mesmo país
+        if (employeeData.value.province) {
+          const currentProvince = provinceStore.provincesbyCountry.find(
+            p => p.id === employeeData.value.province
+          );
+          if (!currentProvince) {
+            employeeData.value.province = null;
+          }
+        } else {
+          employeeData.value.province = null;
+        }
+      } catch (error) {
+        console.error("Failed to load provinces:", error);
+        provinceStore.provincesbyCountry = [];
+        employeeData.value.province = null;
+        errorMsg.value = "Falha ao carregar províncias";
+        alertTimeout = setTimeout(() => {
+          errorMsg.value = "";
+          alertTimeout = null;
+        }, 5000);
+      }
+    } else {
+      provinceStore.clearProvinces();
+      employeeData.value.province = null;
     }
-  } else {
-    provinceStore.clearProvinces();
   }
 });
 
@@ -213,68 +222,20 @@ const onBack = () => {
 };
 
 const submitForm = async () => {
-  if (!form.value) return
+  if (!form.value) return;
 
-  // Validação do Vuetify
-  const { valid } = await form.value.validate()
-
+  const { valid } = await form.value.validate();
   if (!valid) {
-    errorMsg.value = 'Por favor, corrija os erros destacados'
+    errorMsg.value = t('t-please-correct-errors');
     alertTimeout = setTimeout(() => {
-        errorMsg.value = ""
-        alertTimeout = null
-      }, 5000)
-    return
+      errorMsg.value = "";
+      alertTimeout = null;
+    }, 5000);
+    return;
   }
 
-  loading.value = true
-  try {
-    const response = await employeeService.createEmployee(employeeData.value)
-
-    if (response.status === 'error') {
-      handleApiError(response)
-    } else {
-      await employeeStore.fetchEmployees()
-      toast.success(t('t-toast-message-created'));
-      router.push('/employee/list')
-    }
-  } catch (error) {
-    console.error("Erro ao criar funcionário:", error);
-    toast.error(t('t-message-save-error'));
-    handleApiError(error)
-  } finally {
-    loading.value = false
-  }
-}
-
-
-
-const handleApiError = (error: any) => {
-  // Limpa o timeout anterior
-  if (alertTimeout) {
-    clearTimeout(alertTimeout)
-    alertTimeout = null
-  }
-
-  // Define a mensagem de erro
- 
-  if (error.status === 'error') {
-    errorMsg.value  = error.error.message
-  }
-
-  // Configura o timeout para limpar a mensagem após 3 segundos
-  alertTimeout = setTimeout(() => {
-    errorMsg.value = ""
-    alertTimeout = null
-  }, 5000)
-}
-
-onBeforeUnmount(() => {
-  if (alertTimeout) {
-    clearTimeout(alertTimeout)
-    alertTimeout = null
-  }
-})
+  emit('save');
+};
 </script>
 
 <template>
@@ -491,7 +452,7 @@ onBeforeUnmount(() => {
               {{ $t('t-passport-issuance-date') }}
             </div>
             <VueDatePicker v-model="employeeData.passportIssuanceDate" :teleport="true"
-              :placeholder="$t('t-passport-issuance-date')" :enable-time-picker="false" format="dd/MM/yyyy" />
+              :placeholder="$t('t-enter-passport-issuance-date')" :enable-time-picker="false" format="dd/MM/yyyy" />
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
@@ -508,14 +469,26 @@ onBeforeUnmount(() => {
         {{ $t('t-save-and-proceed') }} <i class="ph-arrow-right ms-2" />
       </v-btn>
     </v-card-actions>-->
-      <v-card-actions class="d-flex justify-space-between mt-3">
-        <v-btn color="secondary" variant="outlined" class="me-2" @click="onBack()">
-          {{ $t('t-back') }} <i class="ph-arrow-left ms-2" />
-        </v-btn>
-        <v-btn color="success" variant="elevated" :loading="loading" type="submit">
-          {{ $t('t-save') }} <i class="ph-floppy-disk ms-2" />
-        </v-btn>
-      </v-card-actions>
+    <v-card-actions class="d-flex justify-space-between mt-3">
+      <v-btn 
+        color="secondary" 
+        variant="outlined" 
+        class="me-2" 
+        @click="onBack()"
+        :disabled="loading"
+      >
+        {{ $t('t-back') }} <i class="ph-arrow-left ms-2" />
+      </v-btn>
+      
+      <v-btn 
+        color="success" 
+        variant="elevated" 
+        @click="submitForm"
+        :loading="loading"
+      >
+        {{ $t('t-save-and-proceed') }} <i class="ph-arrow-right ms-2" />
+      </v-btn>
+    </v-card-actions>
     </Card>
   </v-form>
 </template>

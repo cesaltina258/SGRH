@@ -1,26 +1,29 @@
 import HttpService from "@/app/http/httpService";
 import type { EmployeeListingType, EmployeeInsertType, EmployeeUpdateType } from "@/components/employee/types";
 import type { ApiErrorResponse } from "@/app/common/types/errorType";
-import { mo } from "@/assets/images/flags/utils";
+
 export default class EmployeeService extends HttpService {
 
-  //get de todos utilizadores
+  //get de todos colaboradores
   async getEmployees(
     page: number = 0,
     size: number = 10,
     sortColumn: string = 'createdAt',
-    direction: string = 'asc', // Valor padrão alterado para 'asc' conforme seu exemplo
-    query_value?: string,
-    query_props?: string
+    direction: string = 'asc', 
+    query_props?: string,
+    query_value?: string
   ): Promise<{ content: EmployeeListingType[], meta: any }> {
     try {
       // Construção manual da query string para controle total
       const queryParams = [
         `page=${page}`,
         `size=${size}`,
-        `sortColumn=${sortColumn}`, // Apenas o nome da coluna
-        `direction=${direction}`    // Direção separada
+        `sortColumn=${sortColumn}`, 
+        `direction=${direction}`,
       ];
+
+      const includesToUse = 'position,department,company,province,country';
+      queryParams.push(`includes=${includesToUse}`);
   
       if (query_value && query_props) {
         queryParams.push(`query_props=${encodeURIComponent(query_props)}`);
@@ -75,7 +78,8 @@ export default class EmployeeService extends HttpService {
 
   async getEmployeeById(id: string | number) {
     try {
-      const response = await this.get(`/human-resource/employees/${id}`);
+      const response = await this.get(`/human-resource/employees/${id}?includes=position,department,company,province,country`);
+      console.log('Resposta da requisição:------------------------', response); 
       return {
         status: 'success',
         data: response.data
@@ -102,8 +106,10 @@ export default class EmployeeService extends HttpService {
     };
   }
 
-  async updateEmployee(id: string, employeeData: EmployeeUpdateType): Promise<EmployeeListingType> {
+  async updateEmployee(id: string, employeeData: EmployeeInsertType): Promise<EmployeeListingType> {
     try {
+
+      console.log('employeeData on update', employeeData.salary.value)
       // Corpo da requisição conforme especificado
       const payload = {
         employeeNumber: employeeData.employeeNumber,
@@ -134,14 +140,19 @@ export default class EmployeeService extends HttpService {
         passportNumber: employeeData.passportNumber,
         passportIssuer: employeeData.passportIssuer,
         passportExpiryDate: employeeData.passportExpiryDate,
-        passportIssuanceDate: employeeData.passportIssuanceDate
+        passportIssuanceDate: employeeData.passportIssuanceDate,
+        salary: employeeData.salary.value,
+        company: employeeData.company,
+        department: employeeData.department,
+        position: employeeData.position
       };
 
-      const response = await this.put<EmployeeUpdateType>(`/human-resource/employees/${id}`, payload);
+      const response = await this.put<EmployeeInsertType>(`/human-resource/employees/${id}`, payload);
+      console.log('response update', response)
       return response;
 
     } catch (error) {
-      console.error("❌ Erro ao actualizar utilizador:", error);
+      console.error("❌ Erro ao actualizar colaborador:", error);
       throw error;
     }
   }
