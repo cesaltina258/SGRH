@@ -128,7 +128,18 @@ const baseTableRoutes = [
     component: () => import("@/views/baseTables/currency/ListView.vue"),
     meta: { title: "CurrencyListView", authRequired: true },
   },
-
+  {
+    path: `${baseTablePrefix}/hospitalproceduretype/list`,
+    name: "HospitalProcedureTypeListView",
+    component: () => import("@/views/baseTables/hospitalProcedureType/ListView.vue"),
+    meta: { title: "HospitalProcedureTypeListView", authRequired: true },
+  },
+  {
+    path: `${baseTablePrefix}/institutiontype/list`,
+    name: "InstitutionTypeListView",
+    component: () => import("@/views/baseTables/institutionTypes/ListView.vue"),
+    meta: { title: "InstitutionTypeListView", authRequired: true },
+  },
 ].map((data) => {
   return {
     ...data,

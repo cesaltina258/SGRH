@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch, computed, onMounted } from "vue";
+import { ref, watch, computed, onMounted, onBeforeUnmount } from "vue";
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
 import Table from "@/app/common/components/Table.vue";
 import { listViewHeader } from "@/components/baseTables/currency/listView/utils";
@@ -42,12 +42,37 @@ const searchProps = "name,symbol";
 const itemsPerPage = ref(10);
 const loadingList = computed(() => currencyStore.loading);
 const totalItems = computed(() => currencyStore.pagination.totalElements);
-const selectedCurrencies = ref<any[]>([])
+const selectedCurrencies = ref<any[]>([]);
+const errorMsg = ref("");
+let alertTimeout: ReturnType<typeof setTimeout> | null = null;
 
-onMounted(() => {
-  fetchCurrencies({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: [], search: "" });
+const handleApiError = (error: any) => {
+  if (alertTimeout) {
+    clearTimeout(alertTimeout);
+    alertTimeout = null;
+  }
+
+  const message =
+    error?.response?.data?.error?.errors?.name?.[0] || // tenta capturar erro por campo
+    error?.response?.data?.message ||                  // erro direto da API
+    error?.message ||                                  // erro genérico
+    t("t-message-save-error");                         // fallback traduzido
+
+    console.log("message ==", message)
+  errorMsg.value = message;
+
+  alertTimeout = setTimeout(() => {
+    errorMsg.value = "";
+    alertTimeout = null;
+  }, 5000);
+};
+
+onBeforeUnmount(() => {
+  if (alertTimeout) {
+    clearTimeout(alertTimeout);
+    alertTimeout = null;
+  }
 });
-
 
 
 // Carregamento inicial
@@ -120,7 +145,7 @@ const onSubmit = async (data: CurrencyListingType, callbacks?: {
     callbacks?.onSuccess?.();
   } catch (error) {
     toast.error(t('t-message-save-error'));
-
+    handleApiError(error);
   } finally {
     // Callback para desativar o loading
     callbacks?.onFinally?.();
@@ -174,6 +199,7 @@ const onConfirmDelete = async () => {
     toast.success(t('t-toast-message-deleted'));
   } catch (error) {
     toast.error(t('t-toast-message-deleted-erros'));
+    handleApiError(error);
   } finally {
     deleteLoading.value = false;
     deleteDialog.value = false;
@@ -208,8 +234,9 @@ const onConfirmDelete = async () => {
     </v-card-title>
     <v-card-text class="mt-2">
       <DataTableServer :headers="listViewHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
-        :items="currencyStore.currencies" :items-per-page="itemsPerPage" :total-items="totalItems" :loading="loadingList"
-        :search-query="searchQuery" :search-props="searchProps" item-value="id" @load-items="fetchCurrencies">
+        :items="currencyStore.currencies" :items-per-page="itemsPerPage" :total-items="totalItems"
+        :loading="loadingList" :search-query="searchQuery" :search-props="searchProps" item-value="id"
+        @load-items="fetchCurrencies">
         <template #body="{ items }">
           <tr v-for="item in items" :key="item.id" height="50">
             <td>
@@ -242,7 +269,7 @@ const onConfirmDelete = async () => {
     </v-card-text>
   </v-card>
 
-  <CreateUpdateCurrencyModal v-if="currencyData" v-model="dialog" :data="currencyData" @onSubmit="onSubmit" />
+  <CreateUpdateCurrencyModal v-if="currencyData" v-model="dialog" :data="currencyData" :error="errorMsg" @onSubmit="onSubmit" />
 
   <ViewCurrencyModal v-if="currencyData" v-model="viewDialog" :data="currencyData" />
 

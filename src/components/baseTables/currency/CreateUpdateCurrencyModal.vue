@@ -18,10 +18,15 @@ const prop = defineProps({
     type: Object as PropType<CurrencyInsertType>,
     required: true,
   },
+  error: {
+    type: String,
+    default: "",
+  }
 });
 
 const isCreate = computed(() => prop.data.id === -1);
 const formData = ref(prop.data);
+const errorMessage = computed(() => prop.error);
 
 const dialogValue = computed({
   get() {
@@ -106,6 +111,9 @@ const onSubmit = () => {
       <v-card-text class="overflow-y-auto" :style="{
         'max-height': isCreate ? '70vh' : '45vh'
       }">
+        <v-alert v-if="errorMessage" :text="errorMessage" type="error" class="mb-4" variant="tonal" color="danger"
+          density="compact" />
+
         <v-row>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
