@@ -537,5 +537,17 @@
   "t-enter-institution-type-name": "Insira o nome do tipo de instituição",
   "t-view-institution-type": "Consultar Tipo de Instituição",
   "t-please-enter-name-institution-type": "Por favor, insira o nome do tipo de instituição.",
-  "t-please-enter-name-hospital-procedure-type": "Por favor, insira o nome do tipo de procedimento hospitalar."
+  "t-please-enter-name-hospital-procedure-type": "Por favor, insira o nome do tipo de procedimento hospitalar.",
+  "t-leave-reason": "Motivos de Saída",
+  "t-leave-reason-list": "Lista de Motivos de Saída",
+  "t-view-leave-reason-list": "Vista em Lista",
+  "t-add-leave-reason": "Adicionar Motivo de Saída",
+  "t-edit-leave-reason": "Editar Motivo de Saída",
+  "t-search-for-leave-reason": "Pesquisar por Motivo de Saída",
+  "t-enter-leave-reason-name": "Insira o nome do motivo de saída",
+  "t-view-leave-reason": "Consultar Motivo de Saída",
+  "t-please-enter-name-leave-reason": "Por favor, insira o nome do motivo de saída.",
+  "t-reason": "Motivo",
+  "t-enter-reason": "Insira o motivo",
+  "t-please-enter-leave-reason": "Por favor, insira o motivo de saída."
 }

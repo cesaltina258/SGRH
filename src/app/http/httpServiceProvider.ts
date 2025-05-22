@@ -5,6 +5,7 @@ import CountryService from "@/app/http/services/baseTables/country/countryServic
 import CurrencyService from "@/app/http/services/baseTables/currency/currencyService";
 import HospitalProcedureTypeService from "@/app/http/services/baseTables/hospitalProcedureType/hospitalProcedureTypeService";
 import InstitutionTypeService from "@/app/http/services/baseTables/institutionTypes/institutionTypeService";
+import LeaveReasonService from "@/app/http/services/baseTables/leaveReason/leaveReasonService";
 
 // FakeBackendService is used for mocking API responses
 import FakeBackendService from "@/app/http/services/fakeBackendService";
@@ -16,9 +17,10 @@ const countryService = new CountryService();
 const currencyService = new CurrencyService();
 const hospitalProcedureTypeService = new HospitalProcedureTypeService();
 const institutionTypeService = new InstitutionTypeService();
+const leaveReasonService = new LeaveReasonService();
 
 
 // FakeBackendService is used for mocking API responses
 const fakeBackendService = new FakeBackendService();
 
-export { authService, userService, employeeService, fakeBackendService, countryService, currencyService, hospitalProcedureTypeService, institutionTypeService };
+export { authService, userService, employeeService, fakeBackendService, countryService, currencyService, hospitalProcedureTypeService, institutionTypeService, leaveReasonService };
