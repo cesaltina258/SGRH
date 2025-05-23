@@ -223,6 +223,7 @@ const saveData = async () => {
               :placeholder="t('t-select-institution')" 
               clearable 
               :rules="requiredRules.institution"
+              disabled
             />
           </v-col>
           <v-col cols="12" lg="6">
@@ -234,10 +235,10 @@ const saveData = async () => {
               :items="departments" 
               :loading="departmentStore.loading"
               :placeholder="t('t-select-department')" 
-              :disabled="!employeeData.company" 
               :rules="requiredRules.department"
               @scroll-end="loadMoreDepartments" 
               clearable 
+              disabled
             />
           </v-col>
         </v-row>
@@ -254,7 +255,7 @@ const saveData = async () => {
               :loading="positionStore.loading" 
               :rules="requiredRules.position"
               :placeholder="t('t-select-position')" 
-              :disabled="!employeeData.department" 
+              disabled
               @scroll-end="loadMorePositions"
               clearable 
             />
@@ -269,6 +270,7 @@ const saveData = async () => {
               :placeholder="t('t-enter-the-employee-base-salary')" 
               :rules="requiredRules.salary"
               class="mb-2" 
+              disabled
             />
           </v-col>
         </v-row>
@@ -286,14 +288,6 @@ const saveData = async () => {
           {{ $t('t-back-to-general-info') }} <i class="ph-arrow-left ms-2" />
         </v-btn>
 
-        <v-btn 
-          color="success" 
-          variant="elevated" 
-          @click="saveData" 
-          :loading="loading"
-        >
-          {{ $t('t-save') }}
-        </v-btn>
       </v-card-actions>
     </Card>
   </v-form>

@@ -1,31 +1,47 @@
 <script lang="ts" setup>
-// ==============================================
-// IMPORTS
-// ==============================================
+/**
+ * TabGeneralInfo - Componente para informações gerais do employee 
+ * 
+ * Contém:
+ * - Dados pessoais
+ * - Documentos
+ * - Contatos
+ * - Endereço
+ */
+
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+import { useToast } from 'vue-toastification';
+
+// Components
 import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
-import ValidatedDatePicker  from "@/app/common/components/ValidatedDatePicker.vue";
+import ValidatedDatePicker from "@/app/common/components/ValidatedDatePicker.vue";
+
+// Stores
+import { useEmployeeStore } from '@/store/employeeStore';
 import { useCountryStore } from '@/store/baseTables/countryStore';
 import { useProvinceStore } from '@/store/baseTables/provinceStore';
-import { useEmployeeStore } from '@/store/employeeStore';
-import { employeeService } from "@/app/http/httpServiceProvider";
-import { CountryListingType } from "@/components/baseTables/country/types";
-import { ProvinceListingType } from "@/components/baseTables/province/types";
-import { genderOptions, maritalStatusOptions, bloodGroupOptions, nationalityOptions } from "@/components/employee/create/utils";
-import type {
-  EmployeeInsertType
-} from "../types";
-import { useToast } from 'vue-toastification';
-import { useI18n } from "vue-i18n";
 
-// ==============================================
-// ROUTER & EMITS
-// ==============================================
+// Types
+import { CountryListingType } from "@/components/baseTables/country/types"
+import { ProvinceListingType } from "@/components/baseTables/province/types"
+import { EmployeeInsertType } from "../types";
+
+// Utils
+import { 
+  genderOptions, 
+  maritalStatusOptions, 
+  bloodGroupOptions, 
+  nationalityOptions 
+} from "@/components/employee/create/utils";
+
+// Configuração inicial
 const { t } = useI18n();
 const toast = useToast();
 const router = useRouter();
 
+// Emits e Props
 const emit = defineEmits(['onStepChange', 'save']);
 const props = defineProps({
   modelValue: {
@@ -38,18 +54,15 @@ const props = defineProps({
   }
 });
 
-// ==============================================
-// STORES
-// ==============================================
+// Stores
 const employeeStore = useEmployeeStore();
 const countryStore = useCountryStore();
 const provinceStore = useProvinceStore();
 
-// ==============================================
-// FORM STATE
-// ==============================================
+// Referências do formulário
 const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 
+// Dados computados do employee
 const employeeData = computed({
   get() {
     return props.modelValue;
@@ -59,19 +72,13 @@ const employeeData = computed({
   }
 });
 
+// Estado da UI
+const errorMsg = ref("");
+let alertTimeout: ReturnType<typeof setTimeout> | null = null;
 
-// ==============================================
-// UI STATE
-// ==============================================
-const errors = ref<Record<string, string>>({});
-//const apiError = ref<string | null>(null);
-//const showGeneralError = ref(false);
-const loading = ref(false);
-const errorMsg = ref("")
-let alertTimeout: ReturnType<typeof setTimeout> | null = null 
-// ==============================================
-// VALIDATION RULES
-// ==============================================
+/**
+ * Regras de validação para os campos do formulário
+ */
 const requiredRules = {
   employeeNumber: [
     (v: string) => !!v || t('t-please-enter-employee-number'),
@@ -127,9 +134,9 @@ const requiredRules = {
   ],
 }
 
-// ==============================================
-// COMPUTED PROPERTIES
-// ==============================================
+/**
+ * Opções para selects (países e províncias)
+ */
 const countries = computed(() => {
   return countryStore.countries.map((country: CountryListingType) => ({
     value: country.id,
@@ -142,7 +149,6 @@ const countries = computed(() => {
 });
 
 const provinces = computed(() => {
-  console.log('entrei no computed---tab---')
   if (!Array.isArray(provinceStore.provincesbyCountry)) return [];
   return provinceStore.provincesbyCountry.map((province: ProvinceListingType) => ({ 
     value: province.id,
@@ -154,38 +160,37 @@ const provinces = computed(() => {
   }));
 });
 
-// ==============================================
-// LIFECYCLE HOOKS
-// ==============================================
+/**
+ * Carrega dados iniciais quando o componente é montado
+ */
 onMounted(async () => {
   try {
     await countryStore.fetchCountries();
-    // Carrega províncias se já houver um país selecionado
-    console.log('employee-------tab-------', employeeData.value)
+    
+    // Carrega províncias se já houver país selecionado
     if (employeeData.value.country) {
-      console.log("employeeData.value.country.id-------tab-------",employeeData.value.country)
-      console.log("employeeData.value.province.id-------tab-------",employeeData.value.province)
       await provinceStore.fetchProvincesbyCountry(employeeData.value.country);
     }
   } catch (error) {
     console.error("Failed to load countries:", error);
     errorMsg.value = "Falha ao carregar países";
     alertTimeout = setTimeout(() => {
-        errorMsg.value = ""
-        alertTimeout = null
-      }, 5000)
+      errorMsg.value = "";
+      alertTimeout = null;
+    }, 5000);
   }
 });
 
-// ==============================================
-// WATCHERS
-// ==============================================
+/**
+ * Observa mudanças no país para carregar as províncias correspondentes
+ */
 watch(() => employeeData.value.country, async (newCountryId, oldCountryId) => {
   // Só executa se o país realmente mudou
   if (newCountryId !== oldCountryId) {
     if (newCountryId) {
       try {
         await provinceStore.fetchProvincesbyCountry(newCountryId);
+        
         // Mantém a província atual apenas se for do mesmo país
         if (employeeData.value.province) {
           const currentProvince = provinceStore.provincesbyCountry.find(
@@ -214,13 +219,16 @@ watch(() => employeeData.value.country, async (newCountryId, oldCountryId) => {
   }
 });
 
-// ==============================================
-// METHODS
-// ==============================================
+/**
+ * Volta para a lista de employees
+ */
 const onBack = () => {
   router.push({ path: `/employee/list` });
 };
 
+/**
+ * Valida e envia o formulário
+ */
 const submitForm = async () => {
   if (!form.value) return;
 
@@ -236,34 +244,38 @@ const submitForm = async () => {
 
   emit('save');
 };
+
+
 </script>
 
 <template>
   <v-form ref="form" @submit.prevent="submitForm">
-    <!-- Personal Information Section -->
     <Card :title="$t('t-general-information')" elevation="0" title-class="pb-0">
-      <!-- Alert de erro geral -->
+      <!-- Mensagem de erro -->
       <transition name="fade">
         <v-alert v-if="errorMsg" :text="errorMsg" type="error" class="mb-4 mx-5 mt-3" variant="tonal" color="danger"
           density="compact" @click="errorMsg = ''" style="cursor: pointer;" />
       </transition>
 
       <v-card-text class="pt-0">
+        <!-- Seção: Informações básicas -->
         <div class="font-weight-bold mb-2 mt-5">
           {{ $t('t-employeeNumber') }} <i class="ph-asterisk ph-xs text-danger" />
         </div>
         <TextField v-model="employeeData.employeeNumber" :placeholder="$t('t-enter-employee-number')"
           :rules="requiredRules.employeeNumber" />
+        
+        <!-- Nome completo -->
         <v-row class="mt-n3">
           <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2 ">
+            <div class="font-weight-bold mb-2">
               {{ $t('t-firstname') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
             <TextField v-model="employeeData.firstName" :placeholder="$t('t-enter-employee-number')"
               :rules="requiredRules.firstName" />
           </v-col>
           <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2 ">
+            <div class="font-weight-bold mb-2">
               {{ $t('t-middle-name') }}
             </div>
             <TextField v-model="employeeData.middleName" :placeholder="$t('t-enter-middle-name')" />
@@ -276,6 +288,8 @@ const submitForm = async () => {
               :rules="requiredRules.lastName" />
           </v-col>
         </v-row>
+
+        <!-- Dados pessoais -->
         <v-row class="mt-n6">
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
@@ -296,13 +310,15 @@ const submitForm = async () => {
             <MenuSelect v-model="employeeData.bloodGroup" :items="bloodGroupOptions" />
           </v-col>
         </v-row>
+
+        <!-- Data de nascimento e local -->
         <v-row class="mt-n3">
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
               {{ $t('t-birth-date') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <ValidatedDatePicker v-model="employeeData.birthDate" :teleport="true" placeholder="Select date"  :rules="requiredRules.birthDate" 
-               format="dd/MM/yyyy" />
+            <ValidatedDatePicker v-model="employeeData.birthDate" :teleport="true" placeholder="Select date"  
+              :rules="requiredRules.birthDate" format="dd/MM/yyyy" />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
@@ -317,6 +333,8 @@ const submitForm = async () => {
             <MenuSelect v-model="employeeData.nationality" :items="nationalityOptions" />
           </v-col>
         </v-row>
+
+        <!-- Documentos -->
         <v-row class="mt-n3">
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
@@ -328,8 +346,8 @@ const submitForm = async () => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-social-security-number') }}
             </div>
-            <TextField v-model="employeeData.socialSecurityNumber" :placeholder="$t('t-enter-social-security-number')"
-              hide-details />
+            <TextField v-model="employeeData.socialSecurityNumber" 
+              :placeholder="$t('t-enter-social-security-number')" hide-details />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
@@ -338,6 +356,8 @@ const submitForm = async () => {
             <TextField v-model="employeeData.address" :placeholder="$t('t-enter-address')" hide-details />
           </v-col>
         </v-row>
+
+        <!-- País e Província -->
         <v-row class="">
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
@@ -353,6 +373,8 @@ const submitForm = async () => {
               :disabled="!employeeData.country || !Array.isArray(provinceStore.provincesbyCountry)" />
           </v-col>
         </v-row>
+
+        <!-- Código postal e contatos -->
         <v-row class="mt-n6">
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
@@ -372,35 +394,36 @@ const submitForm = async () => {
               {{ $t('t-phone') }}
             </div>
             <MazPhoneNumberInput v-model="employeeData.phone" size="sm" fetchCountry
-              :placeholder="$t('t-enter-phone-number')" 
-              class="custom-phone-input" />
+              :placeholder="$t('t-enter-phone-number')" class="custom-phone-input" />
           </v-col>
         </v-row>
+
+        <!-- Contatos adicionais -->
         <v-row class="">
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
               {{ $t('t-mobile') }}
             </div>
             <MazPhoneNumberInput v-model="employeeData.mobile" size="sm"
-              :placeholder="$t('t-enter-phone-number')" fetchCountry
-              class="custom-phone-input" />
+              :placeholder="$t('t-enter-phone-number')" fetchCountry class="custom-phone-input" />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
               {{ $t('t-emergency-contact-name') }}
             </div>
-            <TextField v-model="employeeData.emergencyContactName" :placeholder="$t('t-enter-phone-number')"
-              hide-details />
+            <TextField v-model="employeeData.emergencyContactName" 
+              :placeholder="$t('t-enter-phone-number')" hide-details />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
               {{ $t('t-emergency-contact-phone') }}
             </div>
-            <MazPhoneNumberInput v-model="employeeData.emergencyContactPhone"  size="sm"
-              :placeholder="$t('t-enter-phone-number')" fetchCountry
-              class="custom-phone-input" />
+            <MazPhoneNumberInput v-model="employeeData.emergencyContactPhone" size="sm"
+              :placeholder="$t('t-enter-phone-number')" fetchCountry class="custom-phone-input" />
           </v-col>
         </v-row>
+
+        <!-- Documentos de identificação -->
         <v-row class="">
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
@@ -413,92 +436,97 @@ const submitForm = async () => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-id-card-issuer') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="employeeData.idCardIssuer" :placeholder="$t('t-enter-id-card-issuer')" :rules="requiredRules.idCardIssuer"/>
+            <TextField v-model="employeeData.idCardIssuer" :placeholder="$t('t-enter-id-card-issuer')" 
+              :rules="requiredRules.idCardIssuer"/>
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
               {{ $t('t-id-card-expiry-date') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <ValidatedDatePicker v-model="employeeData.idCardExpiryDate" :teleport="true" :rules="requiredRules.idCardExpiryDate"
-              :placeholder="$t('t-enter-id-card-expiry-date')" format="dd/MM/yyyy" />
+            <ValidatedDatePicker v-model="employeeData.idCardExpiryDate" :teleport="true" 
+              :rules="requiredRules.idCardExpiryDate" :placeholder="$t('t-enter-id-card-expiry-date')" 
+              format="dd/MM/yyyy" />
           </v-col>
         </v-row>
+
+        <!-- Datas de emissão de documentos -->
         <v-row class="mt-n6">
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
               {{ $t('t-id-card-issuance-date') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <ValidatedDatePicker v-model="employeeData.idCardIssuanceDate" :teleport="true" :rules="requiredRules.idCardIssuanceDate"
-              :placeholder="$t('t-enter-id-card-issuance-date')" format="dd/MM/yyyy" />
+            <ValidatedDatePicker v-model="employeeData.idCardIssuanceDate" :teleport="true" 
+              :rules="requiredRules.idCardIssuanceDate" :placeholder="$t('t-enter-id-card-issuance-date')" 
+              format="dd/MM/yyyy" />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
               {{ $t('t-passport-number') }}
             </div>
-            <TextField v-model="employeeData.passportNumber" :placeholder="$t('t-enter-passport-number')"
-              hide-details />
+            <TextField v-model="employeeData.passportNumber" 
+              :placeholder="$t('t-enter-passport-number')" hide-details />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
               {{ $t('t-passport-issuer') }}
             </div>
-            <TextField v-model="employeeData.passportIssuer" :placeholder="$t('t-enter-passport-issuer')"
-              hide-details />
+            <TextField v-model="employeeData.passportIssuer" 
+              :placeholder="$t('t-enter-passport-issuer')" hide-details />
           </v-col>
         </v-row>
+
+        <!-- Datas de passaporte -->
         <v-row class="">
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
               {{ $t('t-passport-issuance-date') }}
             </div>
             <VueDatePicker v-model="employeeData.passportIssuanceDate" :teleport="true"
-              :placeholder="$t('t-enter-passport-issuance-date')" :enable-time-picker="false" format="dd/MM/yyyy" />
+              :placeholder="$t('t-enter-passport-issuance-date')" :enable-time-picker="false" 
+              format="dd/MM/yyyy" />
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
               {{ $t('t-id-passport-expiry-date') }}
             </div>
             <VueDatePicker v-model="employeeData.passportExpiryDate" :teleport="true"
-              :placeholder="$t('t-enter-id-passport-expiry-date')" :enable-time-picker="false" format="dd/MM/yyyy" />
+              :placeholder="$t('t-enter-id-passport-expiry-date')" :enable-time-picker="false" 
+              format="dd/MM/yyyy" />
           </v-col>
         </v-row>
       </v-card-text>
 
-      <!--<v-card-actions class="d-flex justify-end mt-3">
-      <v-btn color="success" variant="elevated" @click="emit('onStepChange', 2)">
-        {{ $t('t-save-and-proceed') }} <i class="ph-arrow-right ms-2" />
-      </v-btn>
-    </v-card-actions>-->
-    <v-card-actions class="d-flex justify-space-between mt-3">
-      <v-btn 
-        color="secondary" 
-        variant="outlined" 
-        class="me-2" 
-        @click="onBack()"
-        :disabled="loading"
-      >
-        {{ $t('t-back') }} <i class="ph-arrow-left ms-2" />
-      </v-btn>
-      
-      <v-btn 
-        color="success" 
-        variant="elevated" 
-        @click="submitForm"
-        :loading="loading"
-      >
-        {{ $t('t-save-and-proceed') }} <i class="ph-arrow-right ms-2" />
-      </v-btn>
-    </v-card-actions>
+      <!-- Ações do formulário -->
+      <v-card-actions class="d-flex justify-space-between mt-3">
+        <v-btn 
+          color="secondary" 
+          variant="outlined" 
+          class="me-2" 
+          @click="onBack()"
+          :disabled="loading"
+        >
+          {{ $t('t-back') }} <i class="ph-arrow-left ms-2" />
+        </v-btn>
+        
+        <v-btn 
+          color="success" 
+          variant="elevated" 
+          @click="submitForm"
+          :loading="loading"
+        >
+          {{ $t('t-save-and-proceed') }} <i class="ph-arrow-right ms-2" />
+        </v-btn>
+      </v-card-actions>
     </Card>
   </v-form>
 </template>
 
 <style scoped>
+/* Estilos consistentes com o index.vue */
 :deep(.dp__input) {
   height: 2.63rem;
 }
 
-/* Container principal */
 .custom-phone-input {
   background-color: #fff;
   border: 1px solid #DDE1EF;
@@ -507,7 +535,6 @@ const submitForm = async () => {
   color: #ABABAB !important;
 }
 
-/* Acessando elementos internos com :deep() (Vue 3) */
 :deep(.m-input.--has-label .m-input-input) {
   padding-left: 0 !important;
   padding-right: 0 !important;
@@ -518,10 +545,8 @@ const submitForm = async () => {
 :deep(.m-input.--sm .m-input-label) {
   font-size: 0.8rem !important;
   color: #ABABAB !important;
-
 }
 
-/* Se precisar ajustar o placeholder */
 :deep(.m-input-input::placeholder) {
   font-size: 0.75rem !important;
 }
@@ -536,7 +561,6 @@ const submitForm = async () => {
   opacity: 0;
 }
 
-/* Opcional: barra de progresso */
 .v-alert {
   position: relative;
   overflow: hidden;

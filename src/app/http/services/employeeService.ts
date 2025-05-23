@@ -22,15 +22,19 @@ export default class EmployeeService extends HttpService {
         `direction=${direction}`,
       ];
 
-      const includesToUse = 'position,department,company,province,country';
-      queryParams.push(`includes=${includesToUse}`);
+      
   
       if (query_value && query_props) {
         queryParams.push(`query_props=${encodeURIComponent(query_props)}`);
         queryParams.push(`query_value=${encodeURIComponent(query_value)}`);
       }
-  
+
+      const includesToUse = 'position,department,company,province,country';
+      queryParams.push(`includes=${includesToUse}`);
+
       const queryString = queryParams.join('&');
+
+
       const url = `/human-resource/employees?${queryString}`;
   
       console.log('URL da requisição:', url); // Para debug

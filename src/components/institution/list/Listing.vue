@@ -1,210 +1,153 @@
 <script lang="ts" setup>
-import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
-import { ref, watch, computed, onMounted } from "vue";
-import { invoiceHeader, invoicesList } from "@/components/institution/list/utils";
-import Table from "@/app/common/components/Table.vue";
+import { ref, computed, watch } from "vue"
+import { useRouter } from "vue-router"
+import { useInstitutionStore } from "@/store/institution/institutionStore"
+import { employeeService } from "@/app/http/httpServiceProvider"
+import { useToast } from 'vue-toastification'
+import { useI18n } from "vue-i18n"
+
+// Components
+import QuerySearch from "@/app/common/components/filters/QuerySearch.vue"
+import DataTableServer from "@/app/common/components/DataTableServer.vue"
+import TableAction from "@/app/common/components/TableAction.vue"
+import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue"
+import { institutionHeader } from "@/components/institution/list/utils"
+import Card from "@/app/common/components/Card.vue"
 import Status from "@/app/common/components/Status.vue";
-import ConfirmationDialog from "@/app/common/components/ConfirmationDialog.vue";
-import { useRouter } from "vue-router";
-import TableAction from "@/app/common/components/TableAction.vue";
+import { formateDate } from "@/app/common/dateFormate";
 
-const router = useRouter();
+const { t } = useI18n()
+const toast = useToast()
+const router = useRouter()
+const institutionStore = useInstitutionStore()
 
-const query = ref("");
-const confirmationDialog = ref(false);
-const deleteId = ref<number | null>(null);
+// Estado do componente
+const searchQuery = ref("")
+const searchProps = "name,description,address,phone,email,website,incomeTaxNumber" // Campos de pesquisa
+const deleteDialog = ref(false)
+const deleteId = ref<number | null>(null)
+const deleteLoading = ref(false)
+const itemsPerPage = ref(10)
+const selectedInstitutions = ref<any[]>([]) /// Armazena os funcionários selecionados
 
-const mappedData = invoicesList.map((data: any) => {
-  return {
-    ...data,
-    isChecked: false,
-  };
-});
+// Computed properties
+const loading = computed(() => institutionStore.loading)
+const totalItems = computed(() => institutionStore.pagination.totalElements)
 
-const filteredData = ref(mappedData);
-const finalData = ref(filteredData.value);
-const isAllSelected = ref(false);
+// Observa mudanças nos funcionários selecionados
+watch(selectedInstitutions, (newSelection) => {
+  console.log('Instituicoes selecionadas:', newSelection)
+}, { deep: true })
 
-const page = ref(1);
-const noOfItems = computed(() => {
-  return finalData.value.length;
-});
-const tableData = ref<any[]>([]);
-const loading = ref(false);
+// Busca os funcionários com os parâmetros atuais
+const fetchInstitutionsforListing = async ({ page, itemsPerPage, sortBy, search }) => {
+  await institutionStore.fetchInstitutionsforListing(
+    page - 1, // Ajuste para API que começa em 0
+    itemsPerPage,
+    sortBy[0]?.key || 'createdAt',
+    sortBy[0]?.order || 'asc',
+    searchProps, // query_props
+    search // query_values
+  )
+}
 
-const config = ref({
-  page: page.value,
-  start: 0,
-  end: 0,
-  noOfItems: noOfItems.value,
-  itemsPerPage: 10,
-});
+// Navega para a página de visualização
+const onView = (id: string) => {
+  router.push(`/institution/view/${id}`)
+}
 
-const getPaginatedData = () => {
-  const { itemsPerPage, page } = config.value;
-  const start = (page - 1) * itemsPerPage;
-  let end = start + itemsPerPage;
-  end = end <= noOfItems.value ? end : noOfItems.value;
+// Abre o diálogo de confirmação para exclusão
+const openDeleteDialog = (id: number) => {
+  deleteId.value = id
+  deleteDialog.value = true
+}
 
-  config.value = {
-    ...config.value,
-    start,
-    end,
-  };
+// Executa a exclusão do funcionário
+const deleteEmployee = async () => {
+  if (!deleteId.value) return
 
-  const data = filteredData.value.slice(config.value.start, config.value.end);
-
-  loading.value = true;
-  tableData.value = [];
-
-  setTimeout(() => {
-    tableData.value = data;
-    loading.value = false;
-  }, 200);
-};
-
-onMounted(() => {
-  getPaginatedData();
-});
-
-watch(page, (newPage: number) => {
-  config.value.page = newPage;
-  getPaginatedData();
-});
-
-watch(confirmationDialog, (dialog: boolean) => {
-  if (!dialog) {
-    deleteId.value = null;
+  deleteLoading.value = true
+  try {
+    await employeeService.deleteEmployee(deleteId.value)
+    toast.success(t('t-toast-message-deleted'))
+    await institutionStore.fetchInstitutionsforListing(0, itemsPerPage.value)
+  } catch (error) {
+    toast.error(t('t-toast-message-deleted-error'))
+  } finally {
+    deleteLoading.value = false
+    deleteDialog.value = false
   }
-});
+}
 
-watch(query, (newQuery: string) => {
-  filteredData.value = mappedData.filter((item) => {
-    const val = newQuery.toLowerCase();
-    if (
-      item.customer.toLowerCase().includes(val) ||
-      item.email.toLowerCase().includes(val)
-    ) {
-      return item;
-    }
-  });
-  updateTableData(filteredData.value);
-});
-
-const onSelectAll = () => {
-  isAllSelected.value = !isAllSelected.value;
-  tableData.value = tableData.value.map((item) => {
-    return {
-      ...item,
-      isChecked: isAllSelected.value,
-    };
-  });
+const toggleSelection = (item) => {
+  const index = selectedInstitutions.value.findIndex(selected => selected.id === item.id);
+  if (index === -1) {
+    selectedInstitutions.value = [...selectedInstitutions.value, item];
+  } else {
+    selectedInstitutions.value = selectedInstitutions.value.filter(selected => selected.id !== item.id);
+  }
 };
 
-const onDelete = (id: number) => {
-  deleteId.value = id;
-  confirmationDialog.value = true;
-};
-const onConfirmDelete = () => {
-  filteredData.value = filteredData.value.filter((item) => {
-    return item.id !== deleteId.value;
-  });
-  confirmationDialog.value = false;
-  updateTableData(filteredData.value);
-};
 
-const updateTableData = (newVal: any[]) => {
-  loading.value = true;
-  const { itemsPerPage } = config.value;
-
-  const start = 1;
-  let end = start + itemsPerPage;
-  end = end <= newVal.length ? end : newVal.length;
-  tableData.value = [];
-
-  setTimeout(() => {
-    tableData.value = newVal;
-    config.value = {
-      ...config.value,
-      start,
-      end,
-      noOfItems: newVal.length,
-    };
-    loading.value = false;
-  }, 200);
-};
-
-const onView = () => {
-  router.push({ path: "/institution/overview" });
-};
-
-const onEdit = () => {
-  router.push({ path: "/institution/create" });
-};
 </script>
 
 <template>
   <Card :title="$t('t-institution-list')" class="mt-7">
     <template #title-action>
       <v-row justify="end" align="center" no-gutters>
-        <v-col lg="3">
-          <QuerySearch v-model="query" :placeholder="$t('t-search-institution')" />
+        <v-col cols="12" sm="6" md="4">
+          <QuerySearch v-model="searchQuery" :placeholder="$t('t-search-institution')" />
         </v-col>
-        <v-col lg="auto" class="ms-3">
-          <v-btn color="secondary" to="/institution/create">
+        <v-col cols="12" sm="6" md="auto" class="ms-sm-3 mt-sm-0 mt-2">
+          <v-btn color="secondary" to="/institution/create" block>
             <i class="ph-plus-circle" /> {{ $t('t-add-institution') }}
           </v-btn>
         </v-col>
       </v-row>
     </template>
+
     <v-card-text>
-      <Table v-model="page" :headerItems="invoiceHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
-        is-pagination :config="config" :loading="loading" @onSelectAll="onSelectAll">
-        <template #body>
-          <tr v-for="(item, index) in tableData" :key="'cart-item-' + index" height="40">
+      <DataTableServer v-model="selectedInstitutions"
+        :headers="institutionHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
+        :items="institutionStore.institutions" :items-per-page="itemsPerPage" :total-items="totalItems" :loading="loading"
+        :search-query="searchQuery" @load-items="fetchInstitutionsforListing" item-value="id" show-select>
+        <template #body="{ items }">
+          <tr v-for="item in items" :key="item.id" height="50">
             <td>
-              <v-checkbox v-model="item.isChecked" hide-details color="primary" />
+              <v-checkbox :model-value="selectedInstitutions.some(selected => selected.id === item.id)"
+                @update:model-value="toggleSelection(item)" hide-details density="compact" />
             </td>
-            <td class="text-primary curser-pointer" @click="onView">
-              #TBS{{ 2430900 + item.id }}
+            <td class="text-primary cursor-pointer" @click="onView(item.id)">
+              {{ item.name || 'N/A' }}
             </td>
-            <td>{{ item.customer }}</td>
-            <td>{{ item.email }}</td>
-            <td>{{ item.createDate }}</td>
-            <td>{{ item.dueDate }}</td>
-            <td>${{ item.invoice_amount }}</td>
+            <td>{{ item.institutionType?.name || 'N/A' }} </td>
+            <td>{{ item.email || 'N/A' }}</td>
+            <td>{{ item.phone || 'N/A' }}</td>
+            <td>{{ formateDate(item.createdAt) || 'N/A' }}</td>
+            <td><Status :status="item.enabled ? 'active' : 'unactive'" /></td>
             <td>
-              <Status :status="item.status" />
-            </td>
-            <td>
-              <TableAction @onView="onView" @onEdit="onEdit" @onDelete="onDelete(item.id)" />
+              <TableAction @onEdit="() => router.push(`/institution/edit/${item.id}`)"
+                @onDelete="() => openDeleteDialog(item.id)" />
             </td>
           </tr>
         </template>
-      </Table>
-      <div v-if="!filteredData.length" class="text-center">
-        <v-avatar size="80" color="primary" variant="text">
-          <i class="ph-magnifying-glass" style="font-size: 30px" color="primary" />
-        </v-avatar>
-        <div class="font-weight-bold text-subtitle-1 mb-1">
-          {{$t('t-search-not-found-message')}}
-        </div>
-      </div>
+
+        <template v-if="institutionStore.institutions.length === 0" #body>
+          <tr>
+            <td :colspan="institutionHeader.length" class="text-center py-10">
+              <v-avatar size="80" color="primary" variant="tonal">
+                <i class="ph-magnifying-glass" style="font-size: 30px" />
+              </v-avatar>
+              <div class="text-subtitle-1 font-weight-bold mt-3">
+                {{ $t('t-search-not-found-message') }}
+              </div>
+            </td>
+          </tr>
+        </template>
+        
+      </DataTableServer>
     </v-card-text>
   </Card>
 
-  <ConfirmationDialog v-if="deleteId" v-model="confirmationDialog" @onConfirm="onConfirmDelete">
-    <v-btn variant="text" class="confirm-close-icon" icon="ph-x" @click="confirmationDialog = false" />
-    <v-card-text class="text-center ma-md-5">
-      <div class="text-danger">
-        <i class="ph ph-trash ph-4x"></i>
-      </div>
-      <div class="mt-4">
-        <h4>{{ $t('t-confirmation') }}</h4>
-        <p class="text-muted mx-4 mb-0 text-subtitle-1">
-          {{ $t('t-delete-confirmation') }}
-        </p>
-      </div>
-    </v-card-text>
-  </ConfirmationDialog>
+  <RemoveItemConfirmationDialog v-model="deleteDialog" @onConfirm="deleteEmployee" :loading="deleteLoading" />
 </template>

@@ -1,21 +1,20 @@
 <script lang="ts" setup>
-import ImageUploader from "@/app/common/components/ImageUploader.vue";
 const emit = defineEmits(["onStepChange"]);
 
 import { ref, watch, computed } from "vue";
-import Filters from "@/components/institution/createInstitution/HistoryFilters.vue";
-import { filters, interactions } from "@/components/institution/createInstitution/utils";
-import Listing from "@/components/institution/createInstitution/ListingHistory.vue";
-import { HistoryType } from "@/components/institution/createInstitution/types";
-import CreateEditContactDialog from "@/components/institution/createInstitution/CreateEditContactDialog.vue";
+import Filters from "@/components/institution/create/ContactFilters.vue";
+import { filters, customers } from "@/components/institution/create/utils";
+import Listing from "@/components/institution/create/ListingContacs.vue";
+import { ContactType } from "@/components/institution/create/types";
+import CreateEditContactDialog from "@/components/institution/create/CreateEditContactDialog.vue";
 import { v4 as uuidv4 } from "uuid";
 import { formateDate } from "@/app/common/dateFormate";
 
 const customerFilters = ref<any>(filters);
-const selectedCustomer = ref<HistoryType>(interactions[0]);
+const selectedCustomer = ref<ContactType>(customers[0]);
 const dialog = ref(false);
-const customerDetail = ref<HistoryType | null>(null);
-const filteredData = ref(interactions);
+const customerDetail = ref<ContactType | null>(null);
+const filteredData = ref(customers);
 const finalData = ref(filteredData.value);
 
 watch(dialog, (newVal: boolean) => {
@@ -65,7 +64,7 @@ watch(status, (newStatus: string) => {
   }
 });
 
-const onView = (data: HistoryType) => {
+const onView = (data: ContactType) => {
   selectedCustomer.value = data;
 };
 
@@ -74,18 +73,19 @@ const onCreate = () => {
     id: -1,
     name: "",
     email: "",
+    phone: "",
     create_date: new Date().toString(),
     status: "",
   };
   dialog.value = true;
 };
 
-const onEdit = (data: HistoryType) => {
+const onEdit = (data: ContactType) => {
   customerDetail.value = data;
   dialog.value = true;
 };
 
-const onConfirm = (customer: HistoryType) => {
+const onConfirm = (customer: ContactType) => {
   if (customer.id === -1) {
     filteredData.value.unshift({
       ...customer,
@@ -109,13 +109,12 @@ const onConfirm = (customer: HistoryType) => {
 };
 
 </script>
-
 <template>
-  <Card :title="$t('t-interaction-history')" title-class="py-5">
+  <Card :title="$t('t-contact-person-list')" title-class="py-5">
     <template #title-action>
       <div>
         <v-btn color="primary" class="mx-1" @click="onCreate">
-          <i class="ph-plus-circle me-1" /> {{ $t('t-add-interaction') }}
+          <i class="ph-plus-circle me-1" /> {{ $t('t-add-contact-person') }}
         </v-btn>
         <v-btn color="secondary" class="mx-1">
           <i class="ph-download-simple me-1" /> {{$t('t-import')}}
@@ -129,19 +128,19 @@ const onConfirm = (customer: HistoryType) => {
   <v-row class="mt-5">
     <v-col cols="12" lg="12">
       <Filters v-model="customerFilters" />
-      <Listing class="mt-5" :interactions="filteredData" @onView="onView" @onEdit="onEdit" />
+      <Listing class="mt-5" :customers="filteredData" @onView="onView" @onEdit="onEdit" />
     </v-col>
   </v-row>
 
   <CreateEditContactDialog v-if="customerDetail" v-model="dialog" :customerDetail="customerDetail"
     @onConfirm="onConfirm" />
-
-  <v-card-actions class="d-flex justify-space-between">
+    
+  <v-card-actions class="d-flex justify-space-between mt-5">
     <v-btn color="primary" variant="text" @click="emit('onStepChange', 1)">
-      <i class="ph-arrow-left me-2" /> {{$t('t-back-to-health-plan')}}
+      <i class="ph-arrow-left me-2" /> {{ $t('t-back-to-general-info') }}
     </v-btn>
-    <v-btn color="success" variant="elevated" >
-      {{ $t('t-save') }}  
+    <v-btn color="success" variant="elevated" @click="emit('onStepChange', 3)">
+      {{ $t('t-save-and-proceed') }} <i class="ph-arrow-right ms-2" />
     </v-btn>
   </v-card-actions>
 </template>

@@ -2,7 +2,7 @@ import { MenuSelectItemType } from "@/app/common/components/filters/types";
 import { BreadcrumbType } from "@/app/common/types/breadcrumb.type";
 import { TableHeaderType } from "@/app/common/types/table.types";
 import { OptionType } from "@/app/common/types/option.type";
-import { ContactType, HistoryType } from "@/components/institution/createInstitution/types";
+import { ContactType, HistoryType } from "@/components/institution/create/types";
 export const breadcrumb: BreadcrumbType[] = [
   {
     title: "institution-list",
@@ -13,6 +13,39 @@ export const breadcrumb: BreadcrumbType[] = [
     disabled: true,
   },
 ];
+
+export const healthPlanLimitOptions: MenuSelectItemType[] = [
+  { 
+    value: null, 
+    label: "Selecione o Limite do Plano" },
+  {
+    label: "Valor Fixo",
+    value: "FIXED_AMOUNT"
+  },
+  {
+    label: "Salário Anual",
+    value: "ANUAL_SALARY"
+  }
+];
+
+export const salaryComponentOptions: MenuSelectItemType[] = [
+  { 
+    value: null, 
+    label: "Selecione a Componente Salarial" },
+  {
+    label: "Salário Base",
+    value: "BASE_SALARY"
+  },
+  {
+    label: "Salário Bruto",
+    value: "GROSS_SALARY"
+  },
+  {
+    label: "Salário Líquido",
+    value: "NET_SALARY"
+  }
+];
+
 
 export const statusOptions: MenuSelectItemType[] = [
   { value: "", label: "Select status" },

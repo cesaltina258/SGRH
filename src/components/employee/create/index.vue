@@ -1,26 +1,40 @@
 <script lang="ts" setup>
+/**
+ * Employee Create/Edit Component - Main Container
+ * 
+ * Gerencia o fluxo de criação/edição de funcionários com duas abas:
+ * 1. Informações Gerais
+ * 2. Instituição & Classificação
+ */
+
 import { ref, reactive, onMounted, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from 'vue-router';
+import { useToast } from 'vue-toastification';
+import { useI18n } from 'vue-i18n';
+
+// Components
 import ButtonNav from "@/components/employee/create/ButtonNav.vue";
 import Step1 from "@/components/employee/create/TabGeneralInfo.vue";
 import Step2 from "@/components/employee/create/TabInstitution&Classification.vue";
-import { useToast } from 'vue-toastification';
-import { employeeService } from "@/app/http/httpServiceProvider";
+
+// Stores
 import { useEmployeeStore } from '@/store/employeeStore';
-import { useI18n } from 'vue-i18n';
 import { useProvinceStore } from '@/store/baseTables/provinceStore';
 import { useInstitutionStore } from '@/store/institution/institutionStore';
 import { useDepartmentStore } from '@/store/institution/departmentStore';
 import { usePositionStore } from '@/store/institution/positionStore';
-import { EmployeeInsertType, EmployeeUpdateType } from "../types";
 
+// Services & Types
+import { employeeService } from "@/app/http/httpServiceProvider";
+import { EmployeeInsertType } from "../types";
 
+// Inicialização de stores
 const provinceStore = useProvinceStore();
 const institutionStore = useInstitutionStore();
 const departmentStore = useDepartmentStore();
 const positionStore = usePositionStore();
 
-
+// Props
 const props = defineProps({
   cardTitle: {
     type: String,
@@ -28,18 +42,21 @@ const props = defineProps({
   }
 });
 
+// Composables
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
 const employeeStore = useEmployeeStore();
 
-const step = ref(1);
-const employeeId = ref(route.params.id);
-const loading = ref(false);
-const errorMsg = ref("");
-let alertTimeout: ReturnType<typeof setTimeout> | null = null;
+// Refs
+const step = ref(1); // Controla a aba atual (1 ou 2)
+const employeeId = ref(route.params.id); // ID do employee (null se for criação)
+const loading = ref(false); // Estado de loading global
+const errorMsg = ref(""); // Mensagem de erro global
+let alertTimeout: ReturnType<typeof setTimeout> | null = null; // Timeout para mensagens de erro
 
+// Dados reativos do formulário
 const employeeData = reactive<EmployeeInsertType>({
   // Dados da primeira tab
   employeeNumber: '',
@@ -72,6 +89,7 @@ const employeeData = reactive<EmployeeInsertType>({
   passportIssuanceDate: new Date().toISOString().split('T')[0],
   passportExpiryDate: new Date().toISOString().split('T')[0],
   enabled: true,
+  
   // Dados da segunda tab
   salary: null,
   company: null,
@@ -79,19 +97,24 @@ const employeeData = reactive<EmployeeInsertType>({
   position: null
 });
 
+/**
+ * Trata erros da API de forma consistente
+ * @param error - Objeto de erro da API
+ */
 const handleApiError = (error: any) => {
-  // Limpa o timeout anterior
+  // Limpa timeout anterior se existir
   if (alertTimeout) {
     clearTimeout(alertTimeout);
     alertTimeout = null;
   }
 
-  // Determina a mensagem de erro padrão
+  // Mensagem de erro padrão
   let message = t('t-error-saving-employee');
 
+  // Tratamento específico para erros da API
   if (error?.response?.data) {
     if (error.response.data.error) {
-      // Erros de validação - sem timeout
+      // Erros de validação
       errorMsg.value = error.response.data.message;
       alertTimeout = setTimeout(() => {
         errorMsg.value = "";
@@ -99,24 +122,26 @@ const handleApiError = (error: any) => {
       }, 5000);
     }
     message = error.response.data.message || message;
-  }
+  } 
   // Erros gerais
   else if (error.message) {
     message = error.message;
   }
 
-  // Mostra erro geral no toast e no alert (com timeout)
-  // console.log("message:------------------------", message)
+  // Exibe erro no toast e no alert
   toast.error(message);
   errorMsg.value = message;
 
-  // Configura o timeout para limpar a mensagem após 5 segundos
+  // Configura timeout para limpar a mensagem
   alertTimeout = setTimeout(() => {
     errorMsg.value = "";
     alertTimeout = null;
   }, 5000);
 };
 
+/**
+ * Carrega dados do employee quando em modo de edição
+ */
 onMounted(async () => {
   if (employeeId.value) {
     try {
@@ -126,23 +151,21 @@ onMounted(async () => {
       // Atribui os dados básicos
       Object.assign(employeeData, response.data);
 
-      // Atribui apenas os IDs para country e province
+      // Atribui IDs para relacionamentos
       employeeData.country = response.data.country?.id || null;
       employeeData.province = response.data.province?.id || null;
-      employeeData.company = response.data.company?.id  || null;
-      employeeData.department = response.data.department?.id  || null;
-      employeeData.position = response.data.position?.id  || null;
+      employeeData.company = response.data.company?.id || null;
+      employeeData.department = response.data.department?.id || null;
+      employeeData.position = response.data.position?.id || null;
 
-       //Carrega os departamentos e posições com base no company/department
-       if (employeeData.company) {
+      // Carrega dados dependentes
+      if (employeeData.company) {
         await departmentStore.fetchDepartments(employeeData.company);
       }
 
       if (employeeData.department) {
         await positionStore.fetchPositions(employeeData.department);
       }
-
-      //console.log('employeeData.province-----index---------', employeeData.province);
 
     } catch (error) {
       toast.error(t('t-error-loading-employee'));
@@ -153,10 +176,18 @@ onMounted(async () => {
   }
 });
 
+/**
+ * Muda entre as abas do formulário
+ * @param value - Número da aba (1 ou 2)
+ */
 const onStepChange = (value: number) => {
   step.value = value;
 };
 
+/**
+ * Salva os dados do employee
+ * @param isFinalStep - Indica se é o passo final (salvar e sair)
+ */
 const saveEmployee = async (isFinalStep: boolean = false) => {
   try {
     loading.value = true;
@@ -164,28 +195,25 @@ const saveEmployee = async (isFinalStep: boolean = false) => {
 
     let response;
     if (employeeId.value) {
-      // Atualização
+      // Modo edição
       response = await employeeService.updateEmployee(employeeId.value, employeeData);
     } else {
-      // Criação
+      // Modo criação
       response = await employeeService.createEmployee(employeeData);
-      console.error('Response:', response);
-
-      // Verifica se temos um ID válido
+      
       if (response?.data?.id) {
         employeeId.value = response.data.id;
-      }
-      else {
+      } else {
         throw new Error(response?.error?.message || t('t-error-creating-employee'));
       }
-
     }
 
-    // Se chegou aqui, a operação foi bem-sucedida
+    // Feedback de sucesso
     toast.success(employeeId.value
       ? t('t-employee-updated-success')
       : t('t-employee-created-success'));
 
+    // Redirecionamento ou próxima etapa
     if (isFinalStep) {
       await employeeStore.fetchEmployees();
       router.push('/employee/list');
@@ -193,52 +221,64 @@ const saveEmployee = async (isFinalStep: boolean = false) => {
       step.value++;
     }
   } catch (error) {
-    console.error('Error saving employee--------------------------------:', error);
+    console.error('Error saving employee:', error);
     handleApiError(error);
   } finally {
     loading.value = false;
   }
 };
 
+// Limpeza ao desmontar o componente
 onBeforeUnmount(() => {
   if (alertTimeout) {
     clearTimeout(alertTimeout);
     alertTimeout = null;
   }
 });
-
-
 </script>
 
 <template>
   <Card>
     <v-card-text>
+      <!-- Navegação entre abas -->
       <ButtonNav v-model="step" class="mb-2" />
 
+      <!-- Indicador de loading -->
       <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-4"></v-progress-linear>
 
+      <!-- Mensagens de erro -->
       <transition name="fade">
         <v-alert v-if="errorMsg" :text="errorMsg" type="error" class="mb-4 mx-5 mt-3" variant="tonal" color="danger"
           density="compact" @click="errorMsg = ''" style="cursor: pointer; white-space: pre-line;" />
       </transition>
 
-      <Step1 v-if="step === 1" @onStepChange="onStepChange" v-model="employeeData" @save="saveEmployee(false)"
-        :loading="loading" />
+      <!-- Abas do formulário -->
+      <Step1 
+        v-if="step === 1" 
+        @onStepChange="onStepChange" 
+        v-model="employeeData" 
+        @save="saveEmployee(false)"
+        :loading="loading" 
+      />
 
-      <Step2 v-if="step === 2" @onStepChange="onStepChange" v-model="employeeData" @save="saveEmployee(true)"
-        :loading="loading" />
+      <Step2 
+        v-if="step === 2" 
+        @onStepChange="onStepChange" 
+        v-model="employeeData" 
+        @save="saveEmployee(true)"
+        :loading="loading" 
+      />
     </v-card-text>
   </Card>
 </template>
 
-
-
 <style scoped>
+/* Estilos para o date picker */
 :deep(.dp__input) {
   height: 2.63rem;
 }
 
-/* Container principal */
+/* Estilos para inputs de telefone */
 .custom-phone-input {
   background-color: #fff;
   border: 1px solid #DDE1EF;
@@ -247,7 +287,7 @@ onBeforeUnmount(() => {
   color: #ABABAB !important;
 }
 
-/* Acessando elementos internos com :deep() (Vue 3) */
+/* Ajustes para inputs com label */
 :deep(.m-input.--has-label .m-input-input) {
   padding-left: 0 !important;
   padding-right: 0 !important;
@@ -258,14 +298,14 @@ onBeforeUnmount(() => {
 :deep(.m-input.--sm .m-input-label) {
   font-size: 0.8rem !important;
   color: #ABABAB !important;
-
 }
 
-/* Se precisar ajustar o placeholder */
+/* Placeholder */
 :deep(.m-input-input::placeholder) {
   font-size: 0.75rem !important;
 }
 
+/* Transição para mensagens de erro */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.5s ease;
@@ -276,7 +316,7 @@ onBeforeUnmount(() => {
   opacity: 0;
 }
 
-/* Opcional: barra de progresso */
+/* Barra de progresso para alertas */
 .v-alert {
   position: relative;
   overflow: hidden;

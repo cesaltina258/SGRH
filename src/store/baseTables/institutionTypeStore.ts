@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia';
-import { employeeService } from "@/app/http/httpServiceProvider";
-import type { EmployeeListingType } from '@/components/employee/types';
+import { institutionTypeService } from "@/app/http/httpServiceProvider";
+import type { InstitutionTypeListingType } from '@/components/baseTables/institutionType/types';
 
-export const useEmployeeStore = defineStore('employees', { 
+export const useInstitutionTypeStore = defineStore('institutiontypes', { 
   state: () => ({
-    employees: [] as EmployeeListingType[],
+    institutiontypes: [] as InstitutionTypeListingType[],
     pagination: { 
       totalElements: 0,
       currentPage: 0,
@@ -16,7 +16,7 @@ export const useEmployeeStore = defineStore('employees', {
   }),
 
   actions: {
-    async fetchEmployees(
+    async fetchInstitutionTypes(
       page: number = this.pagination.currentPage, 
       size: number = this.pagination.itemsPerPage,
       sortColumn: string = 'createdAt',
@@ -28,7 +28,7 @@ export const useEmployeeStore = defineStore('employees', {
       this.error = null;
       
       try {
-        const { content, meta } = await employeeService.getEmployees(
+        const { content, meta } = await institutionTypeService.getInstitutionTypes(
           page,
           size,
           sortColumn,
@@ -37,20 +37,20 @@ export const useEmployeeStore = defineStore('employees', {
           query_props
         );
 
-        this.employees = content;
+        this.institutiontypes = content;
         this.pagination = {
           totalElements: meta.totalElements,
           currentPage: meta.page,
           itemsPerPage: meta.size,
           totalPages: meta.totalPages || Math.ceil(meta.totalElements / meta.size)
         };
-        console.log('Colaboradores:', this.employees);
+        console.log('Colaboradores:', this.institutiontypes);
         console.log('Meta:', this.pagination);
         
       } catch (err: any) {
         this.error = err.message || 'Erro ao buscar colaboradores';
         console.error("❌ Erro ao buscar colaboradores:", err);
-        this.employees = [];
+        this.institutiontypes = [];
         this.pagination.totalElements = 0;
       } finally {
         this.loading = false;

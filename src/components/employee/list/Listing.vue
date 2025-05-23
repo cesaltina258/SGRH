@@ -25,7 +25,7 @@ const searchProps = "firstName,lastName,email,employeeNumber,phone" // Campos de
 const deleteDialog = ref(false)
 const deleteId = ref<number | null>(null)
 const deleteLoading = ref(false)
-const itemsPerPage = ref(2)
+const itemsPerPage = ref(10)
 const selectedEmployees = ref<any[]>([]) /// Armazena os funcionários selecionados
 
 // Computed properties
@@ -44,8 +44,8 @@ const fetchEmployees = async ({ page, itemsPerPage, sortBy, search }) => {
     itemsPerPage,
     sortBy[0]?.key || 'createdAt',
     sortBy[0]?.order || 'asc',
-    search, // query_values
-    searchProps // query_props
+    searchProps, // query_props
+    search // query_values
   )
 }
 
@@ -122,7 +122,7 @@ const toggleSelection = (item) => {
             <td>{{ item.phone || 'N/A' }}</td>
             <td>{{ item.email || 'N/A' }}</td>
             <td>
-              <TableAction @onEdit="() => router.push(`/employee/edit/${item.id}`)"
+              <TableAction @on-view="() => router.push(`/employee/view/${item.id}`)" @onEdit="() => router.push(`/employee/edit/${item.id}`)"
                 @onDelete="() => openDeleteDialog(item.id)" />
             </td>
           </tr>
