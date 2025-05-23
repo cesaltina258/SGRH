@@ -8,7 +8,7 @@ import { useI18n } from "vue-i18n"
 
 // Components
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue"
-import DataTableServer from "@/app/common/components/DataTableServer.vue" 
+import DataTableServer from "@/app/common/components/DataTableServer.vue"
 import TableAction from "@/app/common/components/TableAction.vue"
 import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue"
 import { employeeHeader } from "@/components/employee/list/utils"
@@ -25,7 +25,7 @@ const searchProps = "firstName,lastName,email,employeeNumber,phone" // Campos de
 const deleteDialog = ref(false)
 const deleteId = ref<number | null>(null)
 const deleteLoading = ref(false)
-const itemsPerPage = ref(2)
+const itemsPerPage = ref(10)
 const selectedEmployees = ref<any[]>([]) /// Armazena os funcionários selecionados
 
 // Computed properties
@@ -44,8 +44,8 @@ const fetchEmployees = async ({ page, itemsPerPage, sortBy, search }) => {
     itemsPerPage,
     sortBy[0]?.key || 'createdAt',
     sortBy[0]?.order || 'asc',
-    search, // query_values
-    searchProps // query_props
+    searchProps, // query_props
+    search // query_values
   )
 }
 
@@ -105,27 +105,15 @@ const toggleSelection = (item) => {
     </template>
 
     <v-card-text>
-      <DataTableServer
-        v-model="selectedEmployees"
+      <DataTableServer v-model="selectedEmployees"
         :headers="employeeHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
-        :items="employeeStore.employees"
-        :items-per-page="itemsPerPage"
-        :total-items="totalItems"
-        :loading="loading"
-        :search-query="searchQuery"
-        @load-items="fetchEmployees"
-        item-value="id"
-        show-select
-      >
-      <template #body="{ items }">
+        :items="employeeStore.employees" :items-per-page="itemsPerPage" :total-items="totalItems" :loading="loading"
+        :search-query="searchQuery" @load-items="fetchEmployees" item-value="id" show-select>
+        <template #body="{ items }">
           <tr v-for="item in items" :key="item.id" height="50">
             <td>
-              <v-checkbox
-                :model-value="selectedEmployees.some(selected => selected.id === item.id)"
-                @update:model-value="toggleSelection(item)"
-                hide-details
-                density="compact"
-              />
+              <v-checkbox :model-value="selectedEmployees.some(selected => selected.id === item.id)"
+                @update:model-value="toggleSelection(item)" hide-details density="compact" />
             </td>
             <td class="text-primary cursor-pointer" @click="onView(item.id)">
               #{{ item.employeeNumber || 'N/A' }}
@@ -134,31 +122,28 @@ const toggleSelection = (item) => {
             <td>{{ item.phone || 'N/A' }}</td>
             <td>{{ item.email || 'N/A' }}</td>
             <td>
-              <TableAction 
-                @onEdit="() => router.push(`/employee/edit/${item.id}`)"
-                @onDelete="() => openDeleteDialog(item.id)"
-              />
+              <TableAction @on-view="() => router.push(`/employee/view/${item.id}`)" @onEdit="() => router.push(`/employee/edit/${item.id}`)"
+                @onDelete="() => openDeleteDialog(item.id)" />
             </td>
           </tr>
         </template>
 
-        <template #no-data>
-          <div class="text-center py-10">
-            <v-avatar size="80" color="primary" variant="tonal">
-              <i class="ph-magnifying-glass" style="font-size: 30px" />
-            </v-avatar>
-            <div class="text-subtitle-1 font-weight-bold mt-3">
-              {{ $t('t-search-not-found-message') }}
-            </div>
-          </div>
+        <template v-if="employeeStore.employees.length === 0" #body>
+          <tr>
+            <td :colspan="employeeHeader.length" class="text-center py-10">
+              <v-avatar size="80" color="primary" variant="tonal">
+                <i class="ph-magnifying-glass" style="font-size: 30px" />
+              </v-avatar>
+              <div class="text-subtitle-1 font-weight-bold mt-3">
+                {{ $t('t-search-not-found-message') }}
+              </div>
+            </td>
+          </tr>
         </template>
+        
       </DataTableServer>
     </v-card-text>
   </Card>
 
-  <RemoveItemConfirmationDialog
-    v-model="deleteDialog"
-    @onConfirm="deleteEmployee"
-    :loading="deleteLoading"
-  />
+  <RemoveItemConfirmationDialog v-model="deleteDialog" @onConfirm="deleteEmployee" :loading="deleteLoading" />
 </template>

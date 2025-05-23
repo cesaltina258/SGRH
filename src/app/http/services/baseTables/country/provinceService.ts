@@ -25,6 +25,17 @@ export default class ProvinceService extends HttpService {
     }
   }
 
+  async getProvinceBycountrId(countrId: string | number): Promise<ProvinceListingType> {
+    try {
+      const response = await this.get(`/administration/setup/provinces/in-country?id=${countrId}`);
+      return response.data;
+
+    } catch (error) {
+      console.error("❌ Erro ao buscar provincias a partir do país:", error);
+      throw error; 
+    }
+  }
+
   async getProvinceByCountryID(id: number): Promise<{ data: ProvinceListingType }> {
     try {
       return await this.get(`/administration/setup/provinces/in-country?id=${id}`);
@@ -34,8 +45,6 @@ export default class ProvinceService extends HttpService {
     }
   }
   
-  
-
   async createProvince(userData: ProvinceInsertType): Promise<ProvinceInsertType> {
     try {
       const response = await this.post("/administration/setup/provinces", userData);

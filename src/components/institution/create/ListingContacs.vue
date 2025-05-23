@@ -1,26 +1,26 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from "vue";
 import Table from "@/app/common/components/Table.vue";
-import { contactOptions, historyHeader } from "@/components/institution/createInstitution/utils";
-import { ContactType } from "@/components/institution/createInstitution/types";
+import { contactOptions, contactHeader } from "@/components/institution/create/utils";
+import { ContactType } from "@/components/institution/create/types";
 import Status from "@/app/common/components/Status.vue";
 import { formateDate } from "@/app/common/dateFormate";
 
 const emit = defineEmits(["onView", "onEdit", "onDelete"]);
 const prop = defineProps({
-  interactions: {
+  customers: {
     type: Object,
     default: () => {},
   },
 });
 
-const interactions = computed(() => {
-  return prop.interactions;
+const customers = computed(() => {
+  return prop.customers;
 });
 
 const page = ref(1);
 const noOfItems = computed(() => {
-  return interactions.value.length;
+  return customers.value.length;
 });
 const tableData = ref<any[]>([]);
 const loading = ref(false);
@@ -45,7 +45,7 @@ const getPaginatedData = () => {
     start,
     end,
   };
-  tableData.value = interactions.value.slice(config.value.start, config.value.end);
+  tableData.value = customers.value.slice(config.value.start, config.value.end);
 };
 
 onMounted(() => {
@@ -78,7 +78,7 @@ const updateTableData = (newVal: any[]) => {
   }, 200);
 };
 
-watch(interactions, (newVal: any) => {
+watch(customers, (newVal: any) => {
   updateTableData(newVal);
 });
 
@@ -101,11 +101,11 @@ const onSelect = (option: string, data: ContactType) => {
 <template>
   <v-card>
     <v-card-text>
-      <Table v-model="page" :headerItems="historyHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))" is-pagination :config="config" :loading="loading">
+      <Table v-model="page" :headerItems="contactHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))" is-pagination :config="config" :loading="loading">
         <template #body>
           <tr
             v-for="(item, index) in tableData"
-            :key="'institution-history-' + index"
+            :key="'institution-contact-' + index"
             height="50"
           >
             <td>
@@ -116,6 +116,7 @@ const onSelect = (option: string, data: ContactType) => {
               </div>
             </td>
             <td>{{ item.email }}</td>
+            <td>{{ item.phone }}</td>
             <td>{{ formateDate(item.create_date) }}</td>
             <td class=""><Status :status="item.status" /></td>
 
@@ -129,7 +130,7 @@ const onSelect = (option: string, data: ContactType) => {
         </template>
       </Table>
 
-      <div v-if="!interactions.length" class="text-center">
+      <div v-if="!customers.length" class="text-center">
         <v-avatar size="80" color="primary" variant="text">
           <i
             class="ph-magnifying-glass"

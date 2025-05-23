@@ -1,5 +1,5 @@
 import { BreadcrumbType } from "@/app/common/types/breadcrumb.type";
-import { TableHeaderType } from "@/app/common/types/table.types";
+import { DataTableHeaderType } from "@/app/common/types/table.types";
 
 export const breadcrumb: BreadcrumbType[] = [
   {
@@ -47,16 +47,15 @@ export const institutionOverview = [
   },
 ];
 
-export const invoiceHeader: TableHeaderType[] = [
-  { title: "", isCheck: true },
-  { title: "id" },
-  { title: "institution-name" },
-  { title: "institution-type" },
-  { title: "email" },
-  { title: "phone-number" },
-  { title: "created-date" },
-  { title: "status" },
-  { title: "action" },
+
+export const institutionHeader: DataTableHeaderType[] = [
+  { title: "institution-name", key: "employeeNumber", sortable: true },
+  { title: "institution-type", key: "firstName", sortable: true },
+  { title: "email", key: "phone", sortable: true },
+  { title: "phone-number", key: "email", sortable: true }, 
+  { title: "created-date", key: "email", sortable: true }, 
+  { title: "status", key: "email", sortable: true }, 
+  { title: "action", sortable: false },
 ];
 
 export const invoicesList = [

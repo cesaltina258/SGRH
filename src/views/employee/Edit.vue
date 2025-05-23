@@ -1,8 +1,15 @@
 <script lang="ts" setup>
-import { breadcrumb } from "@/components/employee/edit/utils";
-import Edit from "@/components/employee/edit/index.vue";
+import { useRoute } from "vue-router";
+import { breadcrumb } from "@/components/employee/create/utils";
+import Create from "@/components/employee/create/index.vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
+const route = useRoute();
+const employeeId = route.params.id;
 </script>
+
 <template>
-  <Breadcrumb title="edit-employee" :items="breadcrumb" />
-  <Edit />
+  <Breadcrumb :title="t('edit-employee')" :items="breadcrumb" />
+  <Create :card-title="t('t-edit-employee')" />
 </template>
