@@ -5,7 +5,6 @@ const emit = defineEmits(["onStepChange"]);
 import { ref, watch, computed } from "vue";
 import Filters from "@/components/institution/create/HistoryFilters.vue";
 import { filters, interactions } from "@/components/institution/create/utils";
-import Listing from "@/components/institution/create/ListingHistory.vue";
 import { HistoryType } from "@/components/institution/create/types";
 import CreateEditContactDialog from "@/components/institution/create/CreateEditContactDialog.vue";
 import { v4 as uuidv4 } from "uuid";
@@ -129,7 +128,9 @@ const onConfirm = (customer: HistoryType) => {
   <v-row class="mt-5">
     <v-col cols="12" lg="12">
       <Filters v-model="customerFilters" />
-      <Listing class="mt-5" :interactions="filteredData" @onView="onView" @onEdit="onEdit" />
+
+      
+      
     </v-col>
   </v-row>
 

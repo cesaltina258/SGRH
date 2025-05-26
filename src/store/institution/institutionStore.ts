@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { institutionService } from "@/app/http/httpServiceProvider";
-import type { InstitutionListingType } from '@/components/institution/types';
+import type { InstitutionListingType, InstitutionInsertType } from '@/components/institution/types';
 
 export const useInstitutionStore = defineStore('institutions', { 
   state: () => ({
@@ -12,7 +12,9 @@ export const useInstitutionStore = defineStore('institutions', {
       totalPages: 0
     },
     loading: false,
-    error: null as string | null
+    error: null as string | null,
+    draftInstitution: null as InstitutionInsertType | null,
+    currentInstitutionId: null as string | null
   }),
 
   actions: {
@@ -95,6 +97,26 @@ export const useInstitutionStore = defineStore('institutions', {
       } finally {
         this.loading = false;
       }
+    },
+    setDraftInstitution(data: InstitutionInsertType) {
+      this.draftInstitution = data;
+      localStorage.setItem('institutionDraft', JSON.stringify(data));
+    },
+    setCurrentInstitutionId(id: string) {
+      this.currentInstitutionId = id;
+      localStorage.setItem('currentInstitutionId', id);
+    },
+    clearDraft() {
+      this.draftInstitution = null;
+      this.currentInstitutionId = null;
+      localStorage.removeItem('institutionDraft');
+      localStorage.removeItem('currentInstitutionId');
+    },
+    loadFromStorage() {
+      const draft = localStorage.getItem('institutionDraft');
+      const id = localStorage.getItem('currentInstitutionId');
+      if (draft) this.draftInstitution = JSON.parse(draft);
+      if (id) this.currentInstitutionId = id;
     }
   }
 });

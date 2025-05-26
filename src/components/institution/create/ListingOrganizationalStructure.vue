@@ -6,7 +6,7 @@ import { ContactType } from "@/components/institution/create/types";
 import Status from "@/app/common/components/Status.vue";
 import { formateDate } from "@/app/common/dateFormate";
 
-const emit = defineEmits(["onView", "onEdit", "onDelete"]);
+const emit = defineEmits(["onView", "onEdit", "onDelete"]); 
 const prop = defineProps({
   customers: {
     type: Object,

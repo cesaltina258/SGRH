@@ -18,7 +18,7 @@ import ButtonNav from "@/components/institution/create/ButtonNav.vue";
 import Step1 from "@/components/institution/create/TabGeneralInfo.vue";
 import Step4 from "@/components/institution/create/TabContacts.vue";
 import Step2 from "@/components/institution/create/TabHealthPlan.vue";
-import Step3 from "@/components/institution/create/TabInteractionHistory.vue";
+import Step3 from "@/components/institution/create/TabOrganizationalStructure.vue";
 
 
 //Stores
@@ -114,6 +114,13 @@ const institutionData = reactive<InstitutionInsertType>({
  * Carrega dados do employee quando em modo de edição
  */
 onMounted(async () => {
+    institutionStore.loadFromStorage();
+  
+  if (institutionStore.currentInstitutionId) {
+    institutionId.value = institutionStore.currentInstitutionId;
+    basicDataValidated.value = true;
+  }
+
   if (institutionId.value) {
     try {
       loading.value = true;
@@ -179,11 +186,15 @@ const onStepChange = (value: number) => {
       
       if (response?.data?.id) {
         institutionId.value = response.data.id;
+        institutionStore.setCurrentInstitutionId(response.data.id);
         basicDataValidated.value = true;
       } else {
         throw new Error(response?.error?.message || t('t-error-creating-employee'));
       }
     }
+
+    // Salvar draft na store
+    institutionStore.setDraftInstitution(institutionData);
 
     // Feedback de sucesso
     toast.success(institutionId.value
@@ -197,6 +208,7 @@ const onStepChange = (value: number) => {
     } else {
       step.value++;
     }
+
   } catch (error) {
     console.error('Error saving institution:', error);
     handleApiError(error);

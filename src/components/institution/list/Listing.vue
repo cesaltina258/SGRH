@@ -14,7 +14,7 @@ import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConf
 import { institutionHeader } from "@/components/institution/list/utils"
 import Card from "@/app/common/components/Card.vue"
 import Status from "@/app/common/components/Status.vue";
-import { formateDate } from "@/app/common/dateFormate";
+import { formateDate } from "@/app/common/dateFormate"; 
 
 const { t } = useI18n()
 const toast = useToast()

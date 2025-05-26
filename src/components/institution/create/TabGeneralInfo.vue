@@ -125,7 +125,8 @@ onMounted(async () => {
  * Volta para a lista de employees
  */
 const onBack = () => {
-  router.push({ path: `/institution/list` });
+  institutionStore.clearDraft();
+  router.push('/institution/list');
 };
 
 /**

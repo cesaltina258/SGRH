@@ -4,7 +4,6 @@ const emit = defineEmits(["onStepChange"]);
 import { ref, watch, computed } from "vue";
 import Filters from "@/components/institution/create/ContactFilters.vue";
 import { filters, customers } from "@/components/institution/create/utils";
-import Listing from "@/components/institution/create/ListingContacs.vue";
 import { ContactType } from "@/components/institution/create/types";
 import CreateEditContactDialog from "@/components/institution/create/CreateEditContactDialog.vue";
 import { v4 as uuidv4 } from "uuid";
@@ -128,7 +127,7 @@ const onConfirm = (customer: ContactType) => {
   <v-row class="mt-5">
     <v-col cols="12" lg="12">
       <Filters v-model="customerFilters" />
-      <Listing class="mt-5" :customers="filteredData" @onView="onView" @onEdit="onEdit" />
+
     </v-col>
   </v-row>
 
