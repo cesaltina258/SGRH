@@ -551,6 +551,8 @@
   "t-min-zero-dependents": "O valor mínimo deve ser 0",
   "t-please-enter-max-age": "Por favor, informe a idade máxima",
   "t-min-zero-age": "A idade mínima deve ser 0",
-  "t-please-select-plan-limit": "Por favor, selecione um limite para o plano de saúde"
+  "t-please-select-plan-limit": "Por favor, selecione um limite para o plano de saúde",
+  "t-please-enter-fixed-amount": "Por favor, informe o valor fixo",
+  "t-please-select-salary-component": "Por favor, selecione um componente salarial"
 
 }

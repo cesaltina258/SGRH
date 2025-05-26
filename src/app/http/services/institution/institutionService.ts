@@ -94,6 +94,10 @@ export default class InstitutionService extends HttpService {
 
   async createInstitution(institutionData: InstitutionInsertType) {
     try {
+
+      institutionData.maxNumberOfDependents = institutionData.maxNumberOfDependents.value;
+      institutionData.childrenMaxAge = institutionData.childrenMaxAge.value;
+
       const response = await this.post('/administration/companies', institutionData);
       return {
         status: 'success',
@@ -157,7 +161,7 @@ export default class InstitutionService extends HttpService {
     }
   }
 
-   async updateEmployee(id: string, institutionData: InstitutionInsertType): Promise<InstitutionListingType> {
+   async updateInstitution(id: string, institutionData: InstitutionInsertType): Promise<InstitutionListingType> {
       try {
   
         // Corpo da requisição conforme especificado
@@ -169,7 +173,9 @@ export default class InstitutionService extends HttpService {
           email: institutionData.email,
           website: institutionData.website,
           incomeTaxNumber: institutionData.incomeTaxNumber,
-          institutionType: institutionData.institutionType
+          institutionType: institutionData.institutionType,
+          maxNumberOfDependents: institutionData.maxNumberOfDependents.value,
+          childrenMaxAge: institutionData.childrenMaxAge.value
         };
   
         const response = await this.put<InstitutionInsertType>(`/administration/companies/${id}`, payload);

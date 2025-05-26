@@ -68,6 +68,21 @@ const institutionData = computed({
 const errorMsg = ref("");
 let alertTimeout: ReturnType<typeof setTimeout> | null = null;
 
+//Wacthers
+// Referência para healthPlanLimit com watch
+const healthPlanLimit = computed({
+  get: () => institutionData.value.healthPlanLimit,
+  set: (value) => {
+    institutionData.value.healthPlanLimit = value;
+  }
+});
+
+// Watch para revalidar quando healthPlanLimit muda
+watch(healthPlanLimit, () => {
+  setTimeout(() => {
+    form1.value?.validate();
+  }, 100);
+});
 
 
 /**
@@ -86,6 +101,29 @@ const requiredRules = {
     (v: string) => !!v || t('t-please-select-plan-limit')
   ]
 };
+
+// Computed para regras dinâmicas
+const fieldRules = computed(() => {
+  const rules: any = {
+    ...requiredRules,
+    fixedAmount: [],
+    salaryComponent: []
+  };
+
+  if (institutionData.value.healthPlanLimit === 'FIXED_AMOUNT') {
+    rules.fixedAmount = [
+      (v: number | null) => (v !== null && v !== undefined) || t('t-please-enter-fixed-amount')
+    ];
+  }
+
+  if (institutionData.value.healthPlanLimit === 'ANUAL_SALARY') {
+    rules.salaryComponent = [
+      (v: string | null) => !!v || t('t-please-select-salary-component')
+    ];
+  }
+
+  return rules;
+});
 
 /**
  * Volta para a lista de employees
@@ -111,7 +149,9 @@ const submitHealthPlan = async () => {
     return;
   }
 
-  emit('save');
+   // Emite o evento de save (que vai marcar basicDataValidated como true)
+   emit('save', false);
+  
 };
 
 
@@ -153,18 +193,18 @@ const submitHealthPlan = async () => {
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
-              {{ $t('t-fixed-amount') }}
+              {{ $t('t-fixed-amount') }} <i v-if="institutionData.healthPlanLimit === 'FIXED_AMOUNT'" class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="institutionData.childrenMaxAge" hide-details type="number"
-              :placeholder="t('t-enter-fixed-amount')" class="mb-2" />
+            <TextField v-model="institutionData.fixedAmount" hide-details type="number"
+              :placeholder="t('t-enter-fixed-amount')" :rules="fieldRules.fixedAmount" class="mb-2" />
           </v-col>
         </v-row>
         <v-row class="mt-n5">
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
-              {{ $t('t-salary-component') }}
+              {{ $t('t-salary-component') }} <i v-if="institutionData.healthPlanLimit === 'ANUAL_SALARY'" class="ph-asterisk ph-xs text-danger" />
             </div>
-            <MenuSelect v-model="institutionData.salaryComponent" :items="salaryComponentOptions" />
+            <MenuSelect v-model="institutionData.salaryComponent" :items="salaryComponentOptions" :rules="fieldRules.salaryComponent" />
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">

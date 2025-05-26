@@ -44,6 +44,8 @@ const loading = ref(false); // Estado de loading global
 const errorMsg = ref(""); // Mensagem de erro global
 let alertTimeout: ReturnType<typeof setTimeout> | null = null; // Timeout para mensagens de erro
 
+const basicDataValidated = ref(false);
+
 // Dados reativos do formulário
 const institutionData = reactive<InstitutionInsertType>({
   // Dados da primeira tab
@@ -137,7 +139,22 @@ onMounted(async () => {
  * @param value - Número da aba (1 ou 2)
  */
 const onStepChange = (value: number) => {
-  step.value = value;
+    // Permite sempre voltar para tabs anteriores
+    if (value < step.value) {
+    step.value = value;
+    return;
+  }
+  
+  // No modo de edição ou quando dados básicos já foram validados, permite navegar livremente
+  if (institutionId.value || basicDataValidated.value) {
+    step.value = value;
+    return;
+  }
+  
+  // No modo criação, só permite avançar para a próxima tab sequencialmente
+  if (value === step.value + 1) {
+    step.value = value;
+  }
 };
 
 
@@ -153,13 +170,16 @@ const onStepChange = (value: number) => {
     let response;
     if (institutionId.value) {
       // Modo edição
-      response = await institutionService.updateEmployee(institutionId.value, institutionData);
+      response = await institutionService.updateInstitution(institutionId.value, institutionData);
+      
     } else {
+
       // Modo criação
       response = await institutionService.createInstitution(institutionData);
       
       if (response?.data?.id) {
         institutionId.value = response.data.id;
+        basicDataValidated.value = true;
       } else {
         throw new Error(response?.error?.message || t('t-error-creating-employee'));
       }
@@ -198,7 +218,8 @@ onBeforeUnmount(() => {
 <template>
   <Card title="">
     <v-card-text>
-      <ButtonNav v-model="step" class="mb-2" />
+      <ButtonNav v-model="step" class="mb-2" :institution-id="institutionId"
+      :basic-data-validated="basicDataValidated" />
       <Step1 v-if="step === 1" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)" :loading="loading"  />
       <Step2 v-if="step === 2" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)" :loading="loading"/>
       <Step3 v-if="step === 3" @onStepChange="onStepChange" />
