@@ -135,7 +135,7 @@ const submitGeneralInfo = async () => {
   if (!form.value) return;
 
   const { valid } = await form.value.validate();
-
+  
   if (!valid) {
     toast.error(t('t-validation-error'));
     errorMsg.value = t('t-please-correct-errors');
@@ -146,8 +146,7 @@ const submitGeneralInfo = async () => {
     return;
   }
 
-  
-  //emit('save');
+  emit('onStepChange', 2);
 };
 
 </script>
