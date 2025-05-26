@@ -59,7 +59,7 @@ const handleApiError = (error: any) => {
     error?.message ||                                  // erro genérico
     t("t-message-save-error");                         // fallback traduzido
 
-    console.error("Erro:", message);
+  console.error("Erro:", message);
   errorMsg.value = message;
 
   alertTimeout = setTimeout(() => {
@@ -199,7 +199,7 @@ const onConfirmDelete = async () => {
     toast.success(t('t-toast-message-deleted'));
   } catch (error) {
     toast.error(t('t-toast-message-deleted-erros'));
-     handleApiError(error);
+    handleApiError(error);
   } finally {
     deleteLoading.value = false;
     deleteDialog.value = false;
@@ -253,23 +253,24 @@ const onConfirmDelete = async () => {
             </td>
           </tr>
         </template>
+        <template v-if="!institutionTypeStore.institution_types.length" #body>
+          <tr>
+            <td :colspan="listViewHeader.length + 2" class="text-center py-10">
+              <v-avatar size="80" color="primary" variant="tonal">
+                <i class="ph-magnifying-glass" style="font-size: 30px" />
+              </v-avatar>
+              <div class="text-subtitle-1 font-weight-bold mt-3">
+                {{ $t('t-search-not-found-message') }}
+              </div>
+            </td>
+          </tr>
+        </template>
       </DataTableServer>
-
-      <div v-if="!institutionTypeStore.institution_types.length" class="text-center pa-7">
-        <div class="mb-3">
-          <v-avatar color="primary" variant="tonal" size="x-large">
-            <i class="ph-magnifying-glass ph-lg"></i>
-          </v-avatar>
-        </div>
-        <div class="text-subtitle-1 font-weight-bold">
-          {{ $t('t-search-not-found-message') }}
-        </div>
-      </div>
     </v-card-text>
   </v-card>
 
-  <CreateUpdateInstitutionTypeModal v-if="institutionTypeData" v-model="dialog" :data="institutionTypeData" :error="errorMsg"
-    @onSubmit="onSubmit" />
+  <CreateUpdateInstitutionTypeModal v-if="institutionTypeData" v-model="dialog" :data="institutionTypeData"
+    :error="errorMsg" @onSubmit="onSubmit" />
 
   <ViewInstitutionTypeModal v-if="institutionTypeData" v-model="viewDialog" :data="institutionTypeData" />
 

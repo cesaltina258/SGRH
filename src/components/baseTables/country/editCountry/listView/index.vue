@@ -498,15 +498,19 @@ const handleSubmit = async () => {
                     </td>
                   </tr>
                 </template>
+                <template v-if="!filteredData.length" #body>
+                  <tr>
+                    <td :colspan="listViewHeader.length + 2" class="text-center py-10">
+                      <v-avatar size="80" color="primary" variant="tonal">
+                        <i class="ph-magnifying-glass" style="font-size: 30px" />
+                      </v-avatar>
+                      <div class="text-subtitle-1 font-weight-bold mt-3">
+                        {{ $t('t-search-not-found-message') }}
+                      </div>
+                    </td>
+                  </tr>
+                </template>
               </DataTableServer>
-              <div v-if="!filteredData.length" class="text-center">
-                <v-avatar size="80" color="primary" variant="text">
-                  <i class="ph-magnifying-glass" style="font-size: 30px" color="primary" />
-                </v-avatar>
-                <div class="font-weight-bold text-subtitle-1 mb-1">
-                  {{ $t('t-search-not-found-message') }}
-                </div>
-              </div>
             </v-card-text>
           </v-card>
         </v-col>

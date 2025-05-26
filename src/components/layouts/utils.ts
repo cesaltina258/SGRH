@@ -197,6 +197,15 @@ export const menuItems: MenuItemType[] = [
      // { label: "functions", link: "/auth/signup" },
     ],
   },
+   {
+    label: "languages",
+    icon: "ph-user-circle",
+    id: "sidebarUsers",
+    subMenu: [
+      { label: "languages", link: "/users/users/list" },
+     // { label: "functions", link: "/auth/signup" },
+    ],
+  },
   {
     label: "base-tables",
     icon: "ph-user-circle",
@@ -210,6 +219,7 @@ export const menuItems: MenuItemType[] = [
       { label: "hospital_procedure_types", link: "/baseTable/hospitalproceduretype/list" },
       { label: "institution-types", link: "/baseTable/institutiontype/list" },
       { label: "leave-reason", link: "/baseTable/leavereason/list" },
+      { label: "languages", link: "/baseTable/languages/list" },
     ],
   },
   /*{

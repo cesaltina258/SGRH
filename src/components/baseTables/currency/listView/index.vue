@@ -58,7 +58,7 @@ const handleApiError = (error: any) => {
     error?.message ||                                  // erro genérico
     t("t-message-save-error");                         // fallback traduzido
 
-    console.log("message ==", message)
+  console.log("message ==", message)
   errorMsg.value = message;
 
   alertTimeout = setTimeout(() => {
@@ -254,22 +254,24 @@ const onConfirmDelete = async () => {
             </td>
           </tr>
         </template>
+        <template v-if="!currencyStore.currencies.length" #body>
+          <tr>
+            <td :colspan="listViewHeader.length + 2" class="text-center py-10">
+              <v-avatar size="80" color="primary" variant="tonal">
+                <i class="ph-magnifying-glass" style="font-size: 30px" />
+              </v-avatar>
+              <div class="text-subtitle-1 font-weight-bold mt-3">
+                {{ $t('t-search-not-found-message') }}
+              </div>
+            </td>
+          </tr>
+        </template>
       </DataTableServer>
-
-      <div v-if="!currencyStore.currencies.length" class="text-center pa-7">
-        <div class="mb-3">
-          <v-avatar color="primary" variant="tonal" size="x-large">
-            <i class="ph-magnifying-glass ph-lg"></i>
-          </v-avatar>
-        </div>
-        <div class="text-subtitle-1 font-weight-bold">
-          {{ $t('t-search-not-found-message') }}
-        </div>
-      </div>
     </v-card-text>
   </v-card>
 
-  <CreateUpdateCurrencyModal v-if="currencyData" v-model="dialog" :data="currencyData" :error="errorMsg" @onSubmit="onSubmit" />
+  <CreateUpdateCurrencyModal v-if="currencyData" v-model="dialog" :data="currencyData" :error="errorMsg"
+    @onSubmit="onSubmit" />
 
   <ViewCurrencyModal v-if="currencyData" v-model="viewDialog" :data="currencyData" />
 

@@ -250,18 +250,19 @@ const onConfirmDelete = async () => {
             </td>
           </tr>
         </template>
+        <template v-if="!countryStore.countries.length" #body>
+          <tr>
+            <td :colspan="listViewHeader.length + 2" class="text-center py-10">
+              <v-avatar size="80" color="primary" variant="tonal">
+                <i class="ph-magnifying-glass" style="font-size: 30px" />
+              </v-avatar>
+              <div class="text-subtitle-1 font-weight-bold mt-3">
+                {{ $t('t-search-not-found-message') }}
+              </div>
+            </td>
+          </tr>
+        </template>
       </DataTableServer>
-
-      <div v-if="!countryStore.countries.length" class="text-center pa-7">
-        <div class="mb-3">
-          <v-avatar color="primary" variant="tonal" size="x-large">
-            <i class="ph-magnifying-glass ph-lg"></i>
-          </v-avatar>
-        </div>
-        <div class="text-subtitle-1 font-weight-bold">
-          {{ $t('t-search-not-found-message') }}
-        </div>
-      </div>
     </v-card-text>
   </v-card>
 

@@ -2,17 +2,17 @@
 import { ref, watch, computed, onMounted, onBeforeUnmount } from "vue";
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
 import Table from "@/app/common/components/Table.vue";
-import { listViewHeader } from "@/components/baseTables/leaveReason/listView/utils";
-import type { LeaveReasonUpdate, LeaveReasonListing, LeaveReasonInsert } from "@/components/baseTables/leaveReason/types";
-import Status from "@/app/common/components/Status.vue";
+import { listViewHeader } from "@/components/baseTables/languages/listView/utils";
+import type { LanguagesUpdate, LanguagesListing, LanguagesInsert } from "@/components/baseTables/languages/types";
+import Rtl from "@/app/common/components/Rtl.vue";
 import TableAction from "@/app/common/components/TableAction.vue";
-import CreateUpdateLeaveReasonModal from "@/components/baseTables/leaveReason/CreateUpdateLeaveReasonModal.vue";
-import ViewLeaveReasonModal from "@/components/baseTables/leaveReason/ViewLeaveReasonModal.vue";
+import CreateUpdateLanguagesModal from "@/components/baseTables/languages/CreateUpdateLanguagesModal.vue";
+import ViewLanguagesModal from "@/components/baseTables/languages/ViewLanguagesModal.vue";
 import { formateDate } from "@/app/common/dateFormate";
 import { useRouter } from "vue-router";
 import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue";
-import { leaveReasonService } from "@/app/http/httpServiceProvider";
-import { useleaveReasonServiceStore } from "@/store/baseTables/LeaveReasonServiceStore";
+import { languageService } from "@/app/http/httpServiceProvider";
+import { useLanguagesStore } from "@/store/baseTables/languageStore";
 import { useToast } from 'vue-toastification';
 import { useI18n } from "vue-i18n";
 import DataTableServer from "@/app/common/components/DataTableServer.vue";
@@ -21,12 +21,12 @@ import DataTableServer from "@/app/common/components/DataTableServer.vue";
 const { t } = useI18n();
 const toast = useToast();
 
-const leaveReasonStore = useleaveReasonServiceStore();
+const languagesStore = useLanguagesStore();
 
 const router = useRouter();
 const dialog = ref(false);
 const viewDialog = ref(false);
-const leaveReasonData = ref<LeaveReasonListing | null>(null);
+const languagesData = ref<LanguagesListing | null>(null);
 
 const deleteDialog = ref(false);
 const deleteId = ref<number | null>(null);
@@ -35,13 +35,13 @@ const isSelectAll = ref(false);
 
 // Campos para pesquisa
 const searchQuery = ref("");
-const searchProps = "name,description";
+const searchProps = "name,region,code,localizedName";
 
 // Paginação
 const itemsPerPage = ref(10);
-const loadingList = computed(() => leaveReasonStore.loading);
-const totalItems = computed(() => leaveReasonStore.pagination.totalElements);
-const selectedLeaveReasons = ref<any[]>([])
+const loadingList = computed(() => languagesStore.loading);
+const totalItems = computed(() => languagesStore.pagination.totalElements);
+const selectedLanguages = ref<any[]>([])
 
 const errorMsg = ref("");
 let alertTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -75,18 +75,18 @@ onBeforeUnmount(() => {
 });
 
 onMounted(() => {
-  fetchLeaveReasons({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: [], search: "" });
+  fetchLanguages({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: [], search: "" });
 });
 
 
 // Observa mudanças nos funcionários selecionados
-watch(selectedLeaveReasons, (newSelection) => {
+watch(selectedLanguages, (newSelection) => {
   console.log('Funcionários selecionados:', newSelection)
 }, { deep: true })
 
 // Função de carregamento da tabela
-const fetchLeaveReasons = async ({ page, itemsPerPage, sortBy, search }) => {
-  await leaveReasonStore.fetchLeaveReasons(
+const fetchLanguages = async ({ page, itemsPerPage, sortBy, search }) => {
+  await languagesStore.fetchLanguages(
     page - 1,
     itemsPerPage,
     sortBy[0]?.key || "name",
@@ -97,48 +97,51 @@ const fetchLeaveReasons = async ({ page, itemsPerPage, sortBy, search }) => {
 };
 
 const toggleSelection = (item) => {
-  const index = selectedLeaveReasons.value.findIndex(selected => selected.id === item.id);
+  const index = selectedLanguages.value.findIndex(selected => selected.id === item.id);
   if (index === -1) {
-    selectedLeaveReasons.value = [...selectedLeaveReasons.value, item];
+    selectedLanguages.value = [...selectedLanguages.value, item];
   } else {
-    selectedLeaveReasons.value = selectedLeaveReasons.value.filter(selected => selected.id !== item.id);
+    selectedLanguages.value = selectedLanguages.value.filter(selected => selected.id !== item.id);
   }
 };
 
 watch(dialog, (newVal: boolean) => {
   if (!newVal) {
-    leaveReasonData.value = null;
+    languagesData.value = null;
   }
 });
 
-const onCreateEditClick = (data: LeaveReasonListing | null) => {
+const onCreateEditClick = (data: LanguagesListing | null) => {
   if (!data) {
-    leaveReasonData.value = {
+    languagesData.value = {
       id: -1,
       name: "",
-      description: "",
+      code: "",
+      localizedName: "",
+      region: "",
+      rtl: false
     };
   } else {
-    leaveReasonData.value = data;
+    languagesData.value = data;
   }
 
   dialog.value = true;
 };
 
-const onSubmit = async (data: LeaveReasonListing, callbacks?: {
+const onSubmit = async (data: LanguagesListing, callbacks?: {
   onSuccess?: () => void,
   onFinally?: () => void
 }) => {
   try {
     if (!data.id) {
-      await leaveReasonService.createLeaveReason(data);
+      await languageService.createLanguages(data);
       toast.success(t('t-toast-message-created'));
     } else {
-      await leaveReasonService.updateLeaveReason(data.id, data);
+      await languageService.updateLanguages(data.id, data);
       toast.success(t('t-toast-message-update'));
     }
 
-    await fetchLeaveReasons({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: [], search: searchQuery.value });
+    await fetchLanguages({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: [], search: searchQuery.value });
 
     // Callback de sucesso (fecha a modal)
     callbacks?.onSuccess?.();
@@ -155,20 +158,23 @@ const onSubmit = async (data: LeaveReasonListing, callbacks?: {
 //Consulta do utilizador
 watch(viewDialog, (newVal: boolean) => {
   if (!newVal) {
-    leaveReasonData.value = null;
+    languagesData.value = null;
   }
 });
 
-const onViewClick = (data: LeaveReasonListing | null) => {
+const onViewClick = (data: LanguagesListing | null) => {
   if (!data) {
-    leaveReasonData.value = {
+    languagesData.value = {
       id: -1,
       name: "",
-      description: "",
+      code: "",
+      localizedName: "",
+      region: "",
+      rtl: false
 
     };
   } else {
-    leaveReasonData.value = data;
+    languagesData.value = data;
 
   }
 
@@ -191,9 +197,9 @@ const onConfirmDelete = async () => {
   deleteLoading.value = true;
 
   try {
-    await leaveReasonService.deleteLeaveReason(deleteId.value!);
+    await languageService.deleteLanguages(deleteId.value!);
 
-    await fetchLeaveReasons({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: [], search: searchQuery.value });
+    await fetchLanguages({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: [], search: searchQuery.value });
 
     toast.success(t('t-toast-message-deleted'));
   } catch (error) {
@@ -213,17 +219,17 @@ const onConfirmDelete = async () => {
       <v-row justify="space-between" align="center" no-gutters>
         <!-- Novo texto à esquerda -->
         <v-col lg="auto" class="d-flex align-center">
-          <span class="text-body-1 font-weight-bold">{{ $t('t-leave-reason-list') }}</span>
+          <span class="text-body-1 font-weight-bold">{{ $t('t-language-list') }}</span>
         </v-col>
         <!-- Container dos elementos à direita -->
         <v-col lg="8" class="d-flex justify-end">
           <v-row justify="end" align="center" no-gutters>
             <v-col lg="4" class="me-3">
-              <QuerySearch v-model="searchQuery" :placeholder="$t('t-search-for-leave-reason')" />
+              <QuerySearch v-model="searchQuery" :placeholder="$t('t-search-for-language')" />
             </v-col>
             <v-col lg="auto">
               <v-btn color="secondary" @click="onCreateEditClick(null)">
-                <i class="ph-plus-circle me-1" /> {{ $t('t-add-leave-reason') }}
+                <i class="ph-plus-circle me-1" /> {{ $t('t-add-language') }}
               </v-btn>
             </v-col>
           </v-row>
@@ -232,27 +238,32 @@ const onConfirmDelete = async () => {
     </v-card-title>
     <v-card-text class="mt-2">
       <DataTableServer :headers="listViewHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
-        :items="leaveReasonStore.leave_reason" :items-per-page="itemsPerPage" :total-items="totalItems"
+        :items="languagesStore.languages" :items-per-page="itemsPerPage" :total-items="totalItems"
         :loading="loadingList" :search-query="searchQuery" :search-props="searchProps" item-value="id"
-        @load-items="fetchLeaveReasons">
+        @load-items="fetchLanguages">
         <template #body="{ items }">
           <tr v-for="item in items" :key="item.id" height="50">
             <td>
-              <v-checkbox :model-value="selectedLeaveReasons.some(selected => selected.id === item.id)"
+              <v-checkbox :model-value="selectedLanguages.some(selected => selected.id === item.id)"
                 @update:model-value="toggleSelection(item)" hide-details density="compact" />
             </td>
-            <td style="padding-right: 200px;">{{ item.name }}</td>
-            <td style="padding-right: 200px;">{{ item.description?.toUpperCase() }}</td>
+            <td>{{ item.name?.toUpperCase() }}</td>
+            <td>{{ item.code?.toUpperCase() }}</td>
+            <td>{{ item.localizedName?.toUpperCase() }}</td>
+            <td>{{ item.region?.toUpperCase() }}</td>
             <!-- <td>
               <Status :status="item.enabled ? 'active' : 'unactive'" />
             </td> -->
+            <td>
+              <Rtl :rtl="item.rtl ? 'true' : 'false'" />
+            </td>
             <td>
               <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)"
                 @onDelete="onDelete(item.id)" />
             </td>
           </tr>
         </template>
-        <template v-if="!leaveReasonStore.leave_reason.length" #body>
+        <template v-if="!languagesStore.languages.length" #body>
           <tr>
             <td :colspan="listViewHeader.length + 2" class="text-center py-10">
               <v-avatar size="80" color="primary" variant="tonal">
@@ -268,10 +279,10 @@ const onConfirmDelete = async () => {
     </v-card-text>
   </v-card>
 
-  <CreateUpdateLeaveReasonModal v-if="leaveReasonData" v-model="dialog" :data="leaveReasonData" :error="errorMsg"
+  <CreateUpdateLanguagesModal v-if="languagesData" v-model="dialog" :data="languagesData" :error="errorMsg"
     @onSubmit="onSubmit" />
 
-  <ViewLeaveReasonModal v-if="leaveReasonData" v-model="viewDialog" :data="leaveReasonData" />
+  <ViewLanguagesModal v-if="languagesData" v-model="viewDialog" :data="languagesData" />
 
   <RemoveItemConfirmationDialog v-if="deleteId" v-model="deleteDialog" @onConfirm="onConfirmDelete"
     :loading="deleteLoading" />

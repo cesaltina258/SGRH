@@ -31,6 +31,7 @@ const institutionPrefix = "/institution";
 const employeePrefix = "/employee";
 const baseTablePrefix = "/baseTable";
 const usersPrefix = "/users";
+const languagesPrefix = "/languages";
 
 
 const institutionRoutes = [
@@ -145,6 +146,12 @@ const baseTableRoutes = [
     name: "LeaveReasonListView",
     component: () => import("@/views/baseTables/leaveReason/ListView.vue"),
     meta: { title: "LeaveReasonListView", authRequired: true },
+  },
+  {
+    path: `${baseTablePrefix}/languages/list`,
+    name: "LanguagesListView",
+    component: () => import("@/views/baseTables/languages/ListView.vue"),
+    meta: { title: "LanguagesListView", authRequired: true },
   },
 ].map((data) => {
   return {

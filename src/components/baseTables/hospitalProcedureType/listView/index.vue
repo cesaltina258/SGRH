@@ -204,7 +204,7 @@ const onConfirmDelete = async () => {
     toast.success(t('t-toast-message-deleted'));
   } catch (error) {
     toast.error(t('t-toast-message-deleted-erros'));
-     handleApiError(error);
+    handleApiError(error);
   } finally {
     deleteLoading.value = false;
     deleteDialog.value = false;
@@ -259,23 +259,24 @@ const onConfirmDelete = async () => {
             </td>
           </tr>
         </template>
+        <template v-if="!hospitalProcedureTypeStore.hospital_procedure_types.length" #body>
+          <tr>
+            <td :colspan="listViewHeader.length + 2" class="text-center py-10">
+              <v-avatar size="80" color="primary" variant="tonal">
+                <i class="ph-magnifying-glass" style="font-size: 30px" />
+              </v-avatar>
+              <div class="text-subtitle-1 font-weight-bold mt-3">
+                {{ $t('t-search-not-found-message') }}
+              </div>
+            </td>
+          </tr>
+        </template>
       </DataTableServer>
-
-      <div v-if="!hospitalProcedureTypeStore.hospital_procedure_types.length" class="text-center pa-7">
-        <div class="mb-3">
-          <v-avatar color="primary" variant="tonal" size="x-large">
-            <i class="ph-magnifying-glass ph-lg"></i>
-          </v-avatar>
-        </div>
-        <div class="text-subtitle-1 font-weight-bold">
-          {{ $t('t-search-not-found-message') }}
-        </div>
-      </div>
     </v-card-text>
   </v-card>
 
-  <CreateUpdateCurrencyModal v-if="hospitalProcedureTypeData" v-model="dialog" :data="hospitalProcedureTypeData" :error="errorMsg"
-    @onSubmit="onSubmit" />
+  <CreateUpdateCurrencyModal v-if="hospitalProcedureTypeData" v-model="dialog" :data="hospitalProcedureTypeData"
+    :error="errorMsg" @onSubmit="onSubmit" />
 
   <ViewHospitalProcedureTypeModal v-if="hospitalProcedureTypeData" v-model="viewDialog"
     :data="hospitalProcedureTypeData" />

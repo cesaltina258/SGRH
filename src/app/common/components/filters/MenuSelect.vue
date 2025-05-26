@@ -15,9 +15,10 @@ const props = defineProps({
     default: false,
   },
   modelValue: {
-    type: [String, Array, Number],
-    default: "",
-  },
+  type: [String, Array, Number, Boolean],
+  default: "",
+},
+
   rules: {
     type: Array,
     default: () => [],
