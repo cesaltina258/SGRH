@@ -8,7 +8,7 @@ export const useEmployeeStore = defineStore('employees', {
     pagination: { 
       totalElements: 0,
       currentPage: 0,
-      itemsPerPage: 2, // Aumentei o padrão para 10
+      itemsPerPage: 10, 
       totalPages: 0
     },
     loading: false,
@@ -21,7 +21,7 @@ export const useEmployeeStore = defineStore('employees', {
       size: number = this.pagination.itemsPerPage,
       sortColumn: string = 'createdAt',
       direction: string = 'asc',
-      query_value?: string,  
+      query_value?: string,   
       query_props?: string   
     ) {
       this.loading = true;

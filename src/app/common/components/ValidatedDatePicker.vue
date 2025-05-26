@@ -18,6 +18,10 @@ const props = defineProps({
   format: {
     type: String,
     default: 'dd/MM/yyyy'
+  },
+  disabled: {  
+    type: Boolean,
+    default: false
   }
 });
 
@@ -70,8 +74,9 @@ const validate = (value: any) => {
       v-model="internalValue"
       :format="format"
       :placeholder="placeholder"
-      :class="{ 'error-border': internalError || errorMessages }"
+      :class="[{ 'error-border': internalError || errorMessages }, { 'is-disabled': disabled }]"
       :enable-time-picker="false"
+      :disabled="disabled"
       auto-apply
       @update:model-value="handleUpdate"
       @blur="validate(internalValue)"
@@ -101,4 +106,13 @@ const validate = (value: any) => {
 .error-border :deep(.dp__input) {
   border-color: #ff5252;
 }
+
+.is-disabled :deep(.dp__input) {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.4;
+  border-color: #d3d3d3;
+  color: #EEF0F7;
+}
+
 </style>

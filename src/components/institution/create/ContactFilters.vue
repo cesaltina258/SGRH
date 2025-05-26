@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
 import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
-import { statusOptions } from "@/components/institution/createInstitution/utils";
+import { statusOptions } from "@/components/institution/create/utils";
 
 const emit = defineEmits(["update:modelValue"]);
 

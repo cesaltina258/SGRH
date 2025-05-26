@@ -15,7 +15,7 @@ import { userService } from "@/app/http/httpServiceProvider";
 import { useToast } from 'vue-toastification';
 import { useI18n } from "vue-i18n";
 import DataTableServer from "@/app/common/components/DataTableServer.vue"
-import CreateEditDialog from "@/components/realEstate/CreateEditDialog.vue";import { Options } from "@/components/users/users/listView/utils";
+import CreateEditDialog from "@/components/realEstate/CreateEditDialog.vue"; import { Options } from "@/components/users/users/listView/utils";
 import ChangePasswordModal from "@/components/users/users/ChangePasswordModal.vue";
 import { changePasswordType } from "@/components/users/types";
 import { onBeforeUnmount } from "vue";
@@ -428,6 +428,11 @@ const onConfirmDelete = async () => {
   } catch (error) {
     toast.error(t('t-toast-message-deleted-erros'));
     console.error("Delete error:", error);
+
+    // Opcional: Mostrar detalhes do erro se disponível
+    const errorMessage = error.response?.data?.message || t('t-message-delete-error-unknown');
+    toast.error(errorMessage);
+
   } finally {
     deleteLoading.value = false;
     deleteDialog.value = false;
@@ -486,31 +491,18 @@ const getDynamicOptions = (user: UserListingType) => {
       </v-row>
     </v-card-title>
     <v-card-text class="mt-2">
-      <DataTableServer
-        v-model="selectedUsers"
-        :headers="userHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
-        :items="userStore.users"
-        :items-per-page="itemsPerPage"
-        :total-items="totalItems"
-        :loading="loadingList"
-        :search-query="searchQuery"
-        :search-props="searchProps" 
-        @load-items="fetchUsers"
-        item-value="id"
-        show-select
-      >
-      <template #body="{ items }">
+      <DataTableServer v-model="selectedUsers"
+        :headers="userHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))" :items="userStore.users"
+        :items-per-page="itemsPerPage" :total-items="totalItems" :loading="loadingList" :search-query="searchQuery"
+        :search-props="searchProps" @load-items="fetchUsers" item-value="id" show-select>
+        <template #body="{ items }">
           <tr v-for="item in items" :key="item.id" height="50">
             <td>
-              <v-checkbox
-                :model-value="selectedUsers.some(selected => selected.id === item.id)"
-                @update:model-value="toggleSelection(item)"
-                hide-details
-                density="compact"
-              />
+              <v-checkbox :model-value="selectedUsers.some(selected => selected.id === item.id)"
+                @update:model-value="toggleSelection(item)" hide-details density="compact" />
             </td>
             <td>
-              {{ item.firstName }} {{ item.lastName }} 
+              {{ item.firstName }} {{ item.lastName }}
             </td>
             <td>{{ item.email }}</td>
             <td>
@@ -521,6 +513,19 @@ const getDynamicOptions = (user: UserListingType) => {
             </td>
             <td>
               <ListMenuWithIcon :menuItems="getDynamicOptions(item)" @onSelect="onSelect($event, item)" />
+            </td>
+          </tr>
+        </template>
+
+        <template v-if="userStore.users.length === 0" #body>
+          <tr>
+            <td :colspan="userHeader.length" class="text-center py-10">
+              <v-avatar size="80" color="primary" variant="tonal">
+                <i class="ph-magnifying-glass" style="font-size: 30px" />
+              </v-avatar>
+              <div class="text-subtitle-1 font-weight-bold mt-3">
+                {{ $t('t-search-not-found-message') }}
+              </div>
             </td>
           </tr>
         </template>

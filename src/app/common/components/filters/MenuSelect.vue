@@ -105,4 +105,9 @@ const onClear = () => {
   line-height: 1.2;
   margin-top: -3px;
 }
+
+.v-autocomplete .v-field__input {
+  font-size: 16px !important;
+}
+
 </style>

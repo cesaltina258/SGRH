@@ -1,4 +1,6 @@
 
+import { ProvinceListingType } from "../baseTables/province/types";
+import { CountryListingType } from "../baseTables/country/types";
 
 export type EmployeeListingType = {
   id: string | number;
@@ -53,8 +55,8 @@ export type EmployeeInsertType = {
   incomeTaxNumber: string | null;
   socialSecurityNumber: string | null;
   address: string;
-  country: string;
-  province: string;
+  country: number | null;
+  province: number |null;
   postalCode: string;
   email: string;
   phone: string;
@@ -69,6 +71,11 @@ export type EmployeeInsertType = {
   passportIssuer: string;
   passportExpiryDate: string;
   passportIssuanceDate: string;
+  salary?: number | null;
+  company?: number| null;
+  department?: number | null;
+  enabled?: boolean;
+  position?: number | null;
 };
 
 
@@ -102,4 +109,9 @@ export type EmployeeUpdateType = {
   passportIssuer: string;
   passportExpiryDate: string;
   passportIssuanceDate: string;
+  salary?: number | null;
+  company?: string| null;
+  department?: string | null;
+  enabled?: boolean;
+  position?: string | null;
 };
