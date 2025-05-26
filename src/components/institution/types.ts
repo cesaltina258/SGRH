@@ -35,9 +35,9 @@ export type InstitutionInsertType = {
     incomeTaxNumber: string;
     institutionType: string | null;
 
-    maxNumberOfDependents: number;
-    childrenMaxAge: number;
-    healthPlanLimit: string;
+    maxNumberOfDependents: number | null;
+    childrenMaxAge: number | null;
+    healthPlanLimit: string | null;
     fixedAmount: number | null;
     salaryComponent: string | null;
     companyContributionPercentage: number | null;

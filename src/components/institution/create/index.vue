@@ -59,8 +59,8 @@ const institutionData = reactive<InstitutionInsertType>({
   institutionType: null,
   
   // Dados da segunda tab
-  maxNumberOfDependents: 0,
-  childrenMaxAge: 0,
+  maxNumberOfDependents: null,
+  childrenMaxAge: null,
   healthPlanLimit: '',
   fixedAmount: null,
   salaryComponent: null,
@@ -171,7 +171,7 @@ const onStepChange = (value: number) => {
     if (institutionId.value) {
       // Modo edição
       response = await institutionService.updateInstitution(institutionId.value, institutionData);
-      
+
     } else {
 
       // Modo criação
@@ -218,8 +218,7 @@ onBeforeUnmount(() => {
 <template>
   <Card title="">
     <v-card-text>
-      <ButtonNav v-model="step" class="mb-2" :institution-id="institutionId"
-      :basic-data-validated="basicDataValidated" />
+      <ButtonNav v-model="step" class="mb-2" :institution-id="institutionId" :basic-data-validated="basicDataValidated" />
       <Step1 v-if="step === 1" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)" :loading="loading"  />
       <Step2 v-if="step === 2" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)" :loading="loading"/>
       <Step3 v-if="step === 3" @onStepChange="onStepChange" />

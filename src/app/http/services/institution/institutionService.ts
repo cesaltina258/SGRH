@@ -95,8 +95,8 @@ export default class InstitutionService extends HttpService {
   async createInstitution(institutionData: InstitutionInsertType) {
     try {
 
-      institutionData.maxNumberOfDependents = institutionData.maxNumberOfDependents.value;
-      institutionData.childrenMaxAge = institutionData.childrenMaxAge.value;
+      //institutionData.maxNumberOfDependents = institutionData.maxNumberOfDependents.value;
+      //institutionData.childrenMaxAge = institutionData.childrenMaxAge.value;
 
       const response = await this.post('/administration/companies', institutionData);
       return {
@@ -174,8 +174,8 @@ export default class InstitutionService extends HttpService {
           website: institutionData.website,
           incomeTaxNumber: institutionData.incomeTaxNumber,
           institutionType: institutionData.institutionType,
-          maxNumberOfDependents: institutionData.maxNumberOfDependents.value,
-          childrenMaxAge: institutionData.childrenMaxAge.value
+          maxNumberOfDependents: institutionData.maxNumberOfDependents,
+          childrenMaxAge: institutionData.childrenMaxAge
         };
   
         const response = await this.put<InstitutionInsertType>(`/administration/companies/${id}`, payload);
