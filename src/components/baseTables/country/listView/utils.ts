@@ -1,5 +1,5 @@
 import { BreadcrumbType } from "@/app/common/types/breadcrumb.type";
-import { TableHeaderType } from "@/app/common/types/table.types";
+import { DataTableHeaderType } from "@/app/common/types/table.types";
 
 export const breadcrumb: BreadcrumbType[] = [
   {
@@ -14,15 +14,14 @@ export const breadcrumb: BreadcrumbType[] = [
   
 ];
 
-export const listViewHeader: TableHeaderType[] = [
-  { title: "", isCheck: true },
-  { title: "country-name" },
-  { title: "country-code" },
-  { title: "iso2Code" },
-  { title: "iso3Code" },
-  { title: "phone-code" },
-  { title: "currency" },
-  { title: "currency-symbol" },
-  { title: "currency-code" },
-  { title: "action" },
+export const listViewHeader: DataTableHeaderType[] = [
+  { title: "country-name", key: "name", sortable: true },
+  { title: "country-code",  key: "code", sortable: true },
+  { title: "iso2Code", sortable: false },
+  { title: "iso3Code", sortable: false },
+  { title: "phone-code", sortable: false },
+  { title: "currency", sortable: false },
+  { title: "currency-symbol", sortable: false },
+  { title: "currency-code", sortable: false },
+  { title: "action", sortable: false },
 ];

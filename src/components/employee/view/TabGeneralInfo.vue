@@ -21,7 +21,7 @@ import ValidatedDatePicker from "@/app/common/components/ValidatedDatePicker.vue
 // Stores
 import { useEmployeeStore } from '@/store/employeeStore';
 import { useCountryStore } from '@/store/baseTables/countryStore';
-import { useProvinceStore } from '@/store/baseTables/provinceStore';
+import { useProvinceStore } from '@/store/baseTables/countryStore';
 
 // Types
 import { CountryListingType } from "@/components/baseTables/country/types"
@@ -155,8 +155,9 @@ const countries = computed(() => {
 });
 
 const provinces = computed(() => {
-  if (!Array.isArray(provinceStore.provincesbyCountry)) return [];
-  return provinceStore.provincesbyCountry.map((province: ProvinceListingType) => ({ 
+  const list = provinceStore.provincesbyCountry as ProvinceListingType[];
+  if (!Array.isArray(list)) return [];
+  return list.map((province) => ({ 
     value: province.id,
     label: province.name,
     meta: {
@@ -165,6 +166,7 @@ const provinces = computed(() => {
     }
   }));
 });
+
 
 /**
  * Carrega dados iniciais quando o componente é montado

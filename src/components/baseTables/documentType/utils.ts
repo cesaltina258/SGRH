@@ -12,8 +12,6 @@ import {
 } from "@/assets/images/users/utils";
 import { AgentListingType } from "@/components/realEstate/agent/types";
 import { MenuSelectItemType } from "@/app/common/components/filters/types";
-import { breadcrumb } from "./gridView/utils";
-
 
 export const agentListingData: AgentListingType[] = [
   {

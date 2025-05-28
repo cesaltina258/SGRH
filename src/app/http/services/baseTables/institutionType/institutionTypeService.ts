@@ -2,34 +2,22 @@ import HttpService from "@/app/http/httpService";
 import type { InstitutionTypeListingType } from "@/components/baseTables/institutionType/types";
 import type { ApiErrorResponse } from "@/app/common/types/errorType";
 
-interface ApiResponse<T> {
-  data: T;
-  meta?: any;
-}
-
-interface ServiceResponse<T> {
-  status: 'success' | 'error';
-  data?: T;
-  error?: ApiErrorResponse;
-}
 export default class InstitutionTypeService extends HttpService {
 
-  //get de todas instituicoes para o select box
   async getInstitutionTypes(
     page: number = 0,
     size: number = 10000000,
     sortColumn: string = 'createdAt',
-    direction: string = 'asc', // Valor padrão alterado para 'asc' conforme seu exemplo
+    direction: string = 'asc',
     query_value?: string,
     query_props?: string
   ): Promise<{ content: InstitutionTypeListingType[], meta: any }> {
     try {
-      // Construção manual da query string para controle total
       const queryParams = [
         `page=${page}`,
         `size=${size}`,
-        `sortColumn=${sortColumn}`, // Apenas o nome da coluna
-        `direction=${direction}`    // Direção separada
+        `sortColumn=${sortColumn}`,
+        `direction=${direction}`
       ];
 
       if (query_value && query_props) {
@@ -40,20 +28,23 @@ export default class InstitutionTypeService extends HttpService {
       const queryString = queryParams.join('&');
       const url = `/administration/setup/institution-types?${queryString}`;
 
-      console.log('URL da requisição institution type------------------:', url); // Para debug
+      console.log('URL da requisição institution type:', url);
 
-      const response = await this.get<ApiResponse<InstitutionTypeListingType[]>>(url);
+      const response = await this.get(url) as {
+        data: InstitutionTypeListingType[],
+        meta?: any
+      };
 
-      console.log('Resposta da requisição:', response); // Para debug  
+      console.log('Resposta da requisição:', response);
 
       return {
         content: response.data || [],
-        meta: response.meta || []
+        meta: response.meta || {}
       };
 
     } catch (error) {
-      console.error("❌ Erro ao buscar colaboradores:", error);
-      throw error;
+      console.error("❌ Erro ao buscar tipos de instituição:", error);
+      throw new Error("Erro ao buscar tipos de instituição");
     }
   }
 

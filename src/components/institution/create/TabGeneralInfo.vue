@@ -102,12 +102,11 @@ let alertTimeout: ReturnType<typeof setTimeout> | null = null;
  * Opções para selects (tipos de instituicao)
  */
 const institutionTypes = computed(() => {
-  return institutionTypeStore.institutiontypes.map((country: InstitutionTypeListingType) => ({
-    value: country.id,
-    label: country.name
+  return (institutionTypeStore.institutiontypes as InstitutionTypeListingType[]).map((item) => ({
+    value: item.id,
+    label: item.name,
   }));
 });
-
 
 /**
  * Carrega dados iniciais quando o componente é montado

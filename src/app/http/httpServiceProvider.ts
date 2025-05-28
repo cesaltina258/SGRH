@@ -8,8 +8,11 @@ import PositionService from "@/app/http/services/institution/positionService";
 
 //BASETABLES
 import CountryService from "@/app/http/services/baseTables/country/countryService";
-import ProvinceService from "@/app/http/services/baseTables/country/provinceService";
-import InstitutionTypeService from "@/app/http/services/baseTables/institutionType/institutionTypeService";
+import CurrencyService from "@/app/http/services/baseTables/currency/currencyService";
+import HospitalProcedureTypeService from "@/app/http/services/baseTables/hospitalProcedureType/hospitalProcedureTypeService";
+import InstitutionTypeService from "@/app/http/services/baseTables/institutionTypes/institutionTypeService";
+import LeaveReasonService from "@/app/http/services/baseTables/leaveReason/leaveReasonService";
+import LanguageService from "@/app/http/services/baseTables/languages/languageService";
 
 // FakeBackendService is used for mocking API responses
 import FakeBackendService from "@/app/http/services/fakeBackendService";
@@ -23,10 +26,13 @@ const positionService = new PositionService();
 
 //BASETABLES
 const countryService = new CountryService();
-const provinceService = new ProvinceService();
-const institutionTypeService = new InstitutionTypeService ();
+const currencyService = new CurrencyService();
+const hospitalProcedureTypeService = new HospitalProcedureTypeService();
+const institutionTypeService = new InstitutionTypeService();
+const leaveReasonService = new LeaveReasonService();
+const languageService = new LanguageService();
 
 // FakeBackendService is used for mocking API responses
 const fakeBackendService = new FakeBackendService();
 
-export { authService, userService, employeeService, fakeBackendService, countryService, provinceService, institutionService, departmentService, positionService, institutionTypeService };
+export { authService, userService, employeeService, fakeBackendService, countryService, currencyService, hospitalProcedureTypeService, institutionTypeService, leaveReasonService, languageService, institutionService, departmentService, positionService };
