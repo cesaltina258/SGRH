@@ -1,5 +1,5 @@
 export type CountryInsertType = {
-    id: number;
+    id: string;
     name: string;
     code: string;
     iso2Code: string;
@@ -11,7 +11,7 @@ export type CountryInsertType = {
   };
   
   export type CountryListingType = {
-    id: number;
+    id: string;
     name: string;
     code: string;
     iso2Code: string;

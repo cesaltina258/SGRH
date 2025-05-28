@@ -51,20 +51,22 @@ const employeeStore = useEmployeeStore();
 
 // Refs
 const step = ref(1); // Controla a aba atual (1 ou 2)
-const employeeId = ref(route.params.id); // ID do employee (null se for criação)
+const employeeId = ref<string | null>(
+  typeof route.params.id === 'string' ? route.params.id : Array.isArray(route.params.id) ? route.params.id[0] : null
+)// ID do employee (null se for criação) 
 const loading = ref(false); // Estado de loading global
 const errorMsg = ref(""); // Mensagem de erro global
 let alertTimeout: ReturnType<typeof setTimeout> | null = null; // Timeout para mensagens de erro
 
 // Dados reativos do formulário
-const employeeData = reactive<EmployeeInsertType>({
+let employeeData = reactive<EmployeeInsertType>({
   // Dados da primeira tab
   employeeNumber: '',
   firstName: '',
   middleName: '',
   lastName: '',
   gender: '',
-  maritalStatus: null,
+  maritalStatus: undefined,
   birthDate: new Date().toISOString().split('T')[0],
   bloodGroup: '',
   placeOfBirth: '',
@@ -72,8 +74,8 @@ const employeeData = reactive<EmployeeInsertType>({
   incomeTaxNumber: null,
   socialSecurityNumber: null,
   address: '',
-  country: null,
-  province: null,
+  country: undefined,
+  province: undefined,
   postalCode: '',
   email: '',
   phone: '',
@@ -92,9 +94,9 @@ const employeeData = reactive<EmployeeInsertType>({
   
   // Dados da segunda tab
   salary: null,
-  company: null,
-  department: null,
-  position: null
+  company: undefined,
+  department: undefined,
+  position: undefined
 });
 
 /**
@@ -148,16 +150,22 @@ onMounted(async () => {
       loading.value = true;
       const response = await employeeService.getEmployeeById(employeeId.value);
 
+      if (!response.data) {
+        throw new Error("Dados do funcionário não disponíveis.");
+      }
+
+      const data = response.data;
+
       // Atribui os dados básicos
-      Object.assign(employeeData, response.data);
+      Object.assign(employeeData, data);
 
       // Atribui IDs para relacionamentos
-      employeeData.country = response.data.country?.id || null;
-      employeeData.province = response.data.province?.id || null;
-      employeeData.company = response.data.company?.id || null;
-      employeeData.department = response.data.department?.id || null;
-      employeeData.position = response.data.position?.id || null;
-
+      employeeData.country = data.country?.id;
+      employeeData.province = data.province?.id;
+      employeeData.company = data.company?.id;
+      employeeData.department = data.department?.id;
+      employeeData.position = data.position?.id;
+      
       // Carrega dados dependentes
       if (employeeData.company) {
         await departmentStore.fetchDepartments(employeeData.company);

@@ -2,9 +2,15 @@
 import HttpService from "@/app/http/httpService";
 import type { DepartmentListingType } from "@/components/institution/types";
 
+
+interface DepartmentListResponse {
+  data: DepartmentListingType[];
+  meta: any;
+}
+
 export default class DepartmentService extends HttpService {
   async getDepartmentsByInstitution(
-    id: number,
+    id: string,
     page: number = 0,
     size: number = 10000000,
     sortColumn: string = 'createdAt',
@@ -30,7 +36,7 @@ export default class DepartmentService extends HttpService {
       const url = `/administration/departments/in-company?${queryString}`;
 
       console.log('URL da requisição:', url);
-      const response = await this.get(url);
+      const response = await this.get<DepartmentListResponse>(url);
 
       return {
         content: response.data || [],

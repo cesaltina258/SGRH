@@ -29,7 +29,7 @@ const viewDialog = ref(false);
 const countryData = ref<CountryListingType | null>(null);
 
 const deleteDialog = ref(false);
-const deleteId = ref<number | null>(null);
+const deleteId = ref<string | null>(null);
 const deleteLoading = ref(false);
 const isSelectAll = ref(false);
 
@@ -155,7 +155,7 @@ watch(dialog, (newVal: boolean) => {
 const onCreateEditClick = (data: CountryListingType | null) => {
   if (!data) {
     countryData.value = {
-      id: -1,
+      id: '-1',
       name: "",
       code: "",
       iso2Code: "",
@@ -216,7 +216,7 @@ watch(viewDialog, (newVal: boolean) => {
 const onViewClick = (data: CountryListingType | null) => {
   if (!data) {
     countryData.value = {
-      id: -1,
+      id: '-1',
       name: "",
       code: "",
       iso2Code: "",
@@ -242,7 +242,7 @@ watch(deleteDialog, (newVal: boolean) => {
     deleteId.value = null;
   }
 });
-const onDelete = (id: number) => {
+const onDelete = (id: string) => {
   deleteId.value = id;
   deleteDialog.value = true;
 };
@@ -297,12 +297,9 @@ const onConfirmDelete = async () => {
 </v-card-title>
     <v-card-text class="mt-2">
       <Table v-model="page" :headerItems="listViewHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
-        :config="config" :loading="loading" is-pagination @on-select-all="onSelectAll">
+        :config="config" :loading="loading" is-pagination >
         <template #body>
           <tr v-for="(item, index) in tableData" :key="'agent-listing-item-' + index" height="50">
-            <td>
-              <v-checkbox v-model="item.isCheck" hide-details color="primary" />
-            </td>
             <td>{{ item.name }}</td>
             <td>{{ item.code }}</td>
             <td>{{ item.iso2Code }}</td>

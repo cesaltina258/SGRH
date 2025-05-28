@@ -1,9 +1,9 @@
 export type ProvinceListingType = {
-    id: string | number;
+    id: string;
     name: string;
     code: string;
     country: {
-        id: string | number;
+        id: string;
         name: string;
         code: string;
         iso2Code: string;
@@ -26,3 +26,28 @@ export type ProvinceListingType = {
       updatedBy: string;
       deletedBy: string; 
   };
+
+
+  export type ProvinceUpdateType = {
+    name?: string;
+    code?: string;
+  };
+  
+  export type OptionType = {
+    title: string;
+    value: string;
+    icon?: string;
+    to?: string;
+  };
+  
+  export type ProvinceInsertType = {
+    id: string;
+    name: string;
+    code: string;
+  };
+
+
+  
+
+
+

@@ -159,7 +159,8 @@ const handleApiError = (error: any) => {
                   <TextField class="two-step-verification-field" v-model="item.value" :id="`digit-${index + 1}`"
                     placeholder="0" maxLength="1" isRequired :showError="isSubmitted && !item.value" hide-details
                     @keyup="moveToNext($event, index + 2)" @keyup.delete="moveToPrev($event, index)" inputmode="numeric"
-                    pattern="[0-9]*" :modelValue="item" />
+                    pattern="[0-9]*" />
+
                 </div>
               </v-col>
             </v-row>

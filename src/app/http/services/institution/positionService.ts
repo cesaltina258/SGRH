@@ -4,7 +4,7 @@ import type { PositionListingType } from "@/components/institution/types";
 
 export default class PositionService extends HttpService {
   async getPositionsByDepartment(
-    id: number,
+    id: string,
     page: number = 0,
     size: number = 10000000,
     sortColumn: string = 'createdAt',
@@ -30,7 +30,7 @@ export default class PositionService extends HttpService {
       const url = `/administration/positions/in-department?${queryString}`;
 
       console.log('URL da requisição:', url);
-      const response = await this.get(url);
+      const response = await this.get<{ data: PositionListingType[]; meta: any }>(url);
 
       return {
         content: response.data || [],

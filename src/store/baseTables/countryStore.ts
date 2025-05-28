@@ -16,13 +16,12 @@ export const useCountryStore = defineStore('countries', {
       this.loading = true;
       try {
         const response = await countryService.getCountries();
-        this.countries = response.data;
+        this.countries = response; 
         console.log('response countries', response);
       } catch (err: any) {
         this.error = err.message || 'Erro ao buscar países';
         console.error("❌ Erro ao buscar países:", err);
-      }
-      finally {
+      } finally {
         this.loading = false;
       }
     },

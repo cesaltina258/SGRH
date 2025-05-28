@@ -16,7 +16,7 @@ export const breadcrumb: BreadcrumbType[] = [
 
 export const healthPlanLimitOptions: MenuSelectItemType[] = [
   { 
-    value: null, 
+    value: undefined, 
     label: "Selecione o Limite do Plano" },
   {
     label: "Valor Fixo",
@@ -30,7 +30,7 @@ export const healthPlanLimitOptions: MenuSelectItemType[] = [
 
 export const salaryComponentOptions: MenuSelectItemType[] = [
   { 
-    value: null, 
+    value: undefined, 
     label: "Selecione a Componente Salarial" },
   {
     label: "Salário Base",

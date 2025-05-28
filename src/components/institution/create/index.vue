@@ -39,7 +39,9 @@ const toast = useToast();
 
 // Refs
 const step = ref(1); // Controla a aba atual (1 ou 2)
-const institutionId = ref(route.params.id); // ID do employee (null se for criação)
+const institutionId = ref<string | null>(
+  typeof route.params.id === 'string' ? route.params.id : Array.isArray(route.params.id) ? route.params.id[0] : null
+);
 const loading = ref(false); // Estado de loading global
 const errorMsg = ref(""); // Mensagem de erro global
 let alertTimeout: ReturnType<typeof setTimeout> | null = null; // Timeout para mensagens de erro
@@ -47,7 +49,7 @@ let alertTimeout: ReturnType<typeof setTimeout> | null = null; // Timeout para m
 const basicDataValidated = ref(false);
 
 // Dados reativos do formulário
-const institutionData = reactive<InstitutionInsertType>({
+let institutionData = reactive<InstitutionInsertType>({
   // Dados da primeira tab
   name: '',
   address: '',
@@ -56,14 +58,14 @@ const institutionData = reactive<InstitutionInsertType>({
   website: null,
   description: null,
   incomeTaxNumber:'',
-  institutionType: null,
+  institutionType: undefined,
   
   // Dados da segunda tab
   maxNumberOfDependents: null,
   childrenMaxAge: null,
   healthPlanLimit: '',
   fixedAmount: null,
-  salaryComponent: null,
+  salaryComponent: undefined,
   companyContributionPercentage: null
 
 });
@@ -126,11 +128,10 @@ onMounted(async () => {
       loading.value = true;
       const response = await institutionService.getInstitutionById(institutionId.value);
 
-      // Atribui os dados básicos
-      Object.assign(institutionData, response.data);
-
-      // Atribui IDs para relacionamentos
-      institutionData.institutionType = response.data.institutionType?.id || null;
+      if (response && response.data) {
+        Object.assign(institutionData, response.data);
+        institutionData.institutionType = response.data.institutionType?.id || undefined;
+      }
 
     } catch (error) {
       toast.error(t('t-error-loading-institution'));
@@ -230,7 +231,7 @@ onBeforeUnmount(() => {
 <template>
   <Card title="">
     <v-card-text>
-      <ButtonNav v-model="step" class="mb-2" :institution-id="institutionId" :basic-data-validated="basicDataValidated" />
+      <ButtonNav v-model="step" class="mb-2" :institution-id="institutionId as string" :basic-data-validated="basicDataValidated" />
       <Step1 v-if="step === 1" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)" :loading="loading"  />
       <Step2 v-if="step === 2" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)" :loading="loading"/>
       <Step3 v-if="step === 3" @onStepChange="onStepChange" />

@@ -18,28 +18,31 @@ export const useDepartmentStore = defineStore('departments', {
 
   actions: {
     async fetchDepartments(
-      id: number,
-      page: number = this.pagination.currentPage, 
-      size: number = this.pagination.itemsPerPage,
+      id: string,
+      page?: number,
+      size?: number,
       sortColumn: string = 'createdAt',
       direction: string = 'asc',
-      query_value?: string,  
-      query_props?: string   
+      query_value?: string,
+      query_props?: string
     ) {
       this.loading = true;
       this.error = null;
-      
+    
+      const actualPage = page ?? this.pagination.currentPage;
+      const actualSize = size ?? this.pagination.itemsPerPage;
+    
       try {
         const { content, meta } = await departmentService.getDepartmentsByInstitution(
           id,
-          page,
-          size,
+          actualPage,
+          actualSize,
           sortColumn,
           direction,
           query_value,
           query_props
         );
-
+    
         this.departments = content;
         this.pagination = {
           totalElements: meta.totalElements,
@@ -49,7 +52,6 @@ export const useDepartmentStore = defineStore('departments', {
         };
         console.log('Departamentos:', this.departments);
         console.log('Meta:', this.pagination);
-        
       } catch (err: any) {
         this.error = err.message || 'Erro ao buscar departamentos';
         console.error("❌ Erro ao buscar departamentos:", err);
@@ -59,5 +61,6 @@ export const useDepartmentStore = defineStore('departments', {
         this.loading = false;
       }
     }
+    
   }
 });

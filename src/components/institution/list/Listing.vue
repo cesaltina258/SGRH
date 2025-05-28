@@ -14,7 +14,8 @@ import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConf
 import { institutionHeader } from "@/components/institution/list/utils"
 import Card from "@/app/common/components/Card.vue"
 import Status from "@/app/common/components/Status.vue";
-import { formateDate } from "@/app/common/dateFormate"; 
+import { formateDate } from "@/app/common/dateFormate";
+import { InstitutionListingType } from "../types"
 
 const { t } = useI18n()
 const toast = useToast()
@@ -25,7 +26,7 @@ const institutionStore = useInstitutionStore()
 const searchQuery = ref("")
 const searchProps = "name,description,address,phone,email,website,incomeTaxNumber" // Campos de pesquisa
 const deleteDialog = ref(false)
-const deleteId = ref<number | null>(null)
+const deleteId = ref<string | null>(null)
 const deleteLoading = ref(false)
 const itemsPerPage = ref(10)
 const selectedInstitutions = ref<any[]>([]) /// Armazena os funcionários selecionados
@@ -39,8 +40,15 @@ watch(selectedInstitutions, (newSelection) => {
   console.log('Instituicoes selecionadas:', newSelection)
 }, { deep: true })
 
+interface FetchParams {
+  page: number
+  itemsPerPage: number
+  sortBy: { key: string, order: 'asc' | 'desc' }[]
+  search: string
+}
+
 // Busca os funcionários com os parâmetros atuais
-const fetchInstitutionsforListing = async ({ page, itemsPerPage, sortBy, search }) => {
+const fetchInstitutionsforListing = async ({ page, itemsPerPage, sortBy, search }: FetchParams) => {
   await institutionStore.fetchInstitutionsforListing(
     page - 1, // Ajuste para API que começa em 0
     itemsPerPage,
@@ -57,7 +65,7 @@ const onView = (id: string) => {
 }
 
 // Abre o diálogo de confirmação para exclusão
-const openDeleteDialog = (id: number) => {
+const openDeleteDialog = (id: string) => {
   deleteId.value = id
   deleteDialog.value = true
 }
@@ -79,7 +87,7 @@ const deleteEmployee = async () => {
   }
 }
 
-const toggleSelection = (item) => {
+const toggleSelection = (item: InstitutionListingType) => {
   const index = selectedInstitutions.value.findIndex(selected => selected.id === item.id);
   if (index === -1) {
     selectedInstitutions.value = [...selectedInstitutions.value, item];
@@ -109,10 +117,11 @@ const toggleSelection = (item) => {
     <v-card-text>
       <DataTableServer v-model="selectedInstitutions"
         :headers="institutionHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
-        :items="institutionStore.institutions" :items-per-page="itemsPerPage" :total-items="totalItems" :loading="loading"
-        :search-query="searchQuery" @load-items="fetchInstitutionsforListing" item-value="id" show-select>
-        <template #body="{ items }">
-          <tr v-for="item in items" :key="item.id" height="50">
+        :items="institutionStore.institutions" :items-per-page="itemsPerPage" :total-items="totalItems"
+        :loading="loading" :search-query="searchQuery" @load-items="fetchInstitutionsforListing" item-value="id"
+        show-select>
+        <template #body="{ items }: { items: readonly unknown[] }">
+          <tr v-for="item in items as InstitutionListingType[]" :key="item.id">
             <td>
               <v-checkbox :model-value="selectedInstitutions.some(selected => selected.id === item.id)"
                 @update:model-value="toggleSelection(item)" hide-details density="compact" />
@@ -124,7 +133,9 @@ const toggleSelection = (item) => {
             <td>{{ item.email || 'N/A' }}</td>
             <td>{{ item.phone || 'N/A' }}</td>
             <td>{{ formateDate(item.createdAt) || 'N/A' }}</td>
-            <td><Status :status="item.enabled ? 'active' : 'unactive'" /></td>
+            <td>
+              <Status :status="item.enable ? 'active' : 'unactive'" />
+            </td>
             <td>
               <TableAction @onEdit="() => router.push(`/institution/edit/${item.id}`)"
                 @onDelete="() => openDeleteDialog(item.id)" />
@@ -144,7 +155,7 @@ const toggleSelection = (item) => {
             </td>
           </tr>
         </template>
-        
+
       </DataTableServer>
     </v-card-text>
   </Card>

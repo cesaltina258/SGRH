@@ -1,6 +1,6 @@
 import HttpService from "@/app/http/httpService";
 import type { UserInsertType, UserListingType, UserUpdateType, changePasswordType,
-  updatePasswordListingType
+  updatePasswordListingType, updatePasswordResponseType
  } from "@/components/users/types";
 
 export default class UserService extends HttpService {
@@ -33,7 +33,7 @@ export default class UserService extends HttpService {
 
       console.log('URL da requisição:', url); // Para debug
 
-      const response = await this.get(url);
+      const response = await this.get<{ data: UserListingType[]; meta: any }>(url);
 
       console.log('Resposta da requisição user:', response); // Para debug
 
@@ -50,7 +50,8 @@ export default class UserService extends HttpService {
 
   async createUser(userData: UserInsertType): Promise<UserInsertType> {
     try {
-      const response = await this.post("/administration/users", userData);
+      const response = await this.post<UserInsertType>("/administration/users", userData);
+
       console.log('response create user', response);
       return response; // Retorna os dados do utilizador criado
 
@@ -75,8 +76,7 @@ export default class UserService extends HttpService {
       const payload = {
         firstName: userData.firstName,
         lastName: userData.lastName,
-        email: userData.email,
-        username: userData.username
+        email: userData.email
       };
 
       const response = await this.put<UserListingType>(`/administration/users/${id}`, payload);
@@ -113,7 +113,7 @@ export default class UserService extends HttpService {
     }
   }
 
-  async updatePassword(userData: updatePasswordListingType): Promise<updatePasswordListingType> {
+  async updatePassword(userData: updatePasswordListingType): Promise<updatePasswordResponseType> {
       try {
         // Corpo da requisição conforme especificado
         const payload = {
@@ -124,7 +124,8 @@ export default class UserService extends HttpService {
         };
         
   
-        const response = await this.put<updatePasswordListingType>(`/administration/users/change-own-password`, payload);
+        const response = await this.put<updatePasswordResponseType>(`/administration/users/change-own-password`, payload);
+        console.log('response update password', response);
         return response;
       } catch (error) {
         console.error("❌ Erro ao actualizar Password:", error);

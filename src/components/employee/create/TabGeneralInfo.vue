@@ -29,11 +29,11 @@ import { ProvinceListingType } from "@/components/baseTables/province/types"
 import { EmployeeInsertType } from "../types";
 
 // Utils
-import { 
-  genderOptions, 
-  maritalStatusOptions, 
-  bloodGroupOptions, 
-  nationalityOptions 
+import {
+  genderOptions,
+  maritalStatusOptions,
+  bloodGroupOptions,
+  nationalityOptions
 } from "@/components/employee/create/utils";
 
 // Configuração inicial
@@ -42,17 +42,16 @@ const toast = useToast();
 const router = useRouter();
 
 // Emits e Props
-const emit = defineEmits(['onStepChange', 'save']);
-const props = defineProps({
-  modelValue: {
-    type: Object as () => EmployeeInsertType,
-    required: true
-  },
-  loading: {
-    type: Boolean,
-    default: false
-  }
-});
+const emit = defineEmits<{
+  (e: 'onStepChange', step: number): void;
+  (e: 'save'): void;
+  (e: 'update:modelValue', value: EmployeeInsertType): void;
+}>();
+
+const props = defineProps<{
+  modelValue: EmployeeInsertType,
+  loading?: boolean
+}>();
 
 // Stores
 const employeeStore = useEmployeeStore();
@@ -63,7 +62,7 @@ const provinceStore = useProvinceStore();
 const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 
 // Dados computados do employee
-const employeeData = computed({
+let employeeData = computed({
   get() {
     return props.modelValue;
   },
@@ -132,6 +131,9 @@ const requiredRules = {
       return date <= minDate || t('t-invalid-id-card-issuance-date');
     }
   ],
+  email: [
+    (v: string) => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || t('t-invalid-email'),
+  ],
 }
 
 /**
@@ -150,7 +152,7 @@ const countries = computed(() => {
 
 const provinces = computed(() => {
   if (!Array.isArray(provinceStore.provincesbyCountry)) return [];
-  return provinceStore.provincesbyCountry.map((province: ProvinceListingType) => ({ 
+  return provinceStore.provincesbyCountry.map((province: ProvinceListingType) => ({
     value: province.id,
     label: province.name,
     meta: {
@@ -166,7 +168,7 @@ const provinces = computed(() => {
 onMounted(async () => {
   try {
     await countryStore.fetchCountries();
-    
+
     // Carrega províncias se já houver país selecionado
     if (employeeData.value.country) {
       await provinceStore.fetchProvincesbyCountry(employeeData.value.country);
@@ -190,22 +192,22 @@ watch(() => employeeData.value.country, async (newCountryId, oldCountryId) => {
     if (newCountryId) {
       try {
         await provinceStore.fetchProvincesbyCountry(newCountryId);
-        
+
         // Mantém a província atual apenas se for do mesmo país
         if (employeeData.value.province) {
           const currentProvince = provinceStore.provincesbyCountry.find(
             p => p.id === employeeData.value.province
           );
           if (!currentProvince) {
-            employeeData.value.province = null;
+            employeeData.value.province = undefined;
           }
         } else {
-          employeeData.value.province = null;
+          employeeData.value.province = undefined;
         }
       } catch (error) {
         console.error("Failed to load provinces:", error);
         provinceStore.provincesbyCountry = [];
-        employeeData.value.province = null;
+        employeeData.value.province = undefined;
         errorMsg.value = "Falha ao carregar províncias";
         alertTimeout = setTimeout(() => {
           errorMsg.value = "";
@@ -214,7 +216,7 @@ watch(() => employeeData.value.country, async (newCountryId, oldCountryId) => {
       }
     } else {
       provinceStore.clearProvinces();
-      employeeData.value.province = null;
+      employeeData.value.province = undefined;
     }
   }
 });
@@ -264,7 +266,7 @@ const submitForm = async () => {
         </div>
         <TextField v-model="employeeData.employeeNumber" :placeholder="$t('t-enter-employee-number')"
           :rules="requiredRules.employeeNumber" />
-        
+
         <!-- Nome completo -->
         <v-row class="mt-n3">
           <v-col cols="12" lg="4">
@@ -295,11 +297,11 @@ const submitForm = async () => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-gender') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <MenuSelect v-model="employeeData.gender" :items="genderOptions" :rules="requiredRules.gender"/>
+            <MenuSelect v-model="employeeData.gender" :items="genderOptions" :rules="requiredRules.gender" />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
-              {{ $t('t-marital-status') }} 
+              {{ $t('t-marital-status') }}
             </div>
             <MenuSelect v-model="employeeData.maritalStatus" :items="maritalStatusOptions" />
           </v-col>
@@ -317,12 +319,12 @@ const submitForm = async () => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-birth-date') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <ValidatedDatePicker v-model="employeeData.birthDate" :teleport="true" placeholder="Select date"  
+            <ValidatedDatePicker v-model="employeeData.birthDate" :teleport="true" placeholder="Select date"
               :rules="requiredRules.birthDate" format="dd/MM/yyyy" />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
-              {{ $t('t-place-of-birth') }} 
+              {{ $t('t-place-of-birth') }}
             </div>
             <TextField v-model="employeeData.placeOfBirth" :placeholder="$t('t-enter-place-of-birth')" hide-details />
           </v-col>
@@ -346,8 +348,8 @@ const submitForm = async () => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-social-security-number') }}
             </div>
-            <TextField v-model="employeeData.socialSecurityNumber" 
-              :placeholder="$t('t-enter-social-security-number')" hide-details />
+            <TextField v-model="employeeData.socialSecurityNumber" :placeholder="$t('t-enter-social-security-number')"
+              hide-details />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
@@ -404,15 +406,15 @@ const submitForm = async () => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-mobile') }}
             </div>
-            <MazPhoneNumberInput v-model="employeeData.mobile" size="sm"
-              :placeholder="$t('t-enter-phone-number')" fetchCountry class="custom-phone-input" />
+            <MazPhoneNumberInput v-model="employeeData.mobile" size="sm" :placeholder="$t('t-enter-phone-number')"
+              fetchCountry class="custom-phone-input" />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
               {{ $t('t-emergency-contact-name') }}
             </div>
-            <TextField v-model="employeeData.emergencyContactName" 
-              :placeholder="$t('t-enter-phone-number')" hide-details />
+            <TextField v-model="employeeData.emergencyContactName" :placeholder="$t('t-enter-phone-number')"
+              hide-details />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
@@ -436,15 +438,15 @@ const submitForm = async () => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-id-card-issuer') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="employeeData.idCardIssuer" :placeholder="$t('t-enter-id-card-issuer')" 
-              :rules="requiredRules.idCardIssuer"/>
+            <TextField v-model="employeeData.idCardIssuer" :placeholder="$t('t-enter-id-card-issuer')"
+              :rules="requiredRules.idCardIssuer" />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
               {{ $t('t-id-card-expiry-date') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <ValidatedDatePicker v-model="employeeData.idCardExpiryDate" :teleport="true" 
-              :rules="requiredRules.idCardExpiryDate" :placeholder="$t('t-enter-id-card-expiry-date')" 
+            <ValidatedDatePicker v-model="employeeData.idCardExpiryDate" :teleport="true"
+              :rules="requiredRules.idCardExpiryDate" :placeholder="$t('t-enter-id-card-expiry-date')"
               format="dd/MM/yyyy" />
           </v-col>
         </v-row>
@@ -455,23 +457,23 @@ const submitForm = async () => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-id-card-issuance-date') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <ValidatedDatePicker v-model="employeeData.idCardIssuanceDate" :teleport="true" 
-              :rules="requiredRules.idCardIssuanceDate" :placeholder="$t('t-enter-id-card-issuance-date')" 
+            <ValidatedDatePicker v-model="employeeData.idCardIssuanceDate" :teleport="true"
+              :rules="requiredRules.idCardIssuanceDate" :placeholder="$t('t-enter-id-card-issuance-date')"
               format="dd/MM/yyyy" />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
               {{ $t('t-passport-number') }}
             </div>
-            <TextField v-model="employeeData.passportNumber" 
-              :placeholder="$t('t-enter-passport-number')" hide-details />
+            <TextField v-model="employeeData.passportNumber" :placeholder="$t('t-enter-passport-number')"
+              hide-details />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
               {{ $t('t-passport-issuer') }}
             </div>
-            <TextField v-model="employeeData.passportIssuer" 
-              :placeholder="$t('t-enter-passport-issuer')" hide-details />
+            <TextField v-model="employeeData.passportIssuer" :placeholder="$t('t-enter-passport-issuer')"
+              hide-details />
           </v-col>
         </v-row>
 
@@ -482,38 +484,25 @@ const submitForm = async () => {
               {{ $t('t-passport-issuance-date') }}
             </div>
             <VueDatePicker v-model="employeeData.passportIssuanceDate" :teleport="true"
-              :placeholder="$t('t-enter-passport-issuance-date')" :enable-time-picker="false" 
-              format="dd/MM/yyyy" />
+              :placeholder="$t('t-enter-passport-issuance-date')" :enable-time-picker="false" format="dd/MM/yyyy" />
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
               {{ $t('t-id-passport-expiry-date') }}
             </div>
             <VueDatePicker v-model="employeeData.passportExpiryDate" :teleport="true"
-              :placeholder="$t('t-enter-id-passport-expiry-date')" :enable-time-picker="false" 
-              format="dd/MM/yyyy" />
+              :placeholder="$t('t-enter-id-passport-expiry-date')" :enable-time-picker="false" format="dd/MM/yyyy" />
           </v-col>
         </v-row>
       </v-card-text>
 
       <!-- Ações do formulário -->
       <v-card-actions class="d-flex justify-space-between mt-3">
-        <v-btn 
-          color="secondary" 
-          variant="outlined" 
-          class="me-2" 
-          @click="onBack()"
-          :disabled="loading"
-        >
+        <v-btn color="secondary" variant="outlined" class="me-2" @click="onBack()" :disabled="loading">
           {{ $t('t-back') }} <i class="ph-arrow-left ms-2" />
         </v-btn>
-        
-        <v-btn 
-          color="success" 
-          variant="elevated" 
-          @click="submitForm"
-          :loading="loading"
-        >
+
+        <v-btn color="success" variant="elevated" @click="submitForm" :loading="loading">
           {{ $t('t-save-and-proceed') }} <i class="ph-arrow-right ms-2" />
         </v-btn>
       </v-card-actions>

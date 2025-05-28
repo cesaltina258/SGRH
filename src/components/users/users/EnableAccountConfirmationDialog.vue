@@ -19,6 +19,10 @@ const prop = defineProps({
     type: String,
     required: true,
   },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const dialogValue = computed({

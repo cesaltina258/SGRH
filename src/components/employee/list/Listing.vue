@@ -13,6 +13,7 @@ import TableAction from "@/app/common/components/TableAction.vue"
 import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue"
 import { employeeHeader } from "@/components/employee/list/utils"
 import Card from "@/app/common/components/Card.vue"
+import { EmployeeListingType } from "../types"
 
 const { t } = useI18n()
 const toast = useToast()
@@ -23,7 +24,7 @@ const employeeStore = useEmployeeStore()
 const searchQuery = ref("")
 const searchProps = "firstName,lastName,email,employeeNumber,phone" // Campos de pesquisa
 const deleteDialog = ref(false)
-const deleteId = ref<number | null>(null)
+const deleteId = ref<string | null>(null)
 const deleteLoading = ref(false)
 const itemsPerPage = ref(10)
 const selectedEmployees = ref<any[]>([]) /// Armazena os funcionários selecionados
@@ -37,8 +38,15 @@ watch(selectedEmployees, (newSelection) => {
   console.log('Funcionários selecionados:', newSelection)
 }, { deep: true })
 
+interface FetchParams {
+  page: number
+  itemsPerPage: number
+  sortBy: { key: string, order: 'asc' | 'desc' }[]
+  search: string
+}
+
 // Busca os funcionários com os parâmetros atuais
-const fetchEmployees = async ({ page, itemsPerPage, sortBy, search }) => {
+const fetchEmployees = async ({ page, itemsPerPage, sortBy, search }: FetchParams) => {
   await employeeStore.fetchEmployees(
     page - 1, // Ajuste para API que começa em 0
     itemsPerPage,
@@ -55,7 +63,7 @@ const onView = (id: string) => {
 }
 
 // Abre o diálogo de confirmação para exclusão
-const openDeleteDialog = (id: number) => {
+const openDeleteDialog = (id: string) => {
   deleteId.value = id
   deleteDialog.value = true
 }
@@ -77,7 +85,7 @@ const deleteEmployee = async () => {
   }
 }
 
-const toggleSelection = (item) => {
+const toggleSelection = (item: EmployeeListingType) => {
   const index = selectedEmployees.value.findIndex(selected => selected.id === item.id);
   if (index === -1) {
     selectedEmployees.value = [...selectedEmployees.value, item];
@@ -109,16 +117,16 @@ const toggleSelection = (item) => {
         :headers="employeeHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
         :items="employeeStore.employees" :items-per-page="itemsPerPage" :total-items="totalItems" :loading="loading"
         :search-query="searchQuery" @load-items="fetchEmployees" item-value="id" show-select>
-        <template #body="{ items }">
-          <tr v-for="item in items" :key="item.id" height="50">
+        <template #body="{ items }: { items: readonly unknown[] }">
+          <tr v-for="item in items as EmployeeListingType[]" :key="item.id">
             <td>
               <v-checkbox :model-value="selectedEmployees.some(selected => selected.id === item.id)"
                 @update:model-value="toggleSelection(item)" hide-details density="compact" />
             </td>
-            <td class="text-primary cursor-pointer" @click="onView(item.id)">
+            <td class="text-primary cursor-pointer" @click="onView(item.id)"> 
               #{{ item.employeeNumber || 'N/A' }}
             </td>
-            <td>{{ item.firstName }} {{ item.lastName }}</td>
+            <td>{{ item.firstName }} {{ item.lastName }}</td> 
             <td>{{ item.phone || 'N/A' }}</td>
             <td>{{ item.email || 'N/A' }}</td>
             <td>

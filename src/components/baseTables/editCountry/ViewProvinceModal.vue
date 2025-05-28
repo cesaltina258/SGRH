@@ -20,12 +20,12 @@ const prop = defineProps({
     required: true,
   },
   country: {
-    type: Number,
+    type: String,
     required: true,
   }
 });
 
-const isCreate = computed(() => prop.data.id === -1);
+const isCreate = computed(() => prop.data.id === '-1');
 const formData = ref({
   ...prop.data,
   country: prop.country // associa o ID ao formulário

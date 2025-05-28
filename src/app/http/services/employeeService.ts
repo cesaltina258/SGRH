@@ -2,6 +2,15 @@ import HttpService from "@/app/http/httpService";
 import type { EmployeeListingType, EmployeeInsertType, EmployeeUpdateType } from "@/components/employee/types";
 import type { ApiErrorResponse } from "@/app/common/types/errorType";
 
+interface EmployeeListResponse {
+  data: EmployeeListingType[];
+  meta: any;
+}
+
+interface SingleEmployeeResponse {
+  data: EmployeeListingType;
+}
+
 export default class EmployeeService extends HttpService {
 
   //get de todos colaboradores
@@ -39,7 +48,8 @@ export default class EmployeeService extends HttpService {
   
       console.log('URL da requisição:', url); // Para debug
   
-      const response = await this.get(url);
+      const response = await this.get<EmployeeListResponse>(url);
+
 
       console.log('Resposta da requisição:', response); // Para debug
       
@@ -54,9 +64,9 @@ export default class EmployeeService extends HttpService {
     }
   }
 
-  async createEmployee(employeeData: EmployeeInsertType) {
+  async createEmployee(employeeData: EmployeeInsertType)  {
     try {
-      const response = await this.post('/human-resource/employees', employeeData);
+      const response = await this.post<SingleEmployeeResponse>('/human-resource/employees', employeeData);
       return {
         status: 'success',
         data: response.data
@@ -80,9 +90,9 @@ export default class EmployeeService extends HttpService {
     }
   }
 
-  async getEmployeeById(id: string | number) {
+  async getEmployeeById(id: string | number)  {
     try {
-      const response = await this.get(`/human-resource/employees/${id}?includes=position,department,company,province,country`);
+      const response = await this.get<SingleEmployeeResponse>(`/human-resource/employees/${id}?includes=position,department,company,province,country`);
       console.log('Resposta da requisição:------------------------', response); 
       return {
         status: 'success',
@@ -113,7 +123,7 @@ export default class EmployeeService extends HttpService {
   async updateEmployee(id: string, employeeData: EmployeeInsertType): Promise<EmployeeListingType> {
     try {
 
-      console.log('employeeData on update', employeeData.salary.value)
+      console.log('employeeData on update', employeeData.salary)
       // Corpo da requisição conforme especificado
       const payload = {
         employeeNumber: employeeData.employeeNumber,
@@ -145,13 +155,13 @@ export default class EmployeeService extends HttpService {
         passportIssuer: employeeData.passportIssuer,
         passportExpiryDate: employeeData.passportExpiryDate,
         passportIssuanceDate: employeeData.passportIssuanceDate,
-        salary: employeeData.salary.value,
+        salary: employeeData.salary,
         company: employeeData.company,
         department: employeeData.department,
         position: employeeData.position
       };
 
-      const response = await this.put<EmployeeInsertType>(`/human-resource/employees/${id}`, payload);
+      const response = await this.put<EmployeeListingType>(`/human-resource/employees/${id}`, payload);
       console.log('response update', response)
       return response;
 
@@ -161,7 +171,7 @@ export default class EmployeeService extends HttpService {
     }
   }
 
-  async deleteEmployee(id: number): Promise<void> {
+  async deleteEmployee(id: string): Promise<void> {
     try {
       await this.delete(`/human-resource/employees/${id}`);
     } catch (error) {

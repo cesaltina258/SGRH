@@ -31,7 +31,7 @@ const toast = useToast();
 const router = useRouter();
 
 // Emits e Props
-const emit = defineEmits(['onStepChange', 'save']);
+const emit = defineEmits(['onStepChange', 'save', 'update:modelValue']);
 const props = defineProps({
   modelValue: {
     type: Object as () => InstitutionInsertType,
@@ -54,7 +54,7 @@ const institutionStore = useInstitutionStore();
 const form1 = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 
 // Dados computados do employee
-const institutionData = computed({
+let institutionData = computed({
   get() {
     return props.modelValue;
   },
@@ -87,7 +87,7 @@ watch(healthPlanLimit, () => {
     institutionData.value.fixedAmount = null;
   }
   if (institutionData.value.healthPlanLimit !== 'ANUAL_SALARY') {
-    institutionData.value.salaryComponent = null;
+    institutionData.value.salaryComponent = undefined;
     institutionData.value.companyContributionPercentage = null;
   }
 

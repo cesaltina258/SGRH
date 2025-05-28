@@ -1,5 +1,5 @@
 export type InstitutionListingType = {
-    id: string | number;
+    id: string  ;
     name: string;
     address: string;
     phone: string;
@@ -7,8 +7,11 @@ export type InstitutionListingType = {
     website: string;
     description: string;
     incomeTaxNumber: string;
-    institutionType: string | null;
-    enable: string;
+    institutionType?: {
+        id: number;
+        name: string
+    } | null;
+    enable: boolean;
 
     maxNumberOfDependents: number | null;
     childrenMaxAge: number | null;
@@ -17,7 +20,37 @@ export type InstitutionListingType = {
     salaryComponent: string | null;
     companyContributionPercentage: number | null;
 
-    createdAt: Date | null;
+    createdAt: Date ;
+    updatedAt: Date | null;
+    deletedAt: Date | null;
+    createdBy: string;
+    updatedBy: string;
+    deletedBy: string;
+};
+
+export type InstitutionResponseType = {
+    id: string  ;
+    name: string;
+    address: string;
+    phone: string;
+    email: string;
+    website?: string;
+    description?: string;
+    incomeTaxNumber: string;
+    institutionType: {
+        id: string;
+        name: string
+    } | undefined ;
+    enable: boolean;
+
+    maxNumberOfDependents: number | null;
+    childrenMaxAge: number | null;
+    healthPlanLimit: string | null;
+    fixedAmount: number | null;
+    salaryComponent: string | null;
+    companyContributionPercentage: number | null;
+
+    createdAt: Date ;
     updatedAt: Date | null;
     deletedAt: Date | null;
     createdBy: string;
@@ -33,13 +66,13 @@ export type InstitutionInsertType = {
     website: string | null;
     description: string | null;
     incomeTaxNumber: string;
-    institutionType: string | null;
+    institutionType: string | undefined;
 
     maxNumberOfDependents: number | null;
     childrenMaxAge: number | null;
-    healthPlanLimit: string | null;
+    healthPlanLimit: string | undefined;
     fixedAmount: number | null;
-    salaryComponent: string | null;
+    salaryComponent: string | undefined;
     companyContributionPercentage: number | null;
 }
 

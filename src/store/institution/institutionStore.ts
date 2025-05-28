@@ -2,13 +2,13 @@ import { defineStore } from 'pinia';
 import { institutionService } from "@/app/http/httpServiceProvider";
 import type { InstitutionListingType, InstitutionInsertType } from '@/components/institution/types';
 
-export const useInstitutionStore = defineStore('institutions', { 
+export const useInstitutionStore = defineStore('institutions', {
   state: () => ({
     institutions: [] as InstitutionListingType[],
-    pagination: { 
+    pagination: {
       totalElements: 0,
       currentPage: 0,
-      itemsPerPage: 10000000, 
+      itemsPerPage: 10000000,
       totalPages: 0
     },
     loading: false,
@@ -19,20 +19,23 @@ export const useInstitutionStore = defineStore('institutions', {
 
   actions: {
     async fetchInstitutions(
-      page: number = this.pagination.currentPage, 
-      size: number = this.pagination.itemsPerPage,
+      page?: number,
+      size?: number,
       sortColumn: string = 'createdAt',
       direction: string = 'asc',
-      query_value?: string,  
-      query_props?: string   
+      query_value?: string,
+      query_props?: string
     ) {
       this.loading = true;
       this.error = null;
-      
+
+      const actualPage = page ?? this.pagination.currentPage;
+      const actualSize = size ?? this.pagination.itemsPerPage;
+
       try {
         const { content, meta } = await institutionService.getInstitutions(
-          page,
-          size,
+          actualPage,
+          actualSize,
           sortColumn,
           direction,
           query_value,
@@ -48,7 +51,6 @@ export const useInstitutionStore = defineStore('institutions', {
         };
         console.log('Instituições:', this.institutions);
         console.log('Meta:', this.pagination);
-        
       } catch (err: any) {
         this.error = err.message || 'Erro ao buscar instituições';
         console.error("❌ Erro ao buscar instituições:", err);
@@ -59,20 +61,23 @@ export const useInstitutionStore = defineStore('institutions', {
       }
     },
     async fetchInstitutionsforListing(
-      page: number = this.pagination.currentPage, 
-      size: number = this.pagination.itemsPerPage,
+      page?: number,
+      size?: number,
       sortColumn: string = 'createdAt',
       direction: string = 'asc',
-      query_value?: string,  
-      query_props?: string   
+      query_value?: string,
+      query_props?: string
     ) {
       this.loading = true;
       this.error = null;
-      
+
+      const actualPage = page ?? this.pagination.currentPage;
+      const actualSize = size ?? this.pagination.itemsPerPage;
+
       try {
         const { content, meta } = await institutionService.getInstitutionsForListing(
-          page,
-          size,
+          actualPage,
+          actualSize,
           sortColumn,
           direction,
           query_value,
@@ -88,7 +93,6 @@ export const useInstitutionStore = defineStore('institutions', {
         };
         console.log('Instituições:', this.institutions);
         console.log('Meta:', this.pagination);
-        
       } catch (err: any) {
         this.error = err.message || 'Erro ao buscar instituições';
         console.error("❌ Erro ao buscar instituições:", err);
@@ -97,7 +101,8 @@ export const useInstitutionStore = defineStore('institutions', {
       } finally {
         this.loading = false;
       }
-    },
+    }
+    ,
     setDraftInstitution(data: InstitutionInsertType) {
       this.draftInstitution = data;
       localStorage.setItem('institutionDraft', JSON.stringify(data));

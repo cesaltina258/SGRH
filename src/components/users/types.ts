@@ -3,7 +3,8 @@ export type UserInsertType= {
   firstName: string;
   lastName: string;
   email: string;
-  username: string;
+  password?: string;
+  password_confirm?: string;
 };
 
 export type UserListingType  = {
@@ -12,7 +13,6 @@ export type UserListingType  = {
   lastName: string;
   password: string;
   email: string;
-  username?: string;
   enabled: boolean;
   accountLocked: boolean;
   twoFactor: boolean;
@@ -28,7 +28,6 @@ export type UserUpdateType = {
   firstName?: string;
   lastName?: string;
   email?: string;
-  username?: string;
 }
 
 export type OptionType = {
@@ -57,4 +56,13 @@ export type updatePasswordListingType = {
   newPassword: string;
   confirmPassword: string;
   passwordsMatching: boolean;
+
+}
+
+export type updatePasswordResponseType = {
+  message: string; 
+  status: string;
+  meta:{
+    timestamp: string;
+  }
 }

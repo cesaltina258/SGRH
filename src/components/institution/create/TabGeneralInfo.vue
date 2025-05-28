@@ -30,7 +30,12 @@ const router = useRouter();
 
 
 // Emits e Props
-const emit = defineEmits(['onStepChange', 'save']);
+const emit = defineEmits<{
+  (e: 'onStepChange', step: number): void;
+  (e: 'save'): void;
+  (e: 'update:modelValue', value: InstitutionInsertType): void;
+}>();
+
 const props = defineProps({
   modelValue: {
     type: Object as () => InstitutionInsertType,
@@ -50,7 +55,7 @@ const institutionTypeStore = useInstitutionTypeStore();
 const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 
 // Dados computados do employee
-const institutionData = computed({
+let institutionData = computed({
   get() {
     return props.modelValue;
   },
@@ -169,7 +174,7 @@ const submitGeneralInfo = async () => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-institution-type') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <MenuSelect v-model="institutionData.institutionType" :items="institutionTypes"
+            <MenuSelect v-model="institutionData.institutionType " :items="institutionTypes"
               :loading="institutionTypeStore.loading" :rules="requiredRules.institutionType" />
           </v-col>
           <v-col cols="12" lg="6">

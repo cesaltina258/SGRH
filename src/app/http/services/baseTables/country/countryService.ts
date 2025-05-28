@@ -1,14 +1,14 @@
 import HttpService from "@/app/http/httpService";
-import type { CountryInsertType, CountryListingType, CountryUpdateType } from "@/components/baseTables/country/types";
+import type { CountryInsertType, CountryListingType, CountryUpdateType, CountryApiResponse } from "@/components/baseTables/country/types";
 
 export default class CountryService extends HttpService {
 
   //get de todos utilizadores
-  async getCountries(): Promise<{ data: CountryListingType[] }> {
+  async getCountries(): Promise<CountryListingType[]> {
     try {
-      const response = await this.get("/administration/setup/countries");
-      //console.log('response users',response);
-      return response;
+      const response = await this.get<CountryApiResponse>("/administration/setup/countries");
+
+      return response.data;
 
     } catch (error) {
       console.error("❌ Erro ao buscar País:", error);
@@ -16,7 +16,7 @@ export default class CountryService extends HttpService {
     }
   }
 
-  async getCountryByID(id: number): Promise<{ data: CountryListingType }> {
+  async getCountryByID(id: string): Promise<{ data: CountryListingType }> {
     try {
       return await this.get(`/administration/setup/countries/${id}`);
     } catch (error) {
@@ -29,7 +29,7 @@ export default class CountryService extends HttpService {
 
   async createCountry(userData: CountryInsertType): Promise<CountryInsertType> {
     try {
-      const response = await this.post("/administration/setup/countries", userData);
+      const response = await this.post<CountryInsertType>("/administration/setup/countries", userData);
       console.log('response create user',response);
       return response;
 
@@ -39,7 +39,7 @@ export default class CountryService extends HttpService {
     }
   }
 
-  async deleteCountry(id: number): Promise<void> {
+  async deleteCountry(id: string): Promise<void> {
     try {
       await this.delete(`/administration/setup/countries/${id}`);
     } catch (error) {
@@ -48,7 +48,7 @@ export default class CountryService extends HttpService {
     }
   }
 
-  async updateCountry(id: number, userData: CountryUpdateType): Promise<CountryUpdateType> {
+  async updateCountry(id: string, userData: CountryUpdateType): Promise<CountryUpdateType> {
     try {
       // Corpo da requisição conforme especificado
       const payload = {

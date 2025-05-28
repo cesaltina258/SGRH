@@ -10,28 +10,31 @@ export const useUserStore = defineStore('users', {
     pagination: {
       totalElements: 0,
       currentPage: 0,
-      itemsPerPage: 2, 
+      itemsPerPage: 10,
       totalPages: 0
     },
     loading: false,
     error: null as string | null
   }),
   actions: {
-    async fetchUsers(
-      page: number = this.pagination.currentPage,
-      size: number = this.pagination.itemsPerPage,
+    async fetchUsers( 
+      page?: number,
+      size?: number,
       sortColumn: string = 'createdAt',
       direction: string = 'asc',
-      query_value?: string,  
-      query_props?: string    
+      query_value?: string,
+      query_props?: string
     ) {
       this.loading = true;
       this.error = null;
-      
+
+      const actualPage = page ?? this.pagination.currentPage;
+      const actualSize = size ?? this.pagination.itemsPerPage;
+
       try {
         const { content, meta } = await userService.getUsers(
-          page,
-          size,
+          actualPage,
+          actualSize,
           sortColumn,
           direction,
           query_value,
@@ -45,18 +48,15 @@ export const useUserStore = defineStore('users', {
           itemsPerPage: meta.size,
           totalPages: meta.totalPages || Math.ceil(meta.totalElements / meta.size)
         };
-        console.log('Utilizadores:', this.users);
-        console.log('Meta:', this.pagination);
-        
       } catch (err: any) {
         this.error = err.message || 'Erro ao buscar utilizadores';
-        console.error("❌ Erro ao buscar utilizadores:", err);
         this.users = [];
         this.pagination.totalElements = 0;
       } finally {
         this.loading = false;
       }
     }
+
   }
 });
 
@@ -85,4 +85,3 @@ export const useProfileStore = defineStore('profile', {
   },
 });
 
-  

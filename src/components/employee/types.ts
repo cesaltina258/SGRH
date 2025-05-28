@@ -3,7 +3,7 @@ import { ProvinceListingType } from "../baseTables/province/types";
 import { CountryListingType } from "../baseTables/country/types";
 
 export type EmployeeListingType = {
-  id: string | number;
+  id: string;
   employeeNumber: string;
   firstName: string;
   middleName: string;
@@ -18,13 +18,13 @@ export type EmployeeListingType = {
   socialSecurityNumber: string;
   address: string;
   country: {
-    id: string | number;
+    id: string | undefined;
     name: string;
-  } | string | null;
+  } | undefined;
   province: {
-    id: string | number;
+    id: string;
     name: string;
-  } | string | null;
+  } | undefined;
   postalCode: string;
   email: string;
   phone: string;
@@ -39,6 +39,19 @@ export type EmployeeListingType = {
   passportIssuer: string;
   passportExpiryDate: string;
   passportIssuanceDate: string;
+  position: {
+    id: string;
+    name: string;
+  } | undefined,
+  department: {
+    id: string;
+    name: string
+  } | undefined,
+  company: {
+    id: string;
+    name: string
+  } | undefined
+
 };
 
 export type EmployeeInsertType = {
@@ -47,7 +60,7 @@ export type EmployeeInsertType = {
   middleName: string;
   lastName: string;
   gender: string;
-  maritalStatus: string | null;
+  maritalStatus: string | undefined;
   birthDate: string;
   bloodGroup: string;
   placeOfBirth: string;
@@ -55,8 +68,8 @@ export type EmployeeInsertType = {
   incomeTaxNumber: string | null;
   socialSecurityNumber: string | null;
   address: string;
-  country: number | null;
-  province: number |null;
+  country: string | undefined;
+  province: string | undefined;
   postalCode: string;
   email: string;
   phone: string;
@@ -72,10 +85,10 @@ export type EmployeeInsertType = {
   passportExpiryDate: string;
   passportIssuanceDate: string;
   salary?: number | null;
-  company?: number| null;
-  department?: number | null;
+  company?: string | undefined;
+  department?: string | undefined;
   enabled?: boolean;
-  position?: number | null;
+  position?: string | undefined;
 };
 
 
@@ -110,7 +123,7 @@ export type EmployeeUpdateType = {
   passportExpiryDate: string;
   passportIssuanceDate: string;
   salary?: number | null;
-  company?: string| null;
+  company?: string | null;
   department?: string | null;
   enabled?: boolean;
   position?: string | null;

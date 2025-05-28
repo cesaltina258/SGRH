@@ -17,26 +17,29 @@ export const useEmployeeStore = defineStore('employees', {
 
   actions: {
     async fetchEmployees(
-      page: number = this.pagination.currentPage, 
-      size: number = this.pagination.itemsPerPage,
+      page?: number,
+      size?: number,
       sortColumn: string = 'createdAt',
       direction: string = 'asc',
-      query_value?: string,   
-      query_props?: string   
+      query_value?: string,
+      query_props?: string
     ) {
       this.loading = true;
       this.error = null;
-      
+    
+      const actualPage = page ?? this.pagination.currentPage;
+      const actualSize = size ?? this.pagination.itemsPerPage;
+    
       try {
         const { content, meta } = await employeeService.getEmployees(
-          page,
-          size,
+          actualPage,
+          actualSize,
           sortColumn,
           direction,
           query_value,
           query_props
         );
-
+    
         this.employees = content;
         this.pagination = {
           totalElements: meta.totalElements,
@@ -46,7 +49,7 @@ export const useEmployeeStore = defineStore('employees', {
         };
         console.log('Colaboradores:', this.employees);
         console.log('Meta:', this.pagination);
-        
+    
       } catch (err: any) {
         this.error = err.message || 'Erro ao buscar colaboradores';
         console.error("❌ Erro ao buscar colaboradores:", err);
@@ -56,5 +59,6 @@ export const useEmployeeStore = defineStore('employees', {
         this.loading = false;
       }
     }
+    
   }
 });

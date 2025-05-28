@@ -18,28 +18,31 @@ export const usePositionStore = defineStore('positions', {
 
   actions: {
     async fetchPositions(
-      id: number,
-      page: number = this.pagination.currentPage, 
-      size: number = this.pagination.itemsPerPage,
+      id: string,
+      page?: number,
+      size?: number,
       sortColumn: string = 'createdAt',
       direction: string = 'asc',
-      query_value?: string,  
-      query_props?: string   
+      query_value?: string,
+      query_props?: string
     ) {
       this.loading = true;
       this.error = null;
-      
+    
+      const actualPage = page ?? this.pagination.currentPage;
+      const actualSize = size ?? this.pagination.itemsPerPage;
+    
       try {
         const { content, meta } = await positionService.getPositionsByDepartment(
           id,
-          page,
-          size,
+          actualPage,
+          actualSize,
           sortColumn,
           direction,
           query_value,
           query_props
         );
-
+    
         this.positions = content;
         this.pagination = {
           totalElements: meta.totalElements,
@@ -47,9 +50,9 @@ export const usePositionStore = defineStore('positions', {
           itemsPerPage: meta.size,
           totalPages: meta.totalPages || Math.ceil(meta.totalElements / meta.size)
         };
+    
         console.log('Posições:', this.positions);
         console.log('Meta:', this.pagination);
-        
       } catch (err: any) {
         this.error = err.message || 'Erro ao buscar posições';
         console.error("❌ Erro ao buscar posições:", err);
@@ -59,5 +62,6 @@ export const usePositionStore = defineStore('positions', {
         this.loading = false;
       }
     }
+    
   }
 });
