@@ -1,14 +1,16 @@
 import HttpService from "@/app/http/httpService";
-import type { EmployeeListingType, EmployeeInsertType, EmployeeUpdateType } from "@/components/employee/types";
+import type { EmployeeListingType, EmployeeInsertType, EmployeeResponseType } from "@/components/employee/types";
 import type { ApiErrorResponse } from "@/app/common/types/errorType";
 
-interface EmployeeListResponse {
-  data: EmployeeListingType[];
-  meta: any;
+interface ApiResponse<T> {
+  data: T;
+  meta?: any;
 }
 
-interface SingleEmployeeResponse {
-  data: EmployeeListingType;
+interface ServiceResponse<T> { 
+  status: 'success' | 'error';
+  data?: T;
+  error?: ApiErrorResponse;
 }
 
 export default class EmployeeService extends HttpService {
@@ -48,7 +50,7 @@ export default class EmployeeService extends HttpService {
   
       console.log('URL da requisição:', url); // Para debug
   
-      const response = await this.get<EmployeeListResponse>(url);
+      const response = await this.get<ApiResponse<EmployeeListingType[]>>(url);
 
 
       console.log('Resposta da requisição:', response); // Para debug
@@ -64,45 +66,54 @@ export default class EmployeeService extends HttpService {
     }
   }
 
-  async createEmployee(employeeData: EmployeeInsertType)  {
+  async createEmployee(employeeData: EmployeeInsertType): Promise<ServiceResponse<EmployeeResponseType>> {
     try {
-      const response = await this.post<SingleEmployeeResponse>('/human-resource/employees', employeeData);
+      const response = await this.post<ApiResponse<EmployeeResponseType>>('/human-resource/employees', employeeData);
       return {
         status: 'success',
         data: response.data
       };
     } catch (error: any) {
       if (error.response) {
-        // Error from backend
         return {
           status: 'error',
           error: error.response.data as ApiErrorResponse
         };
       }
-      // Network or other error
       return {
         status: 'error',
-        error: {
-          message: 'Network error',
-          detail: 'Could not connect to server'
-        }
+        error: this.createNetworkErrorResponse()
       };
     }
   }
 
-  async getEmployeeById(id: string | number)  {
+  private createNetworkErrorResponse(): ApiErrorResponse {
+    return {
+      status: 'error',
+      message: 'Network error',
+      error: {
+        type: 'ConnectionError',
+        title: 'Network Error',
+        status: 503,
+        detail: 'Could not connect to server',
+        instance: '/human-resource/employees'
+      },
+      meta: {
+        timestamp: new Date().toISOString()
+      }
+    };
+  }
+
+  async getEmployeeById(id: string ) : Promise<{ data: EmployeeResponseType }> {
     try {
-      const response = await this.get<SingleEmployeeResponse>(`/human-resource/employees/${id}?includes=position,department,company,province,country`);
+      const response = await this.get<{ data: EmployeeResponseType; meta: any }>
+      (`/human-resource/employees/${id}?includes=position,department,company,province,country`);
       console.log('Resposta da requisição:------------------------', response); 
       return {
-        status: 'success',
         data: response.data
       };
     } catch (error) {
-      return {
-        status: 'error',
-        error: this.handleError(error)
-      };
+      throw this.handleError(error);
     }
   }
 
@@ -120,7 +131,7 @@ export default class EmployeeService extends HttpService {
     };
   }
 
-  async updateEmployee(id: string, employeeData: EmployeeInsertType): Promise<EmployeeListingType> {
+  async updateEmployee(id: string, employeeData: EmployeeInsertType): Promise<EmployeeResponseType> {
     try {
 
       console.log('employeeData on update', employeeData.salary)
@@ -161,7 +172,7 @@ export default class EmployeeService extends HttpService {
         position: employeeData.position
       };
 
-      const response = await this.put<EmployeeListingType>(`/human-resource/employees/${id}`, payload);
+      const response = await this.put<EmployeeResponseType>(`/human-resource/employees/${id}`, payload);
       console.log('response update', response)
       return response;
 

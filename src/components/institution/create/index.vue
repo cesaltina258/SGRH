@@ -53,13 +53,13 @@ let institutionData = reactive<InstitutionInsertType>({
   // Dados da primeira tab
   name: '',
   address: '',
-  phone:'',
+  phone: '',
   email: '',
   website: null,
   description: null,
-  incomeTaxNumber:'',
+  incomeTaxNumber: '',
   institutionType: undefined,
-  
+
   // Dados da segunda tab
   maxNumberOfDependents: null,
   childrenMaxAge: null,
@@ -74,7 +74,7 @@ let institutionData = reactive<InstitutionInsertType>({
  * Trata erros da API de forma consistente
  * @param error - Objeto de erro da API
  */
- const handleApiError = (error: any) => {
+const handleApiError = (error: any) => {
   // Limpa timeout anterior se existir
   if (alertTimeout) {
     clearTimeout(alertTimeout);
@@ -95,7 +95,7 @@ let institutionData = reactive<InstitutionInsertType>({
       }, 5000);
     }
     message = error.response.data.message || message;
-  } 
+  }
   // Erros gerais
   else if (error.message) {
     message = error.message;
@@ -116,8 +116,8 @@ let institutionData = reactive<InstitutionInsertType>({
  * Carrega dados do employee quando em modo de edição
  */
 onMounted(async () => {
-    institutionStore.loadFromStorage();
-  
+  institutionStore.loadFromStorage();
+
   if (institutionStore.currentInstitutionId) {
     institutionId.value = institutionStore.currentInstitutionId;
     basicDataValidated.value = true;
@@ -147,18 +147,18 @@ onMounted(async () => {
  * @param value - Número da aba (1 ou 2)
  */
 const onStepChange = (value: number) => {
-    // Permite sempre voltar para tabs anteriores
-    if (value < step.value) {
+  // Permite sempre voltar para tabs anteriores
+  if (value < step.value) {
     step.value = value;
     return;
   }
-  
+
   // No modo de edição ou quando dados básicos já foram validados, permite navegar livremente
   if (institutionId.value || basicDataValidated.value) {
     step.value = value;
     return;
   }
-  
+
   // No modo criação, só permite avançar para a próxima tab sequencialmente
   if (value === step.value + 1) {
     step.value = value;
@@ -170,7 +170,7 @@ const onStepChange = (value: number) => {
  * Salva os dados do employee
  * @param isFinalStep - Indica se é o passo final (salvar e sair)
  */
- const saveInstitution = async (isFinalStep: boolean = false) => {
+const saveInstitution = async (isFinalStep: boolean = false) => {
   try {
     loading.value = true;
     errorMsg.value = "";
@@ -184,7 +184,7 @@ const onStepChange = (value: number) => {
 
       // Modo criação
       response = await institutionService.createInstitution(institutionData);
-      
+
       if (response?.data?.id) {
         institutionId.value = response.data.id;
         institutionStore.setCurrentInstitutionId(response.data.id);
@@ -231,11 +231,14 @@ onBeforeUnmount(() => {
 <template>
   <Card title="">
     <v-card-text>
-      <ButtonNav v-model="step" class="mb-2" :institution-id="institutionId as string" :basic-data-validated="basicDataValidated" />
-      <Step1 v-if="step === 1" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)" :loading="loading"  />
-      <Step2 v-if="step === 2" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)" :loading="loading"/>
+      <ButtonNav v-model="step" class="mb-2" :institution-id="institutionId as string"
+        :basic-data-validated="basicDataValidated" />
+      <Step1 v-if="step === 1" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)"
+        :loading="loading" />
+      <Step2 v-if="step === 2" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)"
+        :loading="loading" />
       <Step3 v-if="step === 3" @onStepChange="onStepChange" />
-      <Step4 v-if="step === 4" @onStepChange="onStepChange"/>
+      <Step4 v-if="step === 4" @onStepChange="onStepChange" />
     </v-card-text>
   </Card>
-</template> 
+</template>

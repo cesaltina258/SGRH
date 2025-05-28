@@ -50,13 +50,15 @@ const toast = useToast();
 const employeeStore = useEmployeeStore();
 
 // Refs
-const step = ref(1); // Controla a aba atual (1 ou 2)
+const step = ref(1);
 const employeeId = ref<string | null>(
   typeof route.params.id === 'string' ? route.params.id : Array.isArray(route.params.id) ? route.params.id[0] : null
-)// ID do employee (null se for criação) 
-const loading = ref(false); // Estado de loading global
-const errorMsg = ref(""); // Mensagem de erro global
-let alertTimeout: ReturnType<typeof setTimeout> | null = null; // Timeout para mensagens de erro
+);
+const loading = ref(false);
+const errorMsg = ref("");
+let alertTimeout: ReturnType<typeof setTimeout> | null = null;
+
+const basicDataValidated = ref(false);
 
 // Dados reativos do formulário
 let employeeData = reactive<EmployeeInsertType>({
@@ -91,7 +93,7 @@ let employeeData = reactive<EmployeeInsertType>({
   passportIssuanceDate: new Date().toISOString().split('T')[0],
   passportExpiryDate: new Date().toISOString().split('T')[0],
   enabled: true,
-  
+
   // Dados da segunda tab
   salary: null,
   company: undefined,
@@ -124,7 +126,7 @@ const handleApiError = (error: any) => {
       }, 5000);
     }
     message = error.response.data.message || message;
-  } 
+  }
   // Erros gerais
   else if (error.message) {
     message = error.message;
@@ -165,7 +167,7 @@ onMounted(async () => {
       employeeData.company = data.company?.id;
       employeeData.department = data.department?.id;
       employeeData.position = data.position?.id;
-      
+
       // Carrega dados dependentes
       if (employeeData.company) {
         await departmentStore.fetchDepartments(employeeData.company);
@@ -188,9 +190,27 @@ onMounted(async () => {
  * Muda entre as abas do formulário
  * @param value - Número da aba (1 ou 2)
  */
+
 const onStepChange = (value: number) => {
-  step.value = value;
+  // Permite sempre voltar para tabs anteriores
+  if (value < step.value) {
+    step.value = value;
+    return;
+  }
+
+  // No modo de edição ou quando dados básicos já foram validados, permite navegar livremente
+  if (employeeId.value || employeeId.value) {
+    step.value = value;
+    return;
+  }
+
+  // No modo criação, só permite avançar para a próxima tab sequencialmente
+  if (value === step.value + 1) {
+    step.value = value;
+  }
 };
+
+
 
 /**
  * Salva os dados do employee
@@ -208,13 +228,19 @@ const saveEmployee = async (isFinalStep: boolean = false) => {
     } else {
       // Modo criação
       response = await employeeService.createEmployee(employeeData);
-      
+
       if (response?.data?.id) {
         employeeId.value = response.data.id;
+        employeeStore.setCurrentEmployeeId(response.data.id);
+        basicDataValidated.value = true;
       } else {
         throw new Error(response?.error?.message || t('t-error-creating-employee'));
       }
     }
+
+    // Salvar draft na store
+    employeeStore.setDraftEmployee(employeeData);
+
 
     // Feedback de sucesso
     toast.success(employeeId.value
@@ -261,21 +287,11 @@ onBeforeUnmount(() => {
       </transition>
 
       <!-- Abas do formulário -->
-      <Step1 
-        v-if="step === 1" 
-        @onStepChange="onStepChange" 
-        v-model="employeeData" 
-        @save="saveEmployee(false)"
-        :loading="loading" 
-      />
+      <Step1 v-if="step === 1" @onStepChange="onStepChange" v-model="employeeData" @save="saveEmployee(false)"
+        :loading="loading" />
 
-      <Step2 
-        v-if="step === 2" 
-        @onStepChange="onStepChange" 
-        v-model="employeeData" 
-        @save="saveEmployee(true)"
-        :loading="loading" 
-      />
+      <Step2 v-if="step === 2" @onStepChange="onStepChange" v-model="employeeData" @save="saveEmployee(true)"
+        :loading="loading" />
     </v-card-text>
   </Card>
 </template>

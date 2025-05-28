@@ -101,8 +101,7 @@ export const useInstitutionStore = defineStore('institutions', {
       } finally {
         this.loading = false;
       }
-    }
-    ,
+    },
     setDraftInstitution(data: InstitutionInsertType) {
       this.draftInstitution = data;
       localStorage.setItem('institutionDraft', JSON.stringify(data));

@@ -59,7 +59,7 @@ const countryStore = useCountryStore();
 const provinceStore = useProvinceStore();
 
 // Referências do formulário
-const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
+const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null); 
 
 // Dados computados do employee
 let employeeData = computed({
@@ -244,7 +244,7 @@ const submitForm = async () => {
     return;
   }
 
-  emit('save');
+  //emit('save');
 };
 
 
