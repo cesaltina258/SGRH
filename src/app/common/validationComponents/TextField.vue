@@ -84,16 +84,20 @@ const v$ = useVuelidate(vuelidateRules, { fieldValue });
 // Combina as regras do Vuetify com as mensagens de erro do Vuelidate
 const combinedRules = computed(() => {
   const vuetifyRules = props.rules || [];
-  
+
   if (props.showError && props.isSubmitted) {
     return [
       ...vuetifyRules,
-      () => v$.value.fieldValue.$errors.length === 0 || v$.value.fieldValue.$errors[0].$message
+      () => {
+        const error = v$.value.fieldValue.$errors[0];
+        return v$.value.fieldValue.$errors.length === 0 || (error && String(error.$message));
+      }
     ];
   }
-  
+
   return vuetifyRules;
 });
+
 
 const onChange = () => {
   if (isValidation.value) {

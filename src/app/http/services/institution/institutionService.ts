@@ -1,6 +1,17 @@
 import HttpService from "@/app/http/httpService";
-import type { InstitutionListingType, InstitutionInsertType } from "@/components/institution/types";
+import type { InstitutionListingType, InstitutionInsertType, InstitutionResponseType } from "@/components/institution/types";
 import type { ApiErrorResponse } from "@/app/common/types/errorType";
+
+interface ApiResponse<T> {
+  data: T;
+  meta?: any;
+}
+
+interface ServiceResponse<T> {
+  status: 'success' | 'error';
+  data?: T;
+  error?: ApiErrorResponse;
+}
 export default class InstitutionService extends HttpService {
 
   //get de todas instituicoes para o select box
@@ -31,7 +42,7 @@ export default class InstitutionService extends HttpService {
 
       console.log('URL da requisição institution------------------:', url); // Para debug
 
-      const response = await this.get(url);
+      const response = await this.get<ApiResponse<InstitutionListingType[]>>(url);
 
       console.log('Resposta da requisição:', response); // Para debug
 
@@ -77,7 +88,7 @@ export default class InstitutionService extends HttpService {
 
       console.log('URL da requisição:', url); // Para debug
 
-      const response = await this.get(url);
+      const response = await this.get<ApiResponse<InstitutionListingType[]>>(url);
 
       console.log('Resposta da requisição:', response); // Para debug
 
@@ -92,51 +103,59 @@ export default class InstitutionService extends HttpService {
     }
   }
 
-  async createInstitution(institutionData: InstitutionInsertType) {
+  async createInstitution(institutionData: InstitutionInsertType): Promise<ServiceResponse<InstitutionResponseType>> {
     try {
-
-      //institutionData.maxNumberOfDependents = institutionData.maxNumberOfDependents.value;
-      //institutionData.childrenMaxAge = institutionData.childrenMaxAge.value;
-
-      const response = await this.post('/administration/companies', institutionData);
+      const response = await this.post<ApiResponse<InstitutionResponseType>>('/administration/companies', institutionData);
       return {
         status: 'success',
         data: response.data
       };
     } catch (error: any) {
       if (error.response) {
-        // Error from backend
         return {
           status: 'error',
           error: error.response.data as ApiErrorResponse
         };
       }
-      // Network or other error
       return {
         status: 'error',
-        error: {
-          message: 'Network error',
-          detail: 'Could not connect to server'
-        }
+        error: this.createNetworkErrorResponse()
       };
     }
   }
 
-  async getInstitutionById(id: string | number) {
+  private createNetworkErrorResponse(): ApiErrorResponse {
+    return {
+      status: 'error',
+      message: 'Network error',
+      error: {
+        type: 'ConnectionError',
+        title: 'Network Error',
+        status: 503,
+        detail: 'Could not connect to server',
+        instance: '/administration/companies'
+      },
+      meta: {
+        timestamp: new Date().toISOString()
+      }
+    };
+  }
+
+  async getInstitutionById(id: string): Promise<{ data: InstitutionResponseType }> {
     try {
-      const response = await this.get(`/administration/companies/${id}?includes=institutionType`);
+      const response = await this.get<{ data: InstitutionResponseType; meta: any }>(
+        `/administration/companies/${id}?includes=institutionType`
+      );
       console.log('Resposta da requisição:------------------------', response); 
+  
       return {
-        status: 'success',
         data: response.data
       };
     } catch (error) {
-      return {
-        status: 'error',
-        error: this.handleError(error)
-      };
+      throw this.handleError(error);
     }
   }
+  
 
   handleError(error: any) {
     if (error.response) {
@@ -161,7 +180,7 @@ export default class InstitutionService extends HttpService {
     }
   }
 
-   async updateInstitution(id: string, institutionData: InstitutionInsertType): Promise<InstitutionListingType> {
+   async updateInstitution(id: string, institutionData: InstitutionInsertType): Promise<InstitutionResponseType> {
       try {
   
         // Corpo da requisição conforme especificado
@@ -178,7 +197,7 @@ export default class InstitutionService extends HttpService {
           childrenMaxAge: institutionData.childrenMaxAge
         };
   
-        const response = await this.put<InstitutionInsertType>(`/administration/companies/${id}`, payload);
+        const response = await this.put<InstitutionResponseType>(`/administration/companies/${id}`, payload);
         console.log('response update institution', response)
         return response;
   

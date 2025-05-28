@@ -37,19 +37,6 @@ const format = (dates: Date[]) => {
   <Dashboard />
   <v-card class="mt-4">
     <v-card-text>
-      <div class="real-estate-orders-calender">
-        <
-          v-model="date"
-          range
-          :teleport="true"
-          height="150"
-          :enable-time-picker="false"
-          :format="format"
-          :clearable="false"
-          position="left"
-        />
-        <i class="calender-dropdown ph ph-caret-down"></i>
-      </div>
       <apexchart
         v-if="realEstateEarningsChart"
         class="apex-charts"

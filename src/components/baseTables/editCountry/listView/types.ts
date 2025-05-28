@@ -1,11 +1,11 @@
 export type ProvinceInsertType = {
-  id: number;
+  id: string;
   name: string;
   code: string;
 };
 
 export type ProvinceListingType = {
-  id: number;
+  id: string;
   name: string;
   code: string;
 };

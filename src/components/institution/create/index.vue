@@ -18,7 +18,7 @@ import ButtonNav from "@/components/institution/create/ButtonNav.vue";
 import Step1 from "@/components/institution/create/TabGeneralInfo.vue";
 import Step4 from "@/components/institution/create/TabContacts.vue";
 import Step2 from "@/components/institution/create/TabHealthPlan.vue";
-import Step3 from "@/components/institution/create/TabInteractionHistory.vue";
+import Step3 from "@/components/institution/create/TabOrganizationalStructure.vue";
 
 
 //Stores
@@ -39,7 +39,9 @@ const toast = useToast();
 
 // Refs
 const step = ref(1); // Controla a aba atual (1 ou 2)
-const institutionId = ref(route.params.id); // ID do employee (null se for criação)
+const institutionId = ref<string | null>(
+  typeof route.params.id === 'string' ? route.params.id : Array.isArray(route.params.id) ? route.params.id[0] : null
+);
 const loading = ref(false); // Estado de loading global
 const errorMsg = ref(""); // Mensagem de erro global
 let alertTimeout: ReturnType<typeof setTimeout> | null = null; // Timeout para mensagens de erro
@@ -47,23 +49,23 @@ let alertTimeout: ReturnType<typeof setTimeout> | null = null; // Timeout para m
 const basicDataValidated = ref(false);
 
 // Dados reativos do formulário
-const institutionData = reactive<InstitutionInsertType>({
+let institutionData = reactive<InstitutionInsertType>({
   // Dados da primeira tab
   name: '',
   address: '',
-  phone:'',
+  phone: '',
   email: '',
   website: null,
   description: null,
-  incomeTaxNumber:'',
-  institutionType: null,
-  
+  incomeTaxNumber: '',
+  institutionType: undefined,
+
   // Dados da segunda tab
   maxNumberOfDependents: null,
   childrenMaxAge: null,
   healthPlanLimit: '',
   fixedAmount: null,
-  salaryComponent: null,
+  salaryComponent: undefined,
   companyContributionPercentage: null
 
 });
@@ -72,7 +74,7 @@ const institutionData = reactive<InstitutionInsertType>({
  * Trata erros da API de forma consistente
  * @param error - Objeto de erro da API
  */
- const handleApiError = (error: any) => {
+const handleApiError = (error: any) => {
   // Limpa timeout anterior se existir
   if (alertTimeout) {
     clearTimeout(alertTimeout);
@@ -93,7 +95,7 @@ const institutionData = reactive<InstitutionInsertType>({
       }, 5000);
     }
     message = error.response.data.message || message;
-  } 
+  }
   // Erros gerais
   else if (error.message) {
     message = error.message;
@@ -114,16 +116,22 @@ const institutionData = reactive<InstitutionInsertType>({
  * Carrega dados do employee quando em modo de edição
  */
 onMounted(async () => {
+  institutionStore.loadFromStorage();
+
+  if (institutionStore.currentInstitutionId) {
+    institutionId.value = institutionStore.currentInstitutionId;
+    basicDataValidated.value = true;
+  }
+
   if (institutionId.value) {
     try {
       loading.value = true;
       const response = await institutionService.getInstitutionById(institutionId.value);
 
-      // Atribui os dados básicos
-      Object.assign(institutionData, response.data);
-
-      // Atribui IDs para relacionamentos
-      institutionData.institutionType = response.data.institutionType?.id || null;
+      if (response && response.data) {
+        Object.assign(institutionData, response.data);
+        institutionData.institutionType = response.data.institutionType?.id || undefined;
+      }
 
     } catch (error) {
       toast.error(t('t-error-loading-institution'));
@@ -139,18 +147,18 @@ onMounted(async () => {
  * @param value - Número da aba (1 ou 2)
  */
 const onStepChange = (value: number) => {
-    // Permite sempre voltar para tabs anteriores
-    if (value < step.value) {
+  // Permite sempre voltar para tabs anteriores
+  if (value < step.value) {
     step.value = value;
     return;
   }
-  
+
   // No modo de edição ou quando dados básicos já foram validados, permite navegar livremente
   if (institutionId.value || basicDataValidated.value) {
     step.value = value;
     return;
   }
-  
+
   // No modo criação, só permite avançar para a próxima tab sequencialmente
   if (value === step.value + 1) {
     step.value = value;
@@ -162,7 +170,7 @@ const onStepChange = (value: number) => {
  * Salva os dados do employee
  * @param isFinalStep - Indica se é o passo final (salvar e sair)
  */
- const saveInstitution = async (isFinalStep: boolean = false) => {
+const saveInstitution = async (isFinalStep: boolean = false) => {
   try {
     loading.value = true;
     errorMsg.value = "";
@@ -176,14 +184,18 @@ const onStepChange = (value: number) => {
 
       // Modo criação
       response = await institutionService.createInstitution(institutionData);
-      
+
       if (response?.data?.id) {
         institutionId.value = response.data.id;
+        institutionStore.setCurrentInstitutionId(response.data.id);
         basicDataValidated.value = true;
       } else {
         throw new Error(response?.error?.message || t('t-error-creating-employee'));
       }
     }
+
+    // Salvar draft na store
+    institutionStore.setDraftInstitution(institutionData);
 
     // Feedback de sucesso
     toast.success(institutionId.value
@@ -197,6 +209,7 @@ const onStepChange = (value: number) => {
     } else {
       step.value++;
     }
+
   } catch (error) {
     console.error('Error saving institution:', error);
     handleApiError(error);
@@ -218,11 +231,14 @@ onBeforeUnmount(() => {
 <template>
   <Card title="">
     <v-card-text>
-      <ButtonNav v-model="step" class="mb-2" :institution-id="institutionId" :basic-data-validated="basicDataValidated" />
-      <Step1 v-if="step === 1" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)" :loading="loading"  />
-      <Step2 v-if="step === 2" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)" :loading="loading"/>
+      <ButtonNav v-model="step" class="mb-2" :institution-id="institutionId as string"
+        :basic-data-validated="basicDataValidated" />
+      <Step1 v-if="step === 1" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)"
+        :loading="loading" />
+      <Step2 v-if="step === 2" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)"
+        :loading="loading" />
       <Step3 v-if="step === 3" @onStepChange="onStepChange" />
-      <Step4 v-if="step === 4" @onStepChange="onStepChange"/>
+      <Step4 v-if="step === 4" @onStepChange="onStepChange" />
     </v-card-text>
   </Card>
-</template> 
+</template>

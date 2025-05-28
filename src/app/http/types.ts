@@ -4,13 +4,13 @@ export type UserType = {
   password: string;
 };
 
-export type UserType1 = {
+export type UserType1 = { 
   id: number;
   firstName: string;
   lastName: string;
   password: string;
   email: string;
-  username: string;
+  username?: string;
   enabled: boolean;
   accountLocked: boolean;
   twoFactor: boolean;

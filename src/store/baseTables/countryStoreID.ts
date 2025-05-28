@@ -9,7 +9,7 @@ export const useCountryStoreID = defineStore('country_id', {
     error: null as string | null,
   }),
   actions: {
-    async fetchCountryByID(id: number): Promise<CountryListingType | null> {
+    async fetchCountryByID(id: string): Promise<CountryListingType | null> {
       this.error = null;
 
       try {

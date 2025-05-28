@@ -2,6 +2,16 @@ import HttpService from "@/app/http/httpService";
 import type { InstitutionTypeListingType } from "@/components/baseTables/institutionType/types";
 import type { ApiErrorResponse } from "@/app/common/types/errorType";
 
+interface ApiResponse<T> {
+  data: T;
+  meta?: any;
+}
+
+interface ServiceResponse<T> {
+  status: 'success' | 'error';
+  data?: T;
+  error?: ApiErrorResponse;
+}
 export default class InstitutionTypeService extends HttpService {
 
   //get de todas instituicoes para o select box
@@ -32,9 +42,9 @@ export default class InstitutionTypeService extends HttpService {
 
       console.log('URL da requisição institution type------------------:', url); // Para debug
 
-      const response = await this.get(url);
+      const response = await this.get<ApiResponse<InstitutionTypeListingType[]>>(url);
 
-      console.log('Resposta da requisição:', response); // Para debug
+      console.log('Resposta da requisição:', response); // Para debug  
 
       return {
         content: response.data || [],

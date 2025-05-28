@@ -90,7 +90,7 @@ onBeforeUnmount(() => {
 // Estado do componente
 const searchQuery = ref("")
 const searchProps = "firstName,lastName,email" // Campos de pesquisa
-const itemsPerPage = ref(2)
+const itemsPerPage = ref(10)
 const selectedUsers = ref<any[]>([]) /// Armazena os funcionários selecionados
 
 
@@ -104,7 +104,14 @@ watch(selectedUsers, (newSelection) => {
 }, { deep: true })
 
 
-const fetchUsers = async ({ page, itemsPerPage, sortBy, search }) => {
+interface FetchParams {
+  page: number;
+  itemsPerPage: number;
+  sortBy: Array<{ key: string; order: 'asc' | 'desc' }>;
+  search: string;
+}
+
+const fetchUsers = async ({ page, itemsPerPage, sortBy, search }: FetchParams) => {
   await userStore.fetchUsers(
     page - 1, // Ajuste para API que começa em 0
     itemsPerPage,
@@ -115,7 +122,7 @@ const fetchUsers = async ({ page, itemsPerPage, sortBy, search }) => {
   )
 }
 
-const toggleSelection = (item) => {
+const toggleSelection = (item: UserListingType) => {
   const index = selectedUsers.value.findIndex(selected => selected.id === item.id);
   if (index === -1) {
     selectedUsers.value = [...selectedUsers.value, item];
@@ -140,6 +147,14 @@ const onCreateEditClick = (data: UserListingType | null) => {
       lastName: "",
       email: "",
       password: "",
+      enabled: false,
+      accountLocked: false,
+      twoFactor: false,
+      failedsLogin: "",
+      lastSucessfulLogin: "",
+      lastFailedLogin: "",
+      lastPasswordUpdate: "",
+      passwordExpirationDate: ""
     };
   } else {
     userData.value = data;
@@ -217,7 +232,14 @@ const onViewClick = (data: UserListingType | null) => {
       lastName: "",
       email: "",
       password: "",
-
+      enabled: false,
+      accountLocked: false,
+      twoFactor: false,
+      failedsLogin: "",
+      lastSucessfulLogin: "",
+      lastFailedLogin: "",
+      lastPasswordUpdate: "",
+      passwordExpirationDate: ""
     };
   } else {
     //console.log('data userdata', data);
@@ -284,9 +306,6 @@ const onConfirmEnableAccount = async () => {
   }
 };
 
-
-
-
 //Delete do utilizador
 watch(deleteDialog, (newVal: boolean) => {
   if (!newVal) {
@@ -319,7 +338,7 @@ const onConfirmDelete = async () => {
     console.error("Delete error:", error);
 
     // Opcional: Mostrar detalhes do erro se disponível
-    const errorMessage = error.response?.data?.message || t('t-message-delete-error-unknown');
+    const errorMessage = (error as any)?.response?.data?.message || t('t-message-delete-error-unknown');
     toast.error(errorMessage);
 
   } finally {
@@ -386,7 +405,7 @@ const getDynamicOptions = (user: UserListingType) => {
         :items-per-page="itemsPerPage" :total-items="totalItems" :loading="loadingList" :search-query="searchQuery"
         :search-props="searchProps" @load-items="fetchUsers" item-value="id" show-select>
         <template #body="{ items }">
-          <tr v-for="item in items" :key="item.id" height="50">
+          <tr v-for="item in items as UserListingType[]" :key="item.id" height="50">
             <td>
               <v-checkbox :model-value="selectedUsers.some(selected => selected.id === item.id)"
                 @update:model-value="toggleSelection(item)" hide-details density="compact" />

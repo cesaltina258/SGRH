@@ -42,7 +42,12 @@ const toast = useToast();
 const router = useRouter();
 
 // Emits e Props
-const emit = defineEmits(['onStepChange', 'save']);
+const emit = defineEmits<{
+  (e: 'onStepChange', step: number): void;
+  (e: 'save'): void;
+  (e: 'update:modelValue', value: EmployeeInsertType): void;
+}>();
+
 const props = defineProps({
   modelValue: {
     type: Object as () => EmployeeInsertType,
@@ -63,7 +68,7 @@ const provinceStore = useProvinceStore();
 const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 
 // Dados computados do employee
-const employeeData = computed({
+let employeeData = computed({
   get() {
     return props.modelValue;
   },
@@ -198,15 +203,15 @@ watch(() => employeeData.value.country, async (newCountryId, oldCountryId) => {
             p => p.id === employeeData.value.province
           );
           if (!currentProvince) {
-            employeeData.value.province = null;
+            employeeData.value.province = undefined;
           }
         } else {
-          employeeData.value.province = null;
+          employeeData.value.province = undefined;
         }
       } catch (error) {
         console.error("Failed to load provinces:", error);
         provinceStore.provincesbyCountry = [];
-        employeeData.value.province = null;
+        employeeData.value.province = undefined;
         errorMsg.value = "Falha ao carregar províncias";
         alertTimeout = setTimeout(() => {
           errorMsg.value = "";
@@ -215,7 +220,7 @@ watch(() => employeeData.value.country, async (newCountryId, oldCountryId) => {
       }
     } else {
       provinceStore.clearProvinces();
-      employeeData.value.province = null;
+      employeeData.value.province = undefined;
     }
   }
 });
@@ -386,7 +391,7 @@ const submitForm = async () => {
               {{ $t('t-email') }}
             </div>
             <TextField v-model="employeeData.email" :placeholder="$t('t-enter-email')" hide-details
-              :rules="requiredRules.email" disabled/>
+              disabled/>
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">

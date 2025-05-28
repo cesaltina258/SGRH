@@ -40,7 +40,7 @@ const provinceStore = useProvinceStore();
 const countryData = ref<CountryListingType | null>(null);
 
 const route = useRoute();
-const countryId = computed(() => Number(route.query.id));
+const countryId = computed(() => String(route.query.id));
 
 const onBack = () => {
   router.push({ path: `/baseTable/country/list` });
@@ -70,7 +70,7 @@ const viewDialog = ref(false);
 const provinceFormData = ref<ProvinceListingType | null>(null);
 
 const form = ref({
-  id: null as number | null,
+  id: null as string | null,
   name: "",
   code: "",
   iso2Code: "",
@@ -154,7 +154,7 @@ const validateForm = () => {
 
 
 const deleteDialog = ref(false);
-const deleteId = ref<number | null>(null);
+const deleteId = ref<string | null>(null);
 const deleteLoading = ref(false);
 const isSelectAll = ref(false);
 const manualUpdateTrigger = ref(false);
@@ -180,7 +180,7 @@ watch(countryData, (val) => {
 
 
 watch(provinceData, (val) => {
-  if (val) {
+  if (val && Array.isArray(val)) {
     const mapped = val.map((item: ProvinceListingType) => ({
       ...item,
       isCheck: false
@@ -301,7 +301,7 @@ watch(dialog, (newVal: boolean) => {
 const onCreateEditClick = (data: ProvinceListingType | null) => {
   if (!data) {
     provinceFormData.value = {
-      id: -1,
+      id: '-1',
       name: "",
       code: "",
     };
@@ -313,10 +313,12 @@ const onCreateEditClick = (data: ProvinceListingType | null) => {
   dialog.value = true;
 };
 
-const onSubmit = async (data: CountryListingType, callbacks?: {
-  onSuccess?: () => void,
-  onFinally?: () => void
-}) => {
+const onSubmit = async (
+  data: ProvinceListingType,
+  callbacks?: {
+    onSuccess?: () => void;
+    onFinally?: () => void;
+  }) => {
   try {
     if (!data.id) {
       await provinceService.createProvince(data);
@@ -351,7 +353,7 @@ watch(viewDialog, (newVal: boolean) => {
 const onViewClick = (data: ProvinceListingType | null) => {
   if (!data) {
     provinceFormData.value = {
-      id: -1,
+      id: '-1',
       name: "",
       code: "",
 
@@ -369,7 +371,7 @@ watch(deleteDialog, (newVal: boolean) => {
     deleteId.value = null;
   }
 });
-const onDelete = (id: number) => {
+const onDelete = (id: string) => {
   deleteId.value = id;
   deleteDialog.value = true;
 };
@@ -403,7 +405,12 @@ const handleSubmit = async () => {
 
   try {
     loading.value = true;
-    await countryService.updateCountry(form.value.id!, form.value);
+    if (!form.value.id) {
+      toast.error(t('t-missing-country-id'));
+      return;
+    }
+    await countryService.updateCountry(form.value.id, form.value);
+
     toast.success(t('t-toast-message-update'));
     await countryStore.fetchCountries();
     getPaginatedData();
@@ -427,6 +434,9 @@ const onSelect = (option: string, data: ProvinceListingType) => {
       break;
   }
 };
+
+
+
 </script>
 
 <template>
@@ -544,12 +554,10 @@ const onSelect = (option: string, data: ProvinceListingType) => {
             <v-card-text>
               <Table v-model="page"
                 :headerItems="listViewHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))" :config="config"
-                :loading="loading" is-pagination @on-select-all="onSelectAll" class="ma-n2">
+                :loading="loading" is-pagination class="ma-n2">
                 <template #body>
                   <tr v-for="(item, index) in tableData" :key="'agent-listing-item-' + index" height="50">
-                    <td>
-                      <v-checkbox v-model="item.isCheck" hide-details color="primary" />
-                    </td>
+                   
                     <td style="padding-right: 200px;">{{ item.name }}</td>
                     <td style="padding-right: 200px;">{{ item.code }}</td>
                     <!-- <td>
@@ -591,7 +599,6 @@ const onSelect = (option: string, data: ProvinceListingType) => {
   <CreateUpdateProvinceModal v-if="provinceFormData" :country="countryId" v-model="dialog" :data="provinceFormData"
     @onSubmit="onSubmit" />
 
-  <ViewProvinceModal v-if="provinceFormData" v-model="viewDialog" :data="provinceFormData" />
 
   <RemoveItemConfirmationDialog v-if="deleteId" v-model="deleteDialog" @onConfirm="onConfirmDelete"
     :loading="deleteLoading" />

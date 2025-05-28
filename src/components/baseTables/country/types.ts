@@ -1,5 +1,5 @@
 export type CountryInsertType = {
-  id: number;
+  id: string;
   name: string;
   code: string;
   iso2Code: string;
@@ -10,8 +10,21 @@ export type CountryInsertType = {
   currencyCode: string;
 };
 
+export type CountryApiResponse = {
+  status: string;
+  data: CountryListingType[];
+  meta: {
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    last: boolean;
+    timestamp: string;
+  };
+};
+
 export type CountryListingType = {
-  id: number;
+  id: string;
   name: string;
   code: string;
   iso2Code: string;

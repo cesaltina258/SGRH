@@ -85,8 +85,12 @@ const submitForm = async () => {
       passwordsMatching: formData.value.newPswd.value === formData.value.confirmPswd.value,
     };
 
+    console.log("Payload enviado:", formData.value.newPswd.value, formData.value.confirmPswd.value, payload);
+
 
     const response = await userService.updatePassword(payload); // ajuste conforme seu endpoint
+
+    
 
     if (response.status === "error") {
       handleApiError(response);

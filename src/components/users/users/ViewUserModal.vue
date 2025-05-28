@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { PropType, computed, ref } from "vue";
-import { UserInsertType } from "@/components/users/users/types";
-import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
+import { UserInsertType } from "@/components/users/types";
 import { statusOptions } from "@/components/realEstate/agent/utils";
 import { colors } from "@/components/ui/utils";
 import { useI18n } from "vue-i18n";
@@ -39,7 +38,6 @@ const id =  ref(formData.value.id || "");
 const firstName = ref(formData.value.firstName || "");
 const lastName = ref(formData.value.lastName || "");
 const email = ref(formData.value.email || "");
-const username = ref(formData.value.username || "");
 //const enable = ref(formData.value.enable || true);
 
 // Remove as refs de password se não for criação

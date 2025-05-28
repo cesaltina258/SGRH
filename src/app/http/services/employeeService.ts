@@ -1,6 +1,17 @@
 import HttpService from "@/app/http/httpService";
-import type { EmployeeListingType, EmployeeInsertType, EmployeeUpdateType } from "@/components/employee/types";
+import type { EmployeeListingType, EmployeeInsertType, EmployeeResponseType } from "@/components/employee/types";
 import type { ApiErrorResponse } from "@/app/common/types/errorType";
+
+interface ApiResponse<T> {
+  data: T;
+  meta?: any;
+}
+
+interface ServiceResponse<T> { 
+  status: 'success' | 'error';
+  data?: T;
+  error?: ApiErrorResponse;
+}
 
 export default class EmployeeService extends HttpService {
 
@@ -39,7 +50,8 @@ export default class EmployeeService extends HttpService {
   
       console.log('URL da requisição:', url); // Para debug
   
-      const response = await this.get(url);
+      const response = await this.get<ApiResponse<EmployeeListingType[]>>(url);
+
 
       console.log('Resposta da requisição:', response); // Para debug
       
@@ -54,45 +66,54 @@ export default class EmployeeService extends HttpService {
     }
   }
 
-  async createEmployee(employeeData: EmployeeInsertType) {
+  async createEmployee(employeeData: EmployeeInsertType): Promise<ServiceResponse<EmployeeResponseType>> {
     try {
-      const response = await this.post('/human-resource/employees', employeeData);
+      const response = await this.post<ApiResponse<EmployeeResponseType>>('/human-resource/employees', employeeData);
       return {
         status: 'success',
         data: response.data
       };
     } catch (error: any) {
       if (error.response) {
-        // Error from backend
         return {
           status: 'error',
           error: error.response.data as ApiErrorResponse
         };
       }
-      // Network or other error
       return {
         status: 'error',
-        error: {
-          message: 'Network error',
-          detail: 'Could not connect to server'
-        }
+        error: this.createNetworkErrorResponse()
       };
     }
   }
 
-  async getEmployeeById(id: string | number) {
+  private createNetworkErrorResponse(): ApiErrorResponse {
+    return {
+      status: 'error',
+      message: 'Network error',
+      error: {
+        type: 'ConnectionError',
+        title: 'Network Error',
+        status: 503,
+        detail: 'Could not connect to server',
+        instance: '/human-resource/employees'
+      },
+      meta: {
+        timestamp: new Date().toISOString()
+      }
+    };
+  }
+
+  async getEmployeeById(id: string ) : Promise<{ data: EmployeeResponseType }> {
     try {
-      const response = await this.get(`/human-resource/employees/${id}?includes=position,department,company,province,country`);
+      const response = await this.get<{ data: EmployeeResponseType; meta: any }>
+      (`/human-resource/employees/${id}?includes=position,department,company,province,country`);
       console.log('Resposta da requisição:------------------------', response); 
       return {
-        status: 'success',
         data: response.data
       };
     } catch (error) {
-      return {
-        status: 'error',
-        error: this.handleError(error)
-      };
+      throw this.handleError(error);
     }
   }
 
@@ -110,10 +131,10 @@ export default class EmployeeService extends HttpService {
     };
   }
 
-  async updateEmployee(id: string, employeeData: EmployeeInsertType): Promise<EmployeeListingType> {
+  async updateEmployee(id: string, employeeData: EmployeeInsertType): Promise<EmployeeResponseType> {
     try {
 
-      console.log('employeeData on update', employeeData.salary.value)
+      console.log('employeeData on update', employeeData.salary)
       // Corpo da requisição conforme especificado
       const payload = {
         employeeNumber: employeeData.employeeNumber,
@@ -145,13 +166,13 @@ export default class EmployeeService extends HttpService {
         passportIssuer: employeeData.passportIssuer,
         passportExpiryDate: employeeData.passportExpiryDate,
         passportIssuanceDate: employeeData.passportIssuanceDate,
-        salary: employeeData.salary.value,
+        salary: employeeData.salary,
         company: employeeData.company,
         department: employeeData.department,
         position: employeeData.position
       };
 
-      const response = await this.put<EmployeeInsertType>(`/human-resource/employees/${id}`, payload);
+      const response = await this.put<EmployeeResponseType>(`/human-resource/employees/${id}`, payload);
       console.log('response update', response)
       return response;
 
@@ -161,7 +182,7 @@ export default class EmployeeService extends HttpService {
     }
   }
 
-  async deleteEmployee(id: number): Promise<void> {
+  async deleteEmployee(id: string): Promise<void> {
     try {
       await this.delete(`/human-resource/employees/${id}`);
     } catch (error) {

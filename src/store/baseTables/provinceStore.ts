@@ -2,7 +2,6 @@
 import { defineStore } from 'pinia';
 import { provinceService } from "@/app/http/httpServiceProvider";
 import type { ProvinceListingType } from '@/components/baseTables/province/types';
-import { load } from '@amcharts/amcharts5/.internal/core/util/Net';
 
 export const useProvinceStore = defineStore('provinces', {
   state: () => ({
@@ -30,13 +29,14 @@ export const useProvinceStore = defineStore('provinces', {
     clearProvinces() {
       this.provincesbyCountry = [];
     },
-    async fetchProvincesbyCountry(countryId: string | number) {
+    async fetchProvincesbyCountry(countryId:  string) {
       this.loading = true;
       this.error = null;
       try {
-        const data = await provinceService.getProvinceBycountrId(countryId);
-        // Garante que a resposta seja tratada como array
-        this.provincesbyCountry = Array.isArray(data) ? data : [];
+        console.log("countryId", countryId);
+        const response = await provinceService.getProvinceBycountrId(countryId);
+        this.provincesbyCountry = response.data || [];
+        
         console.log('response store provinces by country', this.provincesbyCountry);
       } catch (error) {
         this.error = 'Failed to load provinces';

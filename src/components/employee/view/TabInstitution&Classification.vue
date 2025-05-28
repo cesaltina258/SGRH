@@ -22,7 +22,8 @@ import { useDepartmentStore } from '@/store/institution/departmentStore';
 import { usePositionStore } from '@/store/institution/positionStore';
 
 // Types
-import { InstitutionListingType } from "@/components/institution/types";
+import { InstitutionListingType  } from "@/components/institution/types";
+import { EmployeeInsertType } from "@/components/employee/types";
 
 // Configuração inicial
 const { t } = useI18n();
@@ -37,20 +38,19 @@ const positionStore = usePositionStore();
 const form2 = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 
 // Emits e Props
-const emit = defineEmits(["onStepChange", "save"]);
-const props = defineProps({
-  modelValue: {
-    type: Object,
-    required: true
-  },
-  loading: {
-    type: Boolean,
-    default: false
-  }
-});
+const emit = defineEmits<{
+  (e: 'onStepChange', step: number): void;
+  (e: 'save'): void;
+  (e: 'update:modelValue', value: EmployeeInsertType): void;
+}>();
+
+const props = defineProps<{
+  modelValue: EmployeeInsertType,
+  loading?: boolean
+}>();
 
 // Dados computados do employee
-const employeeData = computed({
+let employeeData = computed({
   get() {
     return props.modelValue;
   },
@@ -123,8 +123,8 @@ onMounted(async () => {
 watch(() => employeeData.value.company, (newInstitutionId) => {
   if (newInstitutionId) {
     departmentStore.fetchDepartments(newInstitutionId);
-    employeeData.value.department = null;
-    employeeData.value.position = null;
+    employeeData.value.department = undefined;
+    employeeData.value.position = undefined;
   } else {
     departmentStore.departments = [];
     positionStore.positions = [];
@@ -137,7 +137,7 @@ watch(() => employeeData.value.company, (newInstitutionId) => {
 watch(() => employeeData.value.department, (newDepartmentId) => {
   if (newDepartmentId) {
     positionStore.fetchPositions(newDepartmentId);
-    employeeData.value.position = null;
+    employeeData.value.position = undefined;
   } else {
     positionStore.positions = [];
   }

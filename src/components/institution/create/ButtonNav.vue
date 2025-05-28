@@ -8,7 +8,7 @@ const props = defineProps({
     default: 1,
   },
   institutionId: {
-    type: [String, Number],
+    type: [String],
     default: null
   },
   basicDataValidated: {

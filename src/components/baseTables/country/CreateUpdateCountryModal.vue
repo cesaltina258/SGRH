@@ -20,7 +20,7 @@ const prop = defineProps({
   },
 });
 
-const isCreate = computed(() => prop.data.id === -1);
+const isCreate = computed(() => prop.data.id === '-1');
 const formData = ref(prop.data);
 
 const dialogValue = computed({

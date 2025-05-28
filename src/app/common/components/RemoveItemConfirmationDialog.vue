@@ -15,6 +15,10 @@ const prop = defineProps({
     type: Number,
     default: 550,
   },
+  loading: { 
+    type: Boolean,
+    default: false
+  }
 });
 
 const dialogValue = computed({
