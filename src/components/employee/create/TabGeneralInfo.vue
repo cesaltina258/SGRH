@@ -1,93 +1,99 @@
 <script lang="ts" setup>
-// ==============================================
-// IMPORTS
-// ==============================================
-import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+/**
+ * TabGeneralInfo - Componente para informações gerais do employee 
+ * 
+ * Contém:
+ * - Dados pessoais
+ * - Documentos
+ * - Contatos
+ * - Endereço
+ */
+
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
+import { useToast } from 'vue-toastification';
+
+// Components
 import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
-import ValidatedDatePicker  from "@/app/common/components/ValidatedDatePicker.vue";
+import ValidatedDatePicker from "@/app/common/components/ValidatedDatePicker.vue";
+
+// Stores
+import { useEmployeeStore } from '@/store/employeeStore';
 import { useCountryStore } from '@/store/baseTables/countryStore';
 import { useProvinceStore } from '@/store/baseTables/provinceStore';
-import { useEmployeeStore } from '@/store/employeeStore';
-import { employeeService } from "@/app/http/httpServiceProvider";
-import { CountryListingType } from "@/components/baseTables/country/types";
-import { ProvinceListingType } from "@/components/baseTables/province/types";
-import { genderOptions, maritalStatusOptions, bloodGroupOptions, nationalityOptions } from "@/components/employee/create/utils";
-import type {
-  EmployeeInsertType
-} from "../types";
-import { useToast } from 'vue-toastification';
-import { useI18n } from "vue-i18n";
 
-// ==============================================
-// ROUTER & EMITS
-// ==============================================
+// Types
+import { CountryListingType } from "@/components/baseTables/country/types"
+import { ProvinceListingType } from "@/components/baseTables/province/types"
+import { EmployeeInsertType } from "../types";
+
+// Utils
+import {
+  genderOptions,
+  maritalStatusOptions,
+  bloodGroupOptions,
+  nationalityOptions
+} from "@/components/employee/create/utils";
+
+// Configuração inicial
 const { t } = useI18n();
 const toast = useToast();
 const router = useRouter();
-const emit = defineEmits(["onStepChange"]);
 
-// ==============================================
-// STORES
-// ==============================================
+// Emits e Props
+const emit = defineEmits<{
+  (e: 'onStepChange', step: number): void;
+  (e: 'save', payload: EmployeeInsertType): void; 
+  (e: 'update:modelValue', value: EmployeeInsertType): void;
+}>();
+
+const props = defineProps({
+  modelValue: {
+    type: Object as () => EmployeeInsertType,
+    required: true
+  },
+  loading: {
+    type: Boolean,
+    default: false
+  }
+});
+
+// Stores
 const employeeStore = useEmployeeStore();
 const countryStore = useCountryStore();
 const provinceStore = useProvinceStore();
 
-// ==============================================
-// FORM STATE
-// ==============================================
-const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
+// Referências do formulário
+const birthDatePicker = ref();
+const idCardIssuanceDatePicker = ref();
+const idCardExpiryDatePicker = ref();
+const form = ref<{ 
+  validate: () => Promise<{ valid: boolean }>;
+  resetValidation: () => void;
+} | null>(null);
 
-const employeeData = ref<EmployeeInsertType>({
-  employeeNumber: '',
-  firstName: '',
-  middleName: '',
-  lastName: '',
-  gender: '',
-  maritalStatus: null,
-  birthDate: new Date().toISOString().split('T')[0],
-  bloodGroup: '',
-  placeOfBirth: '',
-  nationality: '',
-  incomeTaxNumber: null,
-  socialSecurityNumber: null,
-  address: '',
-  country: '',
-  province: '',
-  postalCode: '',
-  email: '',
-  phone: '',
-  mobile: '',
-  emergencyContactName: '',
-  emergencyContactPhone: '',
-  idCardNumber: null,
-  idCardIssuer: '',
-  idCardExpiryDate: new Date().toISOString().split('T')[0],
-  idCardIssuanceDate: new Date().toISOString().split('T')[0],
-  passportNumber: null,
-  passportIssuer: '',
-  passportIssuanceDate: new Date().toISOString().split('T')[0],
-  passportExpiryDate: new Date().toISOString().split('T')[0]
+// Dados computados do employee
+let employeeData = computed({
+  get() {
+    return props.modelValue;
+  },
+  set(value) {
+    emit('update:modelValue', value);
+  }
 });
 
+// Estado da UI
+const errorMsg = ref("");
+let alertTimeout: ReturnType<typeof setTimeout> | null = null;
 
-
-// ==============================================
-// UI STATE
-// ==============================================
-const errors = ref<Record<string, string>>({});
-//const apiError = ref<string | null>(null);
-//const showGeneralError = ref(false);
-const loading = ref(false);
-const errorMsg = ref("")
-let alertTimeout: ReturnType<typeof setTimeout> | null = null // Modificado para usar let em vez de ref
-// ==============================================
-// VALIDATION RULES
-// ==============================================
+/**
+ * Regras de validação para os campos do formulário
+ */
 const requiredRules = {
   employeeNumber: [
     (v: string) => !!v || t('t-please-enter-employee-number'),
+    (v: string) => (v && v.length <= 20) || t('t-please-enter-maximum-20-characters'),
   ],
   firstName: [
     (v: string) => !!v || t('t-please-enter-employee-firstname'),
@@ -106,13 +112,25 @@ const requiredRules = {
     (v: string) => !!v || t('t-please-select-marital-status'),
   ],
   birthDate: [
-    (v: Date | string) => !!v || t('t-please-enter-birth-date'),
-    (v: Date | string) => {
+    (v: Date | string | null) => !!v || t('t-please-enter-birth-date'),
+    (v: Date | string | null) => {
       if (!v) return true;
-      const date = new Date(v);
+      
+      // Converter para Date se for string
+      const date = v instanceof Date ? v : new Date(v);
+      const today = new Date();
+      
+      // Validação de idade máxima (120 anos)
       const minDate = new Date();
       minDate.setFullYear(minDate.getFullYear() - 120);
-      return date >= minDate || t('t-invalid-birth-date');
+      if (date < minDate) return t('t-birth-date-too-old');
+      
+      // Validação de idade mínima (18 anos)
+      const maxDate = new Date();
+      maxDate.setFullYear(maxDate.getFullYear() - 18);
+      if (date > maxDate) return t('t-must-be-over-18');
+      
+      return true;
     }
   ],
   idCardIssuer: [
@@ -137,12 +155,14 @@ const requiredRules = {
       return date <= minDate || t('t-invalid-id-card-issuance-date');
     }
   ],
-  // Adicione outras regras conforme necessário
+  email: [
+    (v: string) => !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || t('t-invalid-email'),
+  ],
 }
 
-// ==============================================
-// COMPUTED PROPERTIES
-// ==============================================
+/**
+ * Opções para selects (países e províncias)
+ */
 const countries = computed(() => {
   return countryStore.countries.map((country: CountryListingType) => ({
     value: country.id,
@@ -156,7 +176,7 @@ const countries = computed(() => {
 
 const provinces = computed(() => {
   if (!Array.isArray(provinceStore.provincesbyCountry)) return [];
-  return provinceStore.provincesbyCountry.map((province: ProvinceListingType) => ({ 
+  return provinceStore.provincesbyCountry.map((province: ProvinceListingType) => ({
     value: province.id,
     label: province.name,
     meta: {
@@ -166,142 +186,136 @@ const provinces = computed(() => {
   }));
 });
 
-// ==============================================
-// LIFECYCLE HOOKS
-// ==============================================
+/**
+ * Carrega dados iniciais quando o componente é montado
+ */
 onMounted(async () => {
   try {
     await countryStore.fetchCountries();
+
+    // Carrega províncias se já houver país selecionado
+    if (employeeData.value.country) {
+      await provinceStore.fetchProvincesbyCountry(employeeData.value.country);
+    }
   } catch (error) {
     console.error("Failed to load countries:", error);
     errorMsg.value = "Falha ao carregar países";
     alertTimeout = setTimeout(() => {
-        errorMsg.value = ""
-        alertTimeout = null
-      }, 5000)
+      errorMsg.value = "";
+      alertTimeout = null;
+    }, 5000);
   }
 });
 
-// ==============================================
-// WATCHERS
-// ==============================================
-watch(() => employeeData.value.country, async (newCountryId) => {
-  if (newCountryId) {
-    try {
-      await provinceStore.fetchProvincesbyCountry(newCountryId);
-      employeeData.value.province = '';
-    } catch (error) {
-      console.error("Failed to load provinces:", error);
-      provinceStore.provincesbyCountry = [];
-      errorMsg.value = "Falha ao carregar províncias";
-      alertTimeout = setTimeout(() => {
-        errorMsg.value = ""
-        alertTimeout = null
-      }, 5000)
+/**
+ * Observa mudanças no país para carregar as províncias correspondentes
+ */
+watch(() => employeeData.value.country, async (newCountryId, oldCountryId) => {
+  // Só executa se o país realmente mudou
+  if (newCountryId !== oldCountryId) {
+    if (newCountryId) {
+      try {
+        await provinceStore.fetchProvincesbyCountry(newCountryId);
+
+        // Mantém a província atual apenas se for do mesmo país
+        if (employeeData.value.province) {
+          const currentProvince = provinceStore.provincesbyCountry.find(
+            p => p.id === employeeData.value.province
+          );
+          if (!currentProvince) {
+            employeeData.value.province = undefined;
+          }
+        } else {
+          employeeData.value.province = undefined;
+        }
+      } catch (error) {
+        console.error("Failed to load provinces:", error);
+        provinceStore.provincesbyCountry = [];
+        employeeData.value.province = undefined;
+        errorMsg.value = "Falha ao carregar províncias";
+        alertTimeout = setTimeout(() => {
+          errorMsg.value = "";
+          alertTimeout = null;
+        }, 5000);
+      }
+    } else {
+      provinceStore.clearProvinces();
+      employeeData.value.province = undefined;
     }
-  } else {
-    provinceStore.clearProvinces();
   }
 });
 
-// ==============================================
-// METHODS
-// ==============================================
+/**
+ * Volta para a lista de employees
+ */
 const onBack = () => {
   router.push({ path: `/employee/list` });
 };
 
+/**
+ * Valida e envia o formulário
+ */
+// Atualize o submitForm para usar as refs
 const submitForm = async () => {
-  if (!form.value) return
+  if (!form.value) return;
 
-  // Validação do Vuetify
-  const { valid } = await form.value.validate()
-
-  if (!valid) {
-    errorMsg.value = 'Por favor, corrija os erros destacados'
-    alertTimeout = setTimeout(() => {
-        errorMsg.value = ""
-        alertTimeout = null
-      }, 5000)
-    return
-  }
-
-  loading.value = true
   try {
-    const response = await employeeService.createEmployee(employeeData.value)
+    // Forçar validação dos date pickers
+    await birthDatePicker.value?.validate();
+    await idCardIssuanceDatePicker.value?.validate();
+    await idCardExpiryDatePicker.value?.validate();
 
-    if (response.status === 'error') {
-      handleApiError(response)
-    } else {
-      await employeeStore.fetchEmployees()
-      toast.success(t('t-toast-message-created'));
-      router.push('/employee/list')
+    // Resto da validação...
+    const { valid } = await form.value.validate();
+    
+    if (!valid) {
+      toast.error(t('t-validation-error'));
+      errorMsg.value = t('t-please-correct-errors');
+      alertTimeout = setTimeout(() => {
+        errorMsg.value = "";
+        alertTimeout = null;
+      }, 5000);
+      return;
     }
+
+    emit('onStepChange', 2);
+
   } catch (error) {
-    console.error("Erro ao criar funcionário:", error);
-    toast.error(t('t-message-save-error'));
-    handleApiError(error)
-  } finally {
-    loading.value = false
+    console.error("Validation error:", error);
+    errorMsg.value = t('t-validation-error');
   }
 }
 
-
-
-const handleApiError = (error: any) => {
-  // Limpa o timeout anterior
-  if (alertTimeout) {
-    clearTimeout(alertTimeout)
-    alertTimeout = null
-  }
-
-  // Define a mensagem de erro
- 
-  if (error.status === 'error') {
-    errorMsg.value  = error.error.message
-  }
-
-  // Configura o timeout para limpar a mensagem após 3 segundos
-  alertTimeout = setTimeout(() => {
-    errorMsg.value = ""
-    alertTimeout = null
-  }, 5000)
-}
-
-onBeforeUnmount(() => {
-  if (alertTimeout) {
-    clearTimeout(alertTimeout)
-    alertTimeout = null
-  }
-})
 </script>
 
 <template>
   <v-form ref="form" @submit.prevent="submitForm">
-    <!-- Personal Information Section -->
     <Card :title="$t('t-general-information')" elevation="0" title-class="pb-0">
-      <!-- Alert de erro geral -->
+      <!-- Mensagem de erro -->
       <transition name="fade">
         <v-alert v-if="errorMsg" :text="errorMsg" type="error" class="mb-4 mx-5 mt-3" variant="tonal" color="danger"
           density="compact" @click="errorMsg = ''" style="cursor: pointer;" />
       </transition>
 
       <v-card-text class="pt-0">
+        <!-- Seção: Informações básicas -->
         <div class="font-weight-bold mb-2 mt-5">
           {{ $t('t-employeeNumber') }} <i class="ph-asterisk ph-xs text-danger" />
         </div>
         <TextField v-model="employeeData.employeeNumber" :placeholder="$t('t-enter-employee-number')"
           :rules="requiredRules.employeeNumber" />
+
+        <!-- Nome completo -->
         <v-row class="mt-n3">
           <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2 ">
+            <div class="font-weight-bold mb-2">
               {{ $t('t-firstname') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
             <TextField v-model="employeeData.firstName" :placeholder="$t('t-enter-employee-number')"
               :rules="requiredRules.firstName" />
           </v-col>
           <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2 ">
+            <div class="font-weight-bold mb-2">
               {{ $t('t-middle-name') }}
             </div>
             <TextField v-model="employeeData.middleName" :placeholder="$t('t-enter-middle-name')" />
@@ -314,16 +328,18 @@ onBeforeUnmount(() => {
               :rules="requiredRules.lastName" />
           </v-col>
         </v-row>
+
+        <!-- Dados pessoais -->
         <v-row class="mt-n6">
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
               {{ $t('t-gender') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <MenuSelect v-model="employeeData.gender" :items="genderOptions" :rules="requiredRules.gender"/>
+            <MenuSelect v-model="employeeData.gender" :items="genderOptions" :rules="requiredRules.gender" />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
-              {{ $t('t-marital-status') }} 
+              {{ $t('t-marital-status') }}
             </div>
             <MenuSelect v-model="employeeData.maritalStatus" :items="maritalStatusOptions" />
           </v-col>
@@ -334,17 +350,19 @@ onBeforeUnmount(() => {
             <MenuSelect v-model="employeeData.bloodGroup" :items="bloodGroupOptions" />
           </v-col>
         </v-row>
+
+        <!-- Data de nascimento e local -->
         <v-row class="mt-n3">
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
               {{ $t('t-birth-date') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <ValidatedDatePicker v-model="employeeData.birthDate" :teleport="true" placeholder="Select date"  :rules="requiredRules.birthDate" 
-               format="dd/MM/yyyy" />
+            <ValidatedDatePicker ref="birthDatePicker" v-model="employeeData.birthDate" :teleport="true" :placeholder="$t('t-enter-birth-date')"
+              :rules="requiredRules.birthDate" format="dd/MM/yyyy" />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
-              {{ $t('t-place-of-birth') }} 
+              {{ $t('t-place-of-birth') }}
             </div>
             <TextField v-model="employeeData.placeOfBirth" :placeholder="$t('t-enter-place-of-birth')" hide-details />
           </v-col>
@@ -355,7 +373,9 @@ onBeforeUnmount(() => {
             <MenuSelect v-model="employeeData.nationality" :items="nationalityOptions" />
           </v-col>
         </v-row>
-        <v-row class="mt-n3">
+
+        <!-- Documentos -->
+        <v-row class="mt-n6">
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
               {{ $t('t-nuit') }}
@@ -376,6 +396,8 @@ onBeforeUnmount(() => {
             <TextField v-model="employeeData.address" :placeholder="$t('t-enter-address')" hide-details />
           </v-col>
         </v-row>
+
+        <!-- País e Província -->
         <v-row class="">
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
@@ -391,6 +413,8 @@ onBeforeUnmount(() => {
               :disabled="!employeeData.country || !Array.isArray(provinceStore.provincesbyCountry)" />
           </v-col>
         </v-row>
+
+        <!-- Código postal e contatos -->
         <v-row class="mt-n6">
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
@@ -410,18 +434,18 @@ onBeforeUnmount(() => {
               {{ $t('t-phone') }}
             </div>
             <MazPhoneNumberInput v-model="employeeData.phone" size="sm" fetchCountry
-              :placeholder="$t('t-enter-phone-number')" 
-              class="custom-phone-input" />
+              :placeholder="$t('t-enter-phone-number')" class="custom-phone-input" />
           </v-col>
         </v-row>
+
+        <!-- Contatos adicionais -->
         <v-row class="">
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
               {{ $t('t-mobile') }}
             </div>
-            <MazPhoneNumberInput v-model="employeeData.mobile" size="sm"
-              :placeholder="$t('t-enter-phone-number')" fetchCountry
-              class="custom-phone-input" />
+            <MazPhoneNumberInput v-model="employeeData.mobile" size="sm" :placeholder="$t('t-enter-phone-number')"
+              fetchCountry class="custom-phone-input" />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
@@ -434,11 +458,12 @@ onBeforeUnmount(() => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-emergency-contact-phone') }}
             </div>
-            <MazPhoneNumberInput v-model="employeeData.emergencyContactPhone"  size="sm"
-              :placeholder="$t('t-enter-phone-number')" fetchCountry
-              class="custom-phone-input" />
+            <MazPhoneNumberInput v-model="employeeData.emergencyContactPhone" size="sm"
+              :placeholder="$t('t-enter-phone-number')" fetchCountry class="custom-phone-input" />
           </v-col>
         </v-row>
+
+        <!-- Documentos de identificação -->
         <v-row class="">
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
@@ -451,23 +476,28 @@ onBeforeUnmount(() => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-id-card-issuer') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="employeeData.idCardIssuer" :placeholder="$t('t-enter-id-card-issuer')" :rules="requiredRules.idCardIssuer"/>
+            <TextField v-model="employeeData.idCardIssuer" :placeholder="$t('t-enter-id-card-issuer')"
+              :rules="requiredRules.idCardIssuer" />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
               {{ $t('t-id-card-expiry-date') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <ValidatedDatePicker v-model="employeeData.idCardExpiryDate" :teleport="true" :rules="requiredRules.idCardExpiryDate"
-              :placeholder="$t('t-enter-id-card-expiry-date')" format="dd/MM/yyyy" />
+            <ValidatedDatePicker ref="idCardExpiryDatePicker" v-model="employeeData.idCardExpiryDate" :teleport="true"
+              :rules="requiredRules.idCardExpiryDate" :placeholder="$t('t-enter-id-card-expiry-date')"
+              format="dd/MM/yyyy" />
           </v-col>
         </v-row>
+
+        <!-- Datas de emissão de documentos -->
         <v-row class="mt-n6">
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
               {{ $t('t-id-card-issuance-date') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <ValidatedDatePicker v-model="employeeData.idCardIssuanceDate" :teleport="true" :rules="requiredRules.idCardIssuanceDate"
-              :placeholder="$t('t-enter-id-card-issuance-date')" format="dd/MM/yyyy" />
+            <ValidatedDatePicker ref="idCardIssuanceDatePicker" v-model="employeeData.idCardIssuanceDate" :teleport="true"
+              :rules="requiredRules.idCardIssuanceDate" :placeholder="$t('t-enter-id-card-issuance-date')"
+              format="dd/MM/yyyy" />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
@@ -484,13 +514,15 @@ onBeforeUnmount(() => {
               hide-details />
           </v-col>
         </v-row>
+
+        <!-- Datas de passaporte -->
         <v-row class="">
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
               {{ $t('t-passport-issuance-date') }}
             </div>
             <VueDatePicker v-model="employeeData.passportIssuanceDate" :teleport="true"
-              :placeholder="$t('t-passport-issuance-date')" :enable-time-picker="false" format="dd/MM/yyyy" />
+              :placeholder="$t('t-enter-passport-issuance-date')" :enable-time-picker="false" format="dd/MM/yyyy" />
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
@@ -502,17 +534,14 @@ onBeforeUnmount(() => {
         </v-row>
       </v-card-text>
 
-      <!--<v-card-actions class="d-flex justify-end mt-3">
-      <v-btn color="success" variant="elevated" @click="emit('onStepChange', 2)">
-        {{ $t('t-save-and-proceed') }} <i class="ph-arrow-right ms-2" />
-      </v-btn>
-    </v-card-actions>-->
+      <!-- Ações do formulário -->
       <v-card-actions class="d-flex justify-space-between mt-3">
-        <v-btn color="secondary" variant="outlined" class="me-2" @click="onBack()">
+        <v-btn color="secondary" variant="outlined" class="me-2" @click="onBack()" :disabled="loading">
           {{ $t('t-back') }} <i class="ph-arrow-left ms-2" />
         </v-btn>
-        <v-btn color="success" variant="elevated" :loading="loading" type="submit">
-          {{ $t('t-save') }} <i class="ph-floppy-disk ms-2" />
+
+        <v-btn color="success" variant="elevated" @click="submitForm" :loading="loading">
+          {{ $t('t-proceed') }} <i class="ph-arrow-right ms-2" />
         </v-btn>
       </v-card-actions>
     </Card>
@@ -520,11 +549,11 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+/* Estilos consistentes com o index.vue */
 :deep(.dp__input) {
   height: 2.63rem;
 }
 
-/* Container principal */
 .custom-phone-input {
   background-color: #fff;
   border: 1px solid #DDE1EF;
@@ -533,7 +562,6 @@ onBeforeUnmount(() => {
   color: #ABABAB !important;
 }
 
-/* Acessando elementos internos com :deep() (Vue 3) */
 :deep(.m-input.--has-label .m-input-input) {
   padding-left: 0 !important;
   padding-right: 0 !important;
@@ -544,10 +572,8 @@ onBeforeUnmount(() => {
 :deep(.m-input.--sm .m-input-label) {
   font-size: 0.8rem !important;
   color: #ABABAB !important;
-
 }
 
-/* Se precisar ajustar o placeholder */
 :deep(.m-input-input::placeholder) {
   font-size: 0.75rem !important;
 }
@@ -562,7 +588,6 @@ onBeforeUnmount(() => {
   opacity: 0;
 }
 
-/* Opcional: barra de progresso */
 .v-alert {
   position: relative;
   overflow: hidden;

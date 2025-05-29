@@ -1,14 +1,11 @@
 <script lang="ts" setup>
 import { ref, computed, watch } from "vue";
 import { getChartColorsArray } from "@/app/common/chartColorArray";
-import { getCharts } from "@/components/dashboard/utils";
 import { useLayoutStore } from "@/store/app";
 
 const state = useLayoutStore();
 const layoutTheme = computed(() => state.layoutTheme);
 
-const charts = ref<any>(getCharts(getChartColorsArray));
-const balanceOverviewChart = ref(charts.value.balanceOverviewChart);
 const overviewType = ref(3);
 const btnList = ref(["ALL", "1M", "6M", "1Y"]);
 const overviewList = ref([
@@ -35,13 +32,7 @@ const overviewList = ref([
   },
 ]);
 
-watch(layoutTheme, () => {
-  balanceOverviewChart.value = null;
-  setTimeout(() => {
-    const chartsVal = getCharts(getChartColorsArray);
-    balanceOverviewChart.value = chartsVal.balanceOverviewChart;
-  }, 200);
-});
+
 </script>
 <template>
   <Card title="Balance Overview" class="h-100">
@@ -64,45 +55,6 @@ watch(layoutTheme, () => {
         </v-btn>
       </v-btn-toggle>
     </template>
-    <v-card-text>
-      <apexchart
-        v-if="balanceOverviewChart"
-        class="apex-charts"
-        height="270"
-        dir="ltr"
-        :series="balanceOverviewChart.series"
-        :options="balanceOverviewChart.chartOptions"
-      />
-      <v-container class="py-0">
-        <v-row
-          v-for="(overview, index) in overviewList"
-          :key="'balance-overview-' + index"
-          no-gutters
-          class="py-1"
-        >
-          <v-col cols>
-            <i class="bx bxs-square me-1" :class="'text-' + overview.color"></i>
-            {{ overview.title }}</v-col
-          >
-          <v-col cols class="text-center font-weight-bold">{{
-            overview.price
-          }}</v-col>
-          <v-col cols class="text-center">
-            <span :class="overview.isSuccess ? 'text-success' : 'text-danger'"
-              ><i v-if="overview.isSuccess" class="bx bxs-up-arrow"></i>
-              <i v-else class="bx bxs-down-arrow"></i>
-              <span class="px-1">{{ overview.percent }}</span>
-            </span>
-
-            than last years
-          </v-col>
-          <v-col cols class="balance-overview-view-btn">
-            <v-btn variant="text" density="compact" color="primary">
-              View All <i class="ph-arrow-right"></i>
-            </v-btn>
-          </v-col>
-        </v-row>
-      </v-container>
-    </v-card-text>
+    
   </Card>
 </template>

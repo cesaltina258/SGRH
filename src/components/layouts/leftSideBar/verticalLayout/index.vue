@@ -66,7 +66,7 @@ watch(sideBarSize, () => {
             <img src="@/assets/images/logo-sm.png" alt="" height="50"  width="150"/>
           </span>
           <span class="logo-lg">
-            <img src="@/assets/images/logo-sm..png" alt="" height="50" width="150" />
+            <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" />
           </span>
         </router-link>
         <router-link to="/" class="logo logo-light">

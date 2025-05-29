@@ -1,5 +1,11 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue";
+import type { PropType } from 'vue';
+
+
+// Define o tipo para as regras de validação
+type ValidationRule = (value: any) => boolean | string;
+
 
 const props = defineProps({
   placeholder: {
@@ -15,15 +21,15 @@ const props = defineProps({
     default: false,
   },
   modelValue: {
-    type: [String, Array, Number],
+    type: [String, Array, Number] as PropType<string | number | any[] >,
     default: "",
   },
   rules: {
-    type: Array,
+    type: Array as PropType<ValidationRule[]>,
     default: () => [],
   },
   errorMessages: {
-    type: [String, Array],
+    type: [String, Array] as PropType<string | string[]>,
     default: "",
   },
 });
@@ -59,6 +65,13 @@ const validate = (value: any) => {
   return true;
 };
 
+const errorMessages = computed(() => {
+  if (Array.isArray(props.errorMessages)) {
+    return props.errorMessages.length > 0 ? props.errorMessages : error.value ? [error.value] : [];
+  }
+  return props.errorMessages || error.value ? [error.value] : [];
+});
+
 const onClear = () => {
   emit("update:modelValue", "");
   validate("");
@@ -74,7 +87,7 @@ const onClear = () => {
     density="compact"
     clearable
     hide-selected
-    :error-messages="errorMessages || error"
+    :error-messages="errorMessages"
     :rules="rules"
     item-title="label"
     item-value="value"
@@ -88,11 +101,7 @@ const onClear = () => {
     @click:clear="onClear"
     @blur="validate(selected)"
   >
-    <template #error="{ message }">
-      <div class="v-messages__message">
-        {{ message }}
-      </div>
-    </template>
+    
   </v-autocomplete>
 </template>
 
@@ -104,4 +113,9 @@ const onClear = () => {
   line-height: 1.2;
   margin-top: -3px;
 }
+
+.v-autocomplete .v-field__input {
+  font-size: 16px !important;
+}
+
 </style>

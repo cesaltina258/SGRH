@@ -39,7 +39,7 @@ const employeeStats = computed(() => {
     },
     {
       title: "total-inactive-employees",
-      endVal: employees.filter(e => e.status === 'INACTIVE').length,
+      endVal: employees.filter(e => e.gender === 'INACTIVE').length,
       color: "danger",
       percent: "0%",
       isProgress: false,

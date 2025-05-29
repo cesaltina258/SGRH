@@ -1,13 +1,13 @@
 import HttpService from "@/app/http/httpService";
-import type { ProvinceUpdateType, ProvinceListingType, ProvinceInsertType } from "@/components/baseTables/editCountry/listView/types";
+import type { ProvinceListingType, ProvinceUpdateType, ProvinceInsertType  } from '@/components/baseTables/province/types';
 
 export default class ProvinceService extends HttpService {
 
   //get de todos utilizadores
   async getProvinces(): Promise<{ data: ProvinceListingType[] }> {
     try {
-      const response = await this.get("/administration/setup/provinces");
-      //console.log('response users',response);
+      const response = await this.get<{ data: ProvinceListingType[] }>("/administration/setup/provinces");
+
       return response;
 
     } catch (error) {
@@ -25,7 +25,20 @@ export default class ProvinceService extends HttpService {
     }
   }
 
-  async getProvinceByCountryID(id: number): Promise<{ data: ProvinceListingType }> {
+  async getProvinceBycountrId(countrId: string):  Promise<{ data: ProvinceListingType[] }>  {
+    try {
+      const response = await this.get<{ data: ProvinceListingType[] }>(`/administration/setup/provinces/in-country?id=${countrId}`);
+      console.log('response getProvinceBycountrId', response.data);
+      
+      return response;
+
+    } catch (error) {
+      console.error("❌ Erro ao buscar provincias a partir do país:", error);
+      throw error; 
+    }
+  }
+
+  async getProvinceByCountryID(id: string): Promise<{ data: ProvinceListingType }> {
     try {
       return await this.get(`/administration/setup/provinces/in-country?id=${id}`);
     } catch (error) {
@@ -34,11 +47,9 @@ export default class ProvinceService extends HttpService {
     }
   }
   
-  
-
   async createProvince(userData: ProvinceInsertType): Promise<ProvinceInsertType> {
     try {
-      const response = await this.post("/administration/setup/provinces", userData);
+      const response = await this.post<ProvinceInsertType>("/administration/setup/provinces", userData);
       console.log('response create user',response);
       return response;
 
@@ -48,7 +59,7 @@ export default class ProvinceService extends HttpService {
     }
   }
 
-  async deleteProvince(id: number): Promise<void> {
+  async deleteProvince(id: string): Promise<void> {
     try {
       await this.delete(`/administration/setup/provinces/${id}`);
     } catch (error) {
@@ -57,7 +68,7 @@ export default class ProvinceService extends HttpService {
     }
   }
 
-  async updateProvince(id: number, userData: ProvinceUpdateType): Promise<ProvinceUpdateType> {
+  async updateProvince(id: string, userData: ProvinceUpdateType): Promise<ProvinceUpdateType> {
     try {
       // Corpo da requisição conforme especificado
       const payload = {

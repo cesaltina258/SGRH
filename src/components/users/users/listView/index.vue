@@ -1,8 +1,7 @@
 <script lang="ts" setup>
 import { ref, watch, computed, onMounted } from "vue";
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
-import Table from "@/app/common/components/Table.vue";
-import { listViewHeader } from "@/components/users/users/listView/utils";
+import { userHeader } from "@/components/users/users/listView/utils";
 import { UserListingType, UserInsertType } from "@/components/users/types";
 import Status from "@/app/common/components/Status.vue";
 import TableAction from "@/app/common/components/TableAction.vue";
@@ -15,12 +14,13 @@ import { useUserStore } from "@/store/userStore";
 import { userService } from "@/app/http/httpServiceProvider";
 import { useToast } from 'vue-toastification';
 import { useI18n } from "vue-i18n";
-import { Options } from "@/components/users/users/listView/utils";
+import DataTableServer from "@/app/common/components/DataTableServer.vue"
+import CreateEditDialog from "@/components/realEstate/CreateEditDialog.vue"; import { Options } from "@/components/users/users/listView/utils";
 import ChangePasswordModal from "@/components/users/users/ChangePasswordModal.vue";
 import { changePasswordType } from "@/components/users/types";
 import { onBeforeUnmount } from "vue";
 import { changePasswordListingType } from "@/components/users/types";
-import LockerAccountConfirmationDialog from "@/components/users/users/LockerAccountConfirmationDialog.vue";
+import EnableAccountConfirmationDialog from "@/components/users/users/EnableAccountConfirmationDialog.vue";
 
 
 const { t } = useI18n();
@@ -29,7 +29,7 @@ const toast = useToast();
 
 const userStore = useUserStore();
 
-const router = useRouter();
+const lockerAction = ref<"enable" | "disable">("enable"); // ou string se preferir
 const dialog = ref(false);
 const viewDialog = ref(false);
 const userData = ref<UserListingType | null>(null);
@@ -38,7 +38,6 @@ const passwordDialog = ref(false);
 const deleteDialog = ref(false);
 const deleteId = ref<number | null>(null);
 const deleteLoading = ref(false);
-const isSelectAll = ref(false);
 const changePasswordUserId = ref<number | null>(null);
 // Junto com as outras refs
 const changePasswordUser = ref<changePasswordListingType | null>(null);
@@ -50,17 +49,15 @@ const lockerLoading = ref(false);
 const errorMsg = ref("");
 let alertTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  const onLocker = (id: number) => {
+const onEnable = (id: number) => {
   const user = userStore.users.find((u) => u.id === id);
-
-  if (user?.accountLocked) {
-    toast.warning(t('t-toast-message-user-already-locked'));
-    return;
-  }
+  if (!user) return;
 
   lockerId.value = id;
+  lockerAction.value = user.enabled ? "disable" : "enable";
   lockerDialog.value = true;
 };
+
 
 
 const handleApiError = (error: any) => {
@@ -90,114 +87,52 @@ onBeforeUnmount(() => {
   }
 });
 
-const mappedData = computed(() =>
-  userStore.users.map((item) => ({
-    ...item,
-    isCheck: false,
-  })).toReversed()
-);
+// Estado do componente
+const searchQuery = ref("")
+const searchProps = "firstName,lastName,email" // Campos de pesquisa
+const itemsPerPage = ref(10)
+const selectedUsers = ref<any[]>([]) /// Armazena os funcionários selecionados
 
-const filteredData = ref<UserListingType[]>([]);
-const finalData = ref<UserListingType[]>([]);
 
-watch(mappedData, (newVal) => {
-  filteredData.value = newVal;
-  finalData.value = newVal;
-}, { immediate: true });
+// Computed properties
+const loadingList = computed(() => userStore.loading)
+const totalItems = computed(() => userStore.pagination.totalElements)
 
-onMounted(() => {
-  userStore.fetchUsers();
-  getPaginatedData();
-});
+// Observa mudanças nos funcionários selecionados
+watch(selectedUsers, (newSelection) => {
+  console.log('Funcionários selecionados:', newSelection)
+}, { deep: true })
 
-const query = ref("");
 
-const page = ref(1);
-const noOfItems = computed(() => {
-  return finalData.value.length;
-});
-const tableData = ref<UserListingType[]>([]);
-const loading = ref(false);
+interface FetchParams {
+  page: number;
+  itemsPerPage: number;
+  sortBy: Array<{ key: string; order: 'asc' | 'desc' }>;
+  search: string;
+}
 
-const config = ref({
-  page: page.value,
-  start: 0,
-  end: 0,
-  noOfItems: noOfItems.value,
-  itemsPerPage: 10,
-});
+const fetchUsers = async ({ page, itemsPerPage, sortBy, search }: FetchParams) => {
+  await userStore.fetchUsers(
+    page - 1, // Ajuste para API que começa em 0
+    itemsPerPage,
+    sortBy[0]?.key || 'createdAt',
+    sortBy[0]?.order || 'asc',
+    search, // query_values
+    searchProps // query_props
+  )
+}
 
-const getPaginatedData = () => {
-  const { itemsPerPage, page } = config.value;
-  const start = (page - 1) * itemsPerPage;
-  let end = start + itemsPerPage;
-  end = end <= noOfItems.value ? end : noOfItems.value;
-
-  config.value = {
-    ...config.value,
-    start,
-    end,
-  };
-
-  const data = finalData.value.slice(config.value.start, config.value.end);
-
-  loading.value = true;
-  tableData.value = [];
-
-  setTimeout(() => {
-    tableData.value = data;
-    loading.value = false;
-  }, 200);
+const toggleSelection = (item: UserListingType) => {
+  const index = selectedUsers.value.findIndex(selected => selected.id === item.id);
+  if (index === -1) {
+    selectedUsers.value = [...selectedUsers.value, item];
+  } else {
+    selectedUsers.value = selectedUsers.value.filter(selected => selected.id !== item.id);
+  }
 };
 
 
-
-watch(page, (newPage: number) => {
-  config.value.page = newPage;
-  getPaginatedData();
-});
-
-watch(filteredData, (newData: UserListingType[]) => {
-  updateTableData(newData);
-});
-
-const updateTableData = (newVal: UserListingType[]) => {
-  loading.value = true;
-  const { itemsPerPage } = config.value;
-
-  const start = 1;
-  let end = start + itemsPerPage;
-  end = end <= newVal.length ? end : newVal.length;
-  tableData.value = [];
-
-  setTimeout(() => {
-    tableData.value = newVal;
-    config.value = {
-      ...config.value,
-      start,
-      end,
-      noOfItems: newVal.length,
-    };
-    loading.value = false;
-  }, 200);
-};
-
-watch(query, (newQuery: string) => {
-  filteredData.value = finalData.value.filter((item) => {
-    const val = newQuery.toLowerCase();
-    if (
-      item.firstName.toLowerCase().includes(val) ||
-      item.email.includes(val) ||
-      item.username.includes(val)
-    ) {
-      return item;
-    }
-  });
-  updateTableData(filteredData.value);
-});
-
-//Criação e edição do utilizador
-
+//Editar ou Criar utilizador
 watch(dialog, (newVal: boolean) => {
   if (!newVal) {
     userData.value = null;
@@ -211,17 +146,20 @@ const onCreateEditClick = (data: UserListingType | null) => {
       firstName: "",
       lastName: "",
       email: "",
-      username: "",
       password: "",
-
+      enabled: false,
+      accountLocked: false,
+      twoFactor: false,
+      failedsLogin: "",
+      lastSucessfulLogin: "",
+      lastFailedLogin: "",
+      lastPasswordUpdate: "",
+      passwordExpirationDate: ""
     };
   } else {
-    //console.log('data userdata', data);
     userData.value = data;
     //console.log('userData.value', userData.value);
-
   }
-
   dialog.value = true;
 };
 
@@ -242,7 +180,7 @@ const onSubmit = async (data: UserListingType, callbacks?: {
     }
 
     // Recarrega os dados
-    await userStore.fetchUsers();
+    await userStore.fetchUsers(0, itemsPerPage.value)
 
     // Callback de sucesso (fecha a modal)
     callbacks?.onSuccess?.();
@@ -293,9 +231,15 @@ const onViewClick = (data: UserListingType | null) => {
       firstName: "",
       lastName: "",
       email: "",
-      username: "",
       password: "",
-
+      enabled: false,
+      accountLocked: false,
+      twoFactor: false,
+      failedsLogin: "",
+      lastSucessfulLogin: "",
+      lastFailedLogin: "",
+      lastPasswordUpdate: "",
+      passwordExpirationDate: ""
     };
   } else {
     //console.log('data userdata', data);
@@ -327,26 +271,40 @@ const onChangePassword = (data: UserListingType | null) => {
   passwordDialog.value = true;
 };
 
-const onConfirmLockerAccount = async () => {
+const onConfirmEnableAccount = async () => {
   lockerLoading.value = true;
 
   try {
-    await userService.lockerUser(lockerId.value!); // Certifique-se que o método existe
-    toast.success(t("t-toast-message-user-locked"));
+    const user = userStore.users.find((u) => u.id === lockerId.value);
+    if (!user) {
+      toast.error(t("t-message-user-not-found"));
+      return;
+    }
 
+    const wasEnabled = user.enabled;
+
+    // Chamada da API
+    await userService.enableUser(lockerId.value!);
+
+    // Atualiza a lista de utilizadores
     await userStore.fetchUsers();
-    getPaginatedData();
+
+    // Toast com base no estado anterior
+    if (wasEnabled) {
+      toast.success(t("t-toast-message-user-disabled"));
+
+    } else {
+      toast.success(t("t-toast-message-user-enabled"));
+    }
   } catch (error) {
-    toast.error(t("t-message-locker-error"));
-    console.error("Erro ao bloquear conta:", error);
+    toast.error(t("t-message-enable-error"));
+    console.error("Erro ao alterar estado da conta:", error);
   } finally {
     lockerLoading.value = false;
     lockerDialog.value = false;
     lockerId.value = null;
   }
 };
-
-
 
 //Delete do utilizador
 watch(deleteDialog, (newVal: boolean) => {
@@ -366,19 +324,27 @@ const onConfirmDelete = async () => {
   try {
     await userService.deleteUser(deleteId.value!);
 
-    filteredData.value = filteredData.value.filter(
-      (item) => item.id !== deleteId.value
-    );
-    finalData.value = [...filteredData.value];
-    updateTableData(filteredData.value);
+    // 1. Remove o usuário deletado da seleção se estiver selecionado
+    selectedUsers.value = selectedUsers.value.filter(user => user.id !== deleteId.value);
 
+    // 2. Recarrega os dados mantendo a paginação atual
+    await userStore.fetchUsers(0, itemsPerPage.value);
+
+    // 3. Feedback visual
     toast.success(t('t-toast-message-deleted'));
+
   } catch (error) {
     toast.error(t('t-toast-message-deleted-erros'));
     console.error("Delete error:", error);
+
+    // Opcional: Mostrar detalhes do erro se disponível
+    const errorMessage = (error as any)?.response?.data?.message || t('t-message-delete-error-unknown');
+    toast.error(errorMessage);
+
   } finally {
     deleteLoading.value = false;
     deleteDialog.value = false;
+    deleteId.value = null; // Limpa o ID após a operação
   }
 };
 
@@ -396,10 +362,25 @@ const onSelect = (option: string, data: UserListingType) => {
     case "change":
       onChangePassword(data);
       break;
-    case "locker":
-      onLocker(data.id); // <- agora usa a modal
+    case "enable":
+      onEnable(data.id); // <- agora usa a modal
       break;
   }
+};
+
+const getDynamicOptions = (user: UserListingType) => {
+  return Options.map(option => {
+    if (option.value === "enable") {
+      return {
+        ...option,
+        title: user.enabled ? t("t-disable") : t("t-enable")  // Traduções devem existir
+      };
+    }
+    return {
+      ...option,
+      title: t(`t-${option.title}`)
+    };
+  });
 };
 
 
@@ -409,7 +390,7 @@ const onSelect = (option: string, data: UserListingType) => {
     <v-card-title class="mt-2">
       <v-row justify="space-between">
         <v-col lg="3">
-          <QuerySearch v-model="query" :placeholder="$t('t-search-for-users')" />
+          <QuerySearch v-model="searchQuery" :placeholder="$t('t-search-for-users')" />
         </v-col>
         <v-col lg="auto">
           <v-btn color="secondary" @click="onCreateEditClick(null)">
@@ -419,34 +400,47 @@ const onSelect = (option: string, data: UserListingType) => {
       </v-row>
     </v-card-title>
     <v-card-text class="mt-2">
-      <Table v-model="page" :headerItems="listViewHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
-        :config="config" :loading="loading" is-pagination @on-select-all="onSelectAll">
-        <template #body>
-          <tr v-for="(item, index) in tableData" :key="'agent-listing-item-' + index" height="50">
+      <DataTableServer v-model="selectedUsers"
+        :headers="userHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))" :items="userStore.users"
+        :items-per-page="itemsPerPage" :total-items="totalItems" :loading="loadingList" :search-query="searchQuery"
+        :search-props="searchProps" @load-items="fetchUsers" item-value="id" show-select>
+        <template #body="{ items }">
+          <tr v-for="item in items as UserListingType[]" :key="item.id" height="50">
             <td>
-              <v-checkbox v-model="item.isCheck" hide-details color="primary" />
+              <v-checkbox :model-value="selectedUsers.some(selected => selected.id === item.id)"
+                @update:model-value="toggleSelection(item)" hide-details density="compact" />
             </td>
             <td>
               {{ item.firstName }} {{ item.lastName }}
             </td>
             <td>{{ item.email }}</td>
-            <td>{{ item.username }}</td>
             <td>
               <Status :status="item.enabled ? 'active' : 'unactive'" />
             </td>
-            <!-- <td>
-              <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)"
-                @onDelete="onDelete(item.id)" />
-            </td> -->
             <td>
-              <ListMenuWithIcon :menuItems="Options.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
-                @onSelect="onSelect($event, item)" />
+              <Status :status="item.accountLocked ? 'block' : 'unblock'" />
+            </td>
+            <td>
+              <ListMenuWithIcon :menuItems="getDynamicOptions(item)" @onSelect="onSelect($event, item)" />
             </td>
           </tr>
         </template>
-      </Table>
 
-      <div v-if="!filteredData.length" class="text-center pa-7">
+        <template v-if="userStore.users.length === 0" #body>
+          <tr>
+            <td :colspan="userHeader.length" class="text-center py-10">
+              <v-avatar size="80" color="primary" variant="tonal">
+                <i class="ph-magnifying-glass" style="font-size: 30px" />
+              </v-avatar>
+              <div class="text-subtitle-1 font-weight-bold mt-3">
+                {{ $t('t-search-not-found-message') }}
+              </div>
+            </td>
+          </tr>
+        </template>
+      </DataTableServer>
+
+      <div v-if="!fetchUsers.length" class="text-center pa-7">
         <div class="mb-3">
           <v-avatar color="primary" variant="tonal" size="x-large">
             <i class="ph-magnifying-glass ph-lg"></i>
@@ -469,7 +463,7 @@ const onSelect = (option: string, data: UserListingType) => {
   <RemoveItemConfirmationDialog v-if="deleteId" v-model="deleteDialog" @onConfirm="onConfirmDelete"
     :loading="deleteLoading" />
 
-  <LockerAccountConfirmationDialog v-if="lockerId" v-model="lockerDialog" @onConfirm="onConfirmLockerAccount"
-    :loading="lockerLoading" />
+  <EnableAccountConfirmationDialog v-if="lockerId" v-model="lockerDialog" :action="lockerAction"
+    @onConfirm="onConfirmEnableAccount" :loading="lockerLoading" />
 
 </template>

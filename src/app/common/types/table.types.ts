@@ -2,6 +2,17 @@ export type TableHeaderType = {
   title: string;
   align?: string;
   isCheck?: boolean;
+  key?: string;
+  sortable?: boolean;
+  value?: string;
+};
+
+export type DataTableHeaderType = {
+  title: string;
+  align?: string;
+  isCheck?: boolean;
+  key?: string;
+  sortable?: boolean;
 };
 
 export type TableConfigType = {

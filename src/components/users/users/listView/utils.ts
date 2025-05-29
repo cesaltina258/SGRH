@@ -1,5 +1,5 @@
 import { BreadcrumbType } from "@/app/common/types/breadcrumb.type";
-import { TableHeaderType } from "@/app/common/types/table.types";
+import { DataTableHeaderType } from "@/app/common/types/table.types";
 import { OptionType } from "@/components/users/types";
 
 export const breadcrumb: BreadcrumbType[] = [
@@ -13,13 +13,12 @@ export const breadcrumb: BreadcrumbType[] = [
   },
 ];
 
-export const listViewHeader: TableHeaderType[] = [
-  { title: "", isCheck: true },
-  { title: "full-name" },
-  { title: "email" },
-  { title: "username" },
-  { title: "status" },
-  { title: "action" },
+export const userHeader: DataTableHeaderType[] = [
+  { title: "full-name", key: "firstName", sortable: true },
+  { title: "email", key: "email" , sortable: true },
+  { title: "status" , sortable: false },
+  { title: "blocked?", sortable: false },
+  { title: "action",  sortable: false  },
 ];
 
 export const Options: OptionType[] = [
@@ -44,9 +43,9 @@ export const Options: OptionType[] = [
     value: "change",
   },
   {
-    title: "locker",
+    title: "enable",
     icon: "ph-lock", // ícone que representa bloqueio/segurança
-    value: "locker",
+    value: "enable",
   },
 ];
 

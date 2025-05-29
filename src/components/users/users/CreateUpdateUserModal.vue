@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { PropType, computed, ref } from "vue";
-import { UserInsertType } from "@/components/users/users/types";
-import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
+import { UserInsertType } from "@/components/users/types";
 import { statusOptions } from "@/components/realEstate/agent/utils";
 import { colors } from "@/components/ui/utils";
 import { useI18n } from "vue-i18n";
@@ -39,28 +38,33 @@ const id =  ref(formData.value.id || "");
 const firstName = ref(formData.value.firstName || ""); 
 const lastName = ref(formData.value.lastName || "");
 const email = ref(formData.value.email || "");
-const username = ref(formData.value.username || "");
 //const enable = ref(formData.value.enable || true);
 
 // Remove as refs de password se  for criação
-const password = ref(isCreate ? formData.value.password || "" : "");
-const password_confirm = ref(isCreate ? formData.value.password_confirm || "" : "");
+const password = ref<{ value: string; isValid: boolean }>({ value: '', isValid: false });
+const password_confirm = ref<{ value: string; isValid: boolean }>({ value: '', isValid: false });
+
+
 
 const { t } = useI18n();
 
 //validate functions
 const validatePassword = () => {
-  if (!isCreate.value) return true; // Ignora validação se for update
+  if (!isCreate.value) return true;
 
-  const pwdValue = typeof password.value === 'object' ? password.value.value : password.value;
-  const pwdConfirmValue = typeof password_confirm.value === 'object' ? password_confirm.value.value : password_confirm.value;
+  const pwd = password.value.value.trim();
+  const pwdConfirm = password_confirm.value.value.trim();
 
-  if (pwdValue !== pwdConfirmValue) {
+  console.log("Validating password:", pwd, pwdConfirm);
+
+  if (pwd !== pwdConfirm) {
     errorMsg.value = t('t-please-enter-same-password-and-password-confirm');
     return false;
   }
+
   return true;
 };
+
 
 const validateEmail = (email: string) => {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -89,11 +93,6 @@ const onSubmit = () => {
     return;
   }
 
-  if (username.value === '') {
-    errorMsg.value = t('t-please-enter-username');
-    setTimeout(() => errorMsg.value = "", 3000);
-    return;
-  }
 
 
   // Validações específicas para criação
@@ -148,12 +147,11 @@ const onSubmit = () => {
     ...(!isCreate.value && { id: id.value }),// Apenas inclui password se for update
     firstName: firstName.value,
     lastName: lastName.value,
-    email: typeof email.value === 'object' ? email.value.value : email.value,
-    username: username.value,
-    ...(isCreate.value && { // Apenas inclui password se for criação
-      password: typeof password.value === 'object' ? password.value.value : password.value,
-      password_confirm: typeof password_confirm.value === 'object' ? password_confirm.value.value : password_confirm.value
-    }),
+    email: email.value,
+      ...(isCreate.value && {
+        password: password.value.value,
+        password_confirm: password_confirm.value.value
+      }),
     //enable: enable.value
   };
 
@@ -202,10 +200,6 @@ const onSubmit = () => {
           {{ $t('t-email') }} <i class="ph-asterisk ph-xs text-danger" />
         </div>
         <TextField v-model="email" !isEmail :placeholder="$t('t-enter-email-form')" />
-        <div class="font-weight-bold text-caption mb-1">
-          {{ $t('t-username') }} <i class="ph-asterisk ph-xs text-danger" />
-        </div>
-        <TextField v-model="username" :placeholder="$t('t-enter-username')" />
         <v-row v-if="isCreate">
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption  mb-1">
