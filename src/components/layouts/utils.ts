@@ -202,10 +202,12 @@ export const menuItems: MenuItemType[] = [
     icon: "ph-user-circle",
     id: "sidebarAuth",
     subMenu: [
-      { label: "document-types", link: "/baseTable/documenttype/list" },
-      { label: "institution-types", link: "/auth/signup" },
-      { label: "state-types", link: "/auth/pass-reset" },
       { label: "countries", link: "/baseTable/country/list" },
+      { label: "currencies", link: "/baseTable/currency/list" },
+      { label: "hospital_procedure_types", link: "/baseTable/hospitalproceduretype/list" },
+      { label: "institution-types", link: "/baseTable/institutiontype/list" },
+      { label: "leave-reason", link: "/baseTable/leavereason/list" },
+      { label: "languages", link: "/baseTable/languages/list" },
     ],
   },
   /*{

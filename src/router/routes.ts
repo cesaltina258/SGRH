@@ -134,6 +134,36 @@ const baseTableRoutes = [
     component: () => import("@/views/baseTables/editCountry/ListView.vue"),
     meta: { title: "EditCountry", authRequired: true },
   },
+  {
+    path: `${baseTablePrefix}/currency/list`,
+    name: "CurrencyListView",
+    component: () => import("@/views/baseTables/currency/ListView.vue"),
+    meta: { title: "CurrencyListView", authRequired: true },
+  },
+  {
+    path: `${baseTablePrefix}/hospitalproceduretype/list`,
+    name: "HospitalProcedureTypeListView",
+    component: () => import("@/views/baseTables/hospitalProcedureType/ListView.vue"),
+    meta: { title: "HospitalProcedureTypeListView", authRequired: true },
+  },
+  {
+    path: `${baseTablePrefix}/institutiontype/list`,
+    name: "InstitutionTypeListView",
+    component: () => import("@/views/baseTables/institutionTypes/ListView.vue"),
+    meta: { title: "InstitutionTypeListView", authRequired: true },
+  },
+  {
+    path: `${baseTablePrefix}/leavereason/list`,
+    name: "LeaveReasonListView",
+    component: () => import("@/views/baseTables/leaveReason/ListView.vue"),
+    meta: { title: "LeaveReasonListView", authRequired: true },
+  },
+  {
+    path: `${baseTablePrefix}/languages/list`,
+    name: "LanguagesListView",
+    component: () => import("@/views/baseTables/languages/ListView.vue"),
+    meta: { title: "LanguagesListView", authRequired: true },
+  },
 ].map((data) => {
   return {
     ...data,
