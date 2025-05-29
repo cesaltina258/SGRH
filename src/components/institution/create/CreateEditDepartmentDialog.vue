@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { PropType, computed, ref, watch } from "vue";
-import { ContactPersonInsertType } from "@/components/institution/types";
+import { DepartmentInsertType } from "@/components/institution/types";
 import { useI18n } from "vue-i18n";
 import { useToast } from 'vue-toastification';
 
@@ -14,13 +14,12 @@ const props = defineProps({
   },
   // No CreateEditContactDialog.vue
   data: {
-    type: Object as PropType<ContactPersonInsertType | null>,
+    type: Object as PropType<DepartmentInsertType | null>,
     required: false,
     default: () => ({
       id: undefined,
-      fullname: "",
-      phone: "",
-      email: "",
+      name: "",
+      description: "",
       company: ""
     })
   },
@@ -39,9 +38,8 @@ const email = ref("");
 watch(() => props.data, (newData) => {
   if (!newData) return;
   id.value = newData.id || "";
-  fullname.value = newData.fullname || "";
-  phone.value = newData.phone || "";
-  email.value = newData.email || "";
+  fullname.value = newData.name || "";
+  phone.value = newData.description || "";
 }, { immediate: true });
 
 
@@ -60,17 +58,12 @@ const dialogValue = computed({
  * Regras de validação para os campos do formulário
  */
  const requiredRules = {
-  fullname: [
-    (v: string) => !!v || t('t-please-enter-fullname'),
+  name: [
+    (v: string) => !!v || t('t-please-enter-department-name'),
   ],
-  phone: [
-    (v: string) => !!v || t('t-please-enter-phone-number'),
-    (v: string) => /^[0-9+() -]*$/.test(v) || t('t-invalid-phone-numebr'),
-  ],
-  email: [
-    (v: string) => !!v || t('t-please-enter-email-address'),
-    (v: string) => /.+@.+\..+/.test(v) || t('t-invalid-email'),
-  ],
+  description: [
+    (v: string) => !!v || t('t-please-enter-description'),
+  ]
 };
 
 const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
@@ -94,13 +87,13 @@ const onSubmit = async () => {
 
   localLoading.value = true;
 
-  const payload: ContactPersonInsertType = {
-    id: id.value || undefined,
-    fullname: fullname.value,
-    phone: phone.value,
-    email: email.value,
-    company: props.data?.company ?? ""
-  };
+  const payload: DepartmentInsertType = {
+  id: id.value || undefined,
+  name: fullname.value, // em vez de name.value
+  description: phone.value, // em vez de description.value
+  company: props.data?.company ?? ""
+};
+
 
   emit("onSubmit", payload, {
     onSuccess: () => dialogValue.value = false,
@@ -111,7 +104,7 @@ const onSubmit = async () => {
 <template>
   <v-dialog v-model="dialogValue" width="500" scrollable>
     <v-form ref="form" @submit.prevent="onSubmit"> 
-    <Card :title="isCreate ? $t('t-add-contact-person') : $t('t-edit-contact-person')" title-class="py-0"
+    <Card :title="isCreate ? $t('t-add-department') : $t('t-edit-department')" title-class="py-0"
       style="overflow: hidden">
       <template #title-action>
         <v-btn icon="ph-x" variant="plain" @click="dialogValue = false" />
@@ -125,23 +118,17 @@ const onSubmit = async () => {
         <v-row class="">
           <v-col cols="12" lg="12">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-fullname') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-name') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="fullname" :placeholder="$t('t-enter-fullname')" :rules="requiredRules.fullname" />
+            <TextField v-model="fullname" :placeholder="$t('t-enter-name')" :rules="requiredRules.name" />
           </v-col>
         </v-row>
         <v-row class="mt-n6">
-          <v-col cols="12" lg="6">
+          <v-col cols="12" lg="12">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-phone') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-description') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="phone" :placeholder="$t('t-enter-phone')" :rules="requiredRules.phone" />
-          </v-col>
-          <v-col cols="12" lg="6">
-            <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-email') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <TextField v-model="email" !isEmail :placeholder="$t('t-enter-email-form')" :rules="requiredRules.email" />
+            <TextField v-model="phone" :placeholder="$t('t-enter-description')" :rules="requiredRules.description" />
           </v-col>
         </v-row>
       </v-card-text>

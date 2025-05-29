@@ -558,6 +558,12 @@
   "t-select-institution": "Selecione a Instituição",
   "t-select-department": "Selecione o Departamento",
   "t-select-position": "Selecione a Posição",
+  "t-must-be-over-18": "Deve ter mais de 18 anos",
+  "t-proceed": "Prosseguir",
+  "t-error-creating-employee": "Ocorreu um erro ao criar o colaborador",
+  "t-error-updating-employee": "Ocorreu um erro ao atualizar o colaborador",
+  "t-institution-updated-success": "Instituição actualizada com sucesso!",
+  "t-institution-created-success": "Instituição criada com sucesso!",
   "t-currency-list": "Lista de Moedas",
   "t-currencies": "Moedas",
   "t-view-list-currency": "Vista em Lista",
@@ -621,5 +627,19 @@
   "t-false": "Não",
   "t-right-to-left": "Escrita RTL (Right-to-Left)?",
   "t-no": "Não",
-  "t-yes": "Sim"
+  "t-yes": "Sim",
+  "t-fullname": "Nome Completo",
+  "t-enter-fullname": "Insira o nome completo",
+  "t-edit-contact-person": "Editar Pessoa de Contacto",
+  "t-view-contact-person": "Consultar Pessoa de Contacto",
+  "t-please-enter-fullname": "Por favor, insira o nome completo!",
+  "t-back-to-organizational-struture": "Voltar à Estrutura Organizacional",
+  "t-department-list": "Lista de Departamentos",
+  "t-search-for-department": "Pesquisar por Departamento",
+  "t-add-department": "Adicionar Departamento",
+  "t-edit-department": "Editar Departamento",
+  "t-please-enter-department-name": "Por favor, insira o nome do departamento!",
+  "t-please-enter-description": "Por favor, insira a descrição!",
+  "t-view-department": "Consultar Departamento"
+
 }

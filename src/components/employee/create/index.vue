@@ -27,6 +27,7 @@ import { usePositionStore } from '@/store/institution/positionStore';
 // Services & Types
 import { employeeService } from "@/app/http/httpServiceProvider";
 import { EmployeeInsertType } from "../types";
+import { nullLiteralTypeAnnotation } from "@babel/types";
 
 // Inicialização de stores
 const provinceStore = useProvinceStore();
@@ -69,7 +70,7 @@ let employeeData = reactive<EmployeeInsertType>({
   lastName: '',
   gender: '',
   maritalStatus: undefined,
-  birthDate: new Date().toISOString().split('T')[0],
+  birthDate: undefined,
   bloodGroup: '',
   placeOfBirth: '',
   nationality: '',
@@ -86,12 +87,12 @@ let employeeData = reactive<EmployeeInsertType>({
   emergencyContactPhone: '',
   idCardNumber: null,
   idCardIssuer: '',
-  idCardExpiryDate: new Date().toISOString().split('T')[0],
-  idCardIssuanceDate: new Date().toISOString().split('T')[0],
+  idCardExpiryDate: undefined,
+  idCardIssuanceDate: undefined,
   passportNumber: null,
   passportIssuer: '',
-  passportIssuanceDate: new Date().toISOString().split('T')[0],
-  passportExpiryDate: new Date().toISOString().split('T')[0],
+  passportIssuanceDate: undefined,
+  passportExpiryDate: undefined,
   enabled: true,
 
   // Dados da segunda tab
@@ -216,18 +217,21 @@ const onStepChange = (value: number) => {
  * Salva os dados do employee
  * @param isFinalStep - Indica se é o passo final (salvar e sair)
  */
-const saveEmployee = async (isFinalStep: boolean = false) => {
+const saveEmployee = async (payload: EmployeeInsertType, isFinalStep: boolean = false) => {
   try {
     loading.value = true;
     errorMsg.value = "";
 
+    // Usa os dados recebidos do payload
+    Object.assign(employeeData, payload);
+
     let response;
     if (employeeId.value) {
       // Modo edição
-      response = await employeeService.updateEmployee(employeeId.value, employeeData);
+      response = await employeeService.updateEmployee(employeeId.value, payload);
     } else {
       // Modo criação
-      response = await employeeService.createEmployee(employeeData);
+      response = await employeeService.createEmployee(payload);
 
       if (response?.data?.id) {
         employeeId.value = response.data.id;
@@ -275,9 +279,10 @@ onBeforeUnmount(() => {
   <Card>
     <v-card-text>
       <!-- Navegação entre abas -->
-      <ButtonNav v-model="step" class="mb-2" />
+      <ButtonNav v-model="step" class="mb-2" :employee-id="employeeId as string"
+        :basic-data-validated="basicDataValidated" />
 
-      <!-- Indicador de loading -->
+      <!-- Barra de progresso para carregamento -->
       <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-4"></v-progress-linear>
 
       <!-- Mensagens de erro -->
@@ -287,11 +292,13 @@ onBeforeUnmount(() => {
       </transition>
 
       <!-- Abas do formulário -->
-      <Step1 v-if="step === 1" @onStepChange="onStepChange" v-model="employeeData" @save="saveEmployee(false)"
-        :loading="loading" />
+      <Step1 v-if="step === 1" @onStepChange="onStepChange" v-model="employeeData"
+        @save="(payload) => saveEmployee(payload, false)" :loading="loading" />
 
-      <Step2 v-if="step === 2" @onStepChange="onStepChange" v-model="employeeData" @save="saveEmployee(true)"
-        :loading="loading" />
+      <Step2 v-if="step === 2" @onStepChange="onStepChange" v-model="employeeData"
+        @save="(payload) => saveEmployee(payload, true)" :loading="loading" />
+
+
     </v-card-text>
   </Card>
 </template>

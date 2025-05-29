@@ -7,7 +7,7 @@ interface ApiResponse<T> {
   meta?: any;
 }
 
-interface ServiceResponse<T> {
+interface ServiceResponse<T> {  
   status: 'success' | 'error';
   data?: T;
   error?: ApiErrorResponse;
@@ -194,7 +194,11 @@ export default class InstitutionService extends HttpService {
           incomeTaxNumber: institutionData.incomeTaxNumber,
           institutionType: institutionData.institutionType,
           maxNumberOfDependents: institutionData.maxNumberOfDependents,
-          childrenMaxAge: institutionData.childrenMaxAge
+          childrenMaxAge: institutionData.childrenMaxAge,
+          healthPlanLimit: institutionData.healthPlanLimit,
+          salaryComponent: institutionData.salaryComponent,
+          fixedAmount: institutionData.fixedAmount
+
         };
   
         const response = await this.put<InstitutionResponseType>(`/administration/companies/${id}`, payload);

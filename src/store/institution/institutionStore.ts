@@ -75,7 +75,7 @@ export const useInstitutionStore = defineStore('institutions', {
       const actualSize = size ?? this.pagination.itemsPerPage;
 
       try {
-        const { content, meta } = await institutionService.getInstitutionsForListing(
+        const { content, meta } = await institutionService.getInstitutionsForListing( 
           actualPage,
           actualSize,
           sortColumn,
@@ -114,7 +114,7 @@ export const useInstitutionStore = defineStore('institutions', {
       this.draftInstitution = null;
       this.currentInstitutionId = null;
       localStorage.removeItem('institutionDraft');
-      localStorage.removeItem('currentInstitutionId');
+      localStorage.removeItem('currentInstitutionId'); 
     },
     loadFromStorage() {
       const draft = localStorage.getItem('institutionDraft');

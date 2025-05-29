@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { ref, watch, computed, type PropType } from 'vue';
+import { ref, watch, computed, onMounted } from 'vue';
+import type { PropType } from 'vue';
 
 const props = defineProps({
   modelValue: [Date, String, Array],
@@ -25,16 +26,18 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update:modelValue', 'update:error']);
+const emit = defineEmits(['update:modelValue', 'update:error', 'blur']);
 
 const internalError = ref('');
 const internalValue = ref<Date | null>(null);
+const isTouched = ref(false);
 
 // Converter valor inicial para Date
 const parseDate = (value: any): Date | null => {
   if (!value) return null;
   if (value instanceof Date) return value;
-  return new Date(value);
+  if (typeof value === 'string') return new Date(value);
+  return null;
 };
 
 // Atualizar valor interno quando o prop muda
@@ -42,14 +45,8 @@ watch(() => props.modelValue, (newVal) => {
   internalValue.value = parseDate(newVal);
 }, { immediate: true });
 
-// Atualizar valor do modelo quando o datepicker muda
-const handleUpdate = (value: Date | null) => {
-  internalValue.value = value;
-  emit('update:modelValue', value);
-  validate(value);
-};
-
-const validate = (value: any) => {
+// Função de validação
+const validate = (value: any = internalValue.value) => {
   internalError.value = '';
   
   if (!props.rules || props.rules.length === 0) return true;
@@ -66,6 +63,27 @@ const validate = (value: any) => {
   emit('update:error', '');
   return true;
 };
+
+const handleUpdate = (value: Date | null) => {
+  internalValue.value = value;
+  const emitValue = value ? value.toISOString() : null;
+  emit('update:modelValue', emitValue);
+  
+  if (isTouched.value) {
+    validate(value);
+  }
+};
+
+const handleBlur = () => {
+  isTouched.value = true;
+  validate();
+  emit('blur');
+};
+
+// Expor a função validate para o componente pai
+defineExpose({
+  validate
+});
 </script>
 
 <template>
@@ -79,7 +97,7 @@ const validate = (value: any) => {
       :disabled="disabled"
       auto-apply
       @update:model-value="handleUpdate"
-      @blur="validate(internalValue)"
+      @blur="handleBlur"
     >
       
     </VueDatePicker>
