@@ -74,7 +74,7 @@ export const useEmployeeStore = defineStore('employees', {
           this.draftEmployee = null;
           this.currentEmployeeId = null;
           localStorage.removeItem('employeeDraft');
-          localStorage.removeItem('currentEmployeeId');
+          localStorage.removeItem('currentEmployeeId'); 
         },
         loadFromStorage() {
           const draft = localStorage.getItem('employeeDraft');

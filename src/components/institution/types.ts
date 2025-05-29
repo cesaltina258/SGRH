@@ -28,7 +28,7 @@ export type InstitutionListingType = {
     deletedBy: string;
 };
 
-export type InstitutionResponseType = {
+export type InstitutionResponseType = { 
     id: string  ;
     name: string;
     address: string;

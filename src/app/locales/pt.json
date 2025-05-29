@@ -557,6 +557,11 @@
   "t-please-enter-company-contribution-percentage": "Por favor, informe a percentagem de contribuição da empresa",
   "t-select-institution": "Selecione a Instituição",
   "t-select-department": "Selecione o Departamento",
-  "t-select-position": "Selecione a Posição"
-
+  "t-select-position": "Selecione a Posição",
+  "t-must-be-over-18": "Deve ter mais de 18 anos",
+  "t-proceed": "Prosseguir",
+  "t-error-creating-employee": "Ocorreu um erro ao criar o colaborador",
+  "t-error-updating-employee": "Ocorreu um erro ao atualizar o colaborador",
+  "t-institution-updated-success": "Instituição actualizada com sucesso!",
+  "t-institution-created-success": "Instituição criada com sucesso!"
 }

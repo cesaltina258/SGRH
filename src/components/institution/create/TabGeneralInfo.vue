@@ -33,7 +33,7 @@ const router = useRouter();
 const emit = defineEmits<{
   (e: 'onStepChange', step: number): void;
   (e: 'save'): void;
-  (e: 'update:modelValue', value: InstitutionInsertType): void;
+  (e: 'update:modelValue', value: InstitutionInsertType): void; 
 }>();
 
 const props = defineProps({
@@ -49,7 +49,7 @@ const props = defineProps({
 
 // Stores
 const institutionStore = useInstitutionStore();
-const institutionTypeStore = useInstitutionTypeStore();
+const institutionTypeStore = useInstitutionTypeStore(); 
 
 // Referências do formulário
 const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
@@ -235,7 +235,7 @@ const submitGeneralInfo = async () => {
         </v-btn>
         <v-btn color="success" variant="elevated" @click="submitGeneralInfo"
         :loading="loading">
-          {{ $t('t-save-and-proceed') }} <i class="ph-arrow-right ms-2" />
+          {{ $t('t-proceed') }} <i class="ph-arrow-right ms-2" />
         </v-btn>
       </v-card-actions>
     </Card>

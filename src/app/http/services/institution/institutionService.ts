@@ -1,13 +1,14 @@
 import HttpService from "@/app/http/httpService";
 import type { InstitutionListingType, InstitutionInsertType, InstitutionResponseType } from "@/components/institution/types";
 import type { ApiErrorResponse } from "@/app/common/types/errorType";
+import { healthPlanLimitOptions } from "@/components/institution/create/utils";
 
 interface ApiResponse<T> {
   data: T;
   meta?: any;
 }
 
-interface ServiceResponse<T> {
+interface ServiceResponse<T> { 
   status: 'success' | 'error';
   data?: T;
   error?: ApiErrorResponse;
@@ -194,7 +195,11 @@ export default class InstitutionService extends HttpService {
           incomeTaxNumber: institutionData.incomeTaxNumber,
           institutionType: institutionData.institutionType,
           maxNumberOfDependents: institutionData.maxNumberOfDependents,
-          childrenMaxAge: institutionData.childrenMaxAge
+          childrenMaxAge: institutionData.childrenMaxAge,
+          healthPlanLimit: institutionData.healthPlanLimit,
+          salaryComponent: institutionData.salaryComponent,
+          fixedAmount: institutionData.fixedAmount
+
         };
   
         const response = await this.put<InstitutionResponseType>(`/administration/companies/${id}`, payload);

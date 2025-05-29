@@ -41,8 +41,8 @@ const form2 = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 // Emits e Props
 const emit = defineEmits<{
   (e: 'onStepChange', step: number): void;
-  (e: 'save'): void;
-  (e: 'update:modelValue', value: EmployeeInsertType): void;
+  (e: 'save', payload: EmployeeInsertType): void; 
+  (e: 'update:modelValue', value: EmployeeInsertType): void; 
 }>();
 
 const props = defineProps<{
@@ -190,6 +190,7 @@ const saveData = async () => {
 
   const { valid } = await form2.value.validate();
   if (!valid) {
+    toast.error(t('t-validation-error'));
     errorMsg.value = t('t-please-correct-errors');
     alertTimeout = setTimeout(() => {
       errorMsg.value = "";
@@ -197,7 +198,15 @@ const saveData = async () => {
     }, 5000);
     return;
   }
-  emit('save');
+  
+  console.log("Dados do funcionário:", employeeData.value);
+
+  // Garante que o salary seja enviado como número
+  const payload = {
+    ...employeeData.value
+  };
+
+  emit('save', payload);
 };
 </script>
 
@@ -247,7 +256,7 @@ const saveData = async () => {
         <v-row class="mt-n6">
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
-              {{ $t('t-position') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-position') }} <i class="ph-asterisk ph-xs text-danger" /> 
             </div>
             <MenuSelect 
               v-model="employeeData.position" 
@@ -265,8 +274,8 @@ const saveData = async () => {
               {{ $t('t-base-salary') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
             <TextField 
-              v-model.number="employeeData.salary" 
-              isRequired 
+              v-model="employeeData.salary" 
+              type="number"
               :placeholder="t('t-enter-the-employee-base-salary')" 
               :rules="requiredRules.salary"
               class="mb-2" 

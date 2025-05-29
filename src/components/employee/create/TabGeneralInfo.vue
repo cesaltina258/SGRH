@@ -9,7 +9,7 @@
  * - Endereço
  */
 
-import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useToast } from 'vue-toastification';
@@ -44,14 +44,20 @@ const router = useRouter();
 // Emits e Props
 const emit = defineEmits<{
   (e: 'onStepChange', step: number): void;
-  (e: 'save'): void;
+  (e: 'save', payload: EmployeeInsertType): void; 
   (e: 'update:modelValue', value: EmployeeInsertType): void;
 }>();
 
-const props = defineProps<{
-  modelValue: EmployeeInsertType,
-  loading?: boolean
-}>();
+const props = defineProps({
+  modelValue: {
+    type: Object as () => EmployeeInsertType,
+    required: true
+  },
+  loading: {
+    type: Boolean,
+    default: false
+  }
+});
 
 // Stores
 const employeeStore = useEmployeeStore();
@@ -59,7 +65,13 @@ const countryStore = useCountryStore();
 const provinceStore = useProvinceStore();
 
 // Referências do formulário
-const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null); 
+const birthDatePicker = ref();
+const idCardIssuanceDatePicker = ref();
+const idCardExpiryDatePicker = ref();
+const form = ref<{ 
+  validate: () => Promise<{ valid: boolean }>;
+  resetValidation: () => void;
+} | null>(null);
 
 // Dados computados do employee
 let employeeData = computed({
@@ -100,13 +112,25 @@ const requiredRules = {
     (v: string) => !!v || t('t-please-select-marital-status'),
   ],
   birthDate: [
-    (v: Date | string) => !!v || t('t-please-enter-birth-date'),
-    (v: Date | string) => {
+    (v: Date | string | null) => !!v || t('t-please-enter-birth-date'),
+    (v: Date | string | null) => {
       if (!v) return true;
-      const date = new Date(v);
+      
+      // Converter para Date se for string
+      const date = v instanceof Date ? v : new Date(v);
+      const today = new Date();
+      
+      // Validação de idade máxima (120 anos)
       const minDate = new Date();
       minDate.setFullYear(minDate.getFullYear() - 120);
-      return date >= minDate || t('t-invalid-birth-date');
+      if (date < minDate) return t('t-birth-date-too-old');
+      
+      // Validação de idade mínima (18 anos)
+      const maxDate = new Date();
+      maxDate.setFullYear(maxDate.getFullYear() - 18);
+      if (date > maxDate) return t('t-must-be-over-18');
+      
+      return true;
     }
   ],
   idCardIssuer: [
@@ -231,22 +255,36 @@ const onBack = () => {
 /**
  * Valida e envia o formulário
  */
+// Atualize o submitForm para usar as refs
 const submitForm = async () => {
   if (!form.value) return;
 
-  const { valid } = await form.value.validate();
-  if (!valid) {
-    errorMsg.value = t('t-please-correct-errors');
-    alertTimeout = setTimeout(() => {
-      errorMsg.value = "";
-      alertTimeout = null;
-    }, 5000);
-    return;
+  try {
+    // Forçar validação dos date pickers
+    await birthDatePicker.value?.validate();
+    await idCardIssuanceDatePicker.value?.validate();
+    await idCardExpiryDatePicker.value?.validate();
+
+    // Resto da validação...
+    const { valid } = await form.value.validate();
+    
+    if (!valid) {
+      toast.error(t('t-validation-error'));
+      errorMsg.value = t('t-please-correct-errors');
+      alertTimeout = setTimeout(() => {
+        errorMsg.value = "";
+        alertTimeout = null;
+      }, 5000);
+      return;
+    }
+
+    emit('onStepChange', 2);
+
+  } catch (error) {
+    console.error("Validation error:", error);
+    errorMsg.value = t('t-validation-error');
   }
-
-  //emit('save');
-};
-
+}
 
 </script>
 
@@ -319,7 +357,7 @@ const submitForm = async () => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-birth-date') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <ValidatedDatePicker v-model="employeeData.birthDate" :teleport="true" placeholder="Select date"
+            <ValidatedDatePicker ref="birthDatePicker" v-model="employeeData.birthDate" :teleport="true" :placeholder="$t('t-enter-birth-date')"
               :rules="requiredRules.birthDate" format="dd/MM/yyyy" />
           </v-col>
           <v-col cols="12" lg="4">
@@ -337,7 +375,7 @@ const submitForm = async () => {
         </v-row>
 
         <!-- Documentos -->
-        <v-row class="mt-n3">
+        <v-row class="mt-n6">
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
               {{ $t('t-nuit') }}
@@ -445,7 +483,7 @@ const submitForm = async () => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-id-card-expiry-date') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <ValidatedDatePicker v-model="employeeData.idCardExpiryDate" :teleport="true"
+            <ValidatedDatePicker ref="idCardExpiryDatePicker" v-model="employeeData.idCardExpiryDate" :teleport="true"
               :rules="requiredRules.idCardExpiryDate" :placeholder="$t('t-enter-id-card-expiry-date')"
               format="dd/MM/yyyy" />
           </v-col>
@@ -457,7 +495,7 @@ const submitForm = async () => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-id-card-issuance-date') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <ValidatedDatePicker v-model="employeeData.idCardIssuanceDate" :teleport="true"
+            <ValidatedDatePicker ref="idCardIssuanceDatePicker" v-model="employeeData.idCardIssuanceDate" :teleport="true"
               :rules="requiredRules.idCardIssuanceDate" :placeholder="$t('t-enter-id-card-issuance-date')"
               format="dd/MM/yyyy" />
           </v-col>
@@ -503,7 +541,7 @@ const submitForm = async () => {
         </v-btn>
 
         <v-btn color="success" variant="elevated" @click="submitForm" :loading="loading">
-          {{ $t('t-save-and-proceed') }} <i class="ph-arrow-right ms-2" />
+          {{ $t('t-proceed') }} <i class="ph-arrow-right ms-2" />
         </v-btn>
       </v-card-actions>
     </Card>

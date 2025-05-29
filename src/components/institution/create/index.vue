@@ -42,6 +42,7 @@ const step = ref(1); // Controla a aba atual (1 ou 2)
 const institutionId = ref<string | null>(
   typeof route.params.id === 'string' ? route.params.id : Array.isArray(route.params.id) ? route.params.id[0] : null
 );
+const isCreated = ref(!institutionId.value); 
 const loading = ref(false); // Estado de loading global
 const errorMsg = ref(""); // Mensagem de erro global
 let alertTimeout: ReturnType<typeof setTimeout> | null = null; // Timeout para mensagens de erro
@@ -198,9 +199,9 @@ const saveInstitution = async (isFinalStep: boolean = false) => {
     institutionStore.setDraftInstitution(institutionData);
 
     // Feedback de sucesso
-    toast.success(institutionId.value
-      ? t('t-institution-updated-success')
-      : t('t-institution-created-success'));
+    toast.success(isCreated.value
+      ? t('t-institution-created-success')
+      : t('t-institution-updated-success'));
 
     // Redirecionamento ou próxima etapa
     if (isFinalStep) {
@@ -233,6 +234,16 @@ onBeforeUnmount(() => {
     <v-card-text>
       <ButtonNav v-model="step" class="mb-2" :institution-id="institutionId as string"
         :basic-data-validated="basicDataValidated" />
+
+        <!-- Indicador de loading -->
+        <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-4"></v-progress-linear>
+
+        <!-- Mensagens de erro -->
+      <transition name="fade">
+        <v-alert v-if="errorMsg" :text="errorMsg" type="error" class="mb-4 mx-5 mt-3" variant="tonal" color="danger"
+          density="compact" @click="errorMsg = ''" style="cursor: pointer; white-space: pre-line;" />
+      </transition>
+
       <Step1 v-if="step === 1" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)"
         :loading="loading" />
       <Step2 v-if="step === 2" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)"
