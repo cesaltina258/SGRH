@@ -627,5 +627,19 @@
   "t-false": "Não",
   "t-right-to-left": "Escrita RTL (Right-to-Left)?",
   "t-no": "Não",
-  "t-yes": "Sim"
+  "t-yes": "Sim",
+  "t-fullname": "Nome Completo",
+  "t-enter-fullname": "Insira o nome completo",
+  "t-edit-contact-person": "Editar Pessoa de Contacto",
+  "t-view-contact-person": "Consultar Pessoa de Contacto",
+  "t-please-enter-fullname": "Por favor, insira o nome completo!",
+  "t-back-to-organizational-struture": "Voltar à Estrutura Organizacional",
+  "t-department-list": "Lista de Departamentos",
+  "t-search-for-department": "Pesquisar por Departamento",
+  "t-add-department": "Adicionar Departamento",
+  "t-edit-department": "Editar Departamento",
+  "t-please-enter-department-name": "Por favor, insira o nome do departamento!",
+  "t-please-enter-description": "Por favor, insira a descrição!",
+  "t-view-department": "Consultar Departamento"
+
 }

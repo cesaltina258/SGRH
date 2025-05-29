@@ -76,6 +76,25 @@ export type InstitutionInsertType = {
     companyContributionPercentage: number | null;
 }
 
+export type DepartmentInsertType = {
+    id?: string | null;
+    name: string;
+    description: string | null;
+    company: string;
+}
+
+export type DepartmentListingForListType = {
+    id: string;
+    name: string;
+    description: string | null;
+    company: string;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    deletedAt: Date | null;
+    createdBy: string;
+    updatedBy: string;
+    deletedBy: string;
+}
 
 export type DepartmentListingType = {
     id: string | number;
@@ -121,4 +140,26 @@ export type PositionListingType = {
     createdBy: string;
     updatedBy: string;
     deletedBy: string;
+};
+
+export type ContactPersonListingType = {
+    id: string;
+    fullname: string;
+    email: string;
+    phone: string;
+    company: string ;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    deletedAt: Date | null;
+    createdBy: string;
+    updatedBy: string;
+    deletedBy: string;
+};
+
+export type ContactPersonInsertType = {
+    id?: string | null; 
+    fullname: string;   
+    email: string;
+    phone: string;
+    company: string; 
 };

@@ -1,145 +1,299 @@
 <script lang="ts" setup>
-const emit = defineEmits(["onStepChange"]);
+/**
+ * TabContacts - Componente para  de pessoas de contato de instituições
+ * 
+ * Funcionalidades:
+ * - Listagem de contatos
+ * - Criação/Edição de contatos
+ * - Visualização de detalhes
+ * - Exclusão de contatos
+ */
 
-import { ref, watch, computed } from "vue";
-import Filters from "@/components/institution/create/ContactFilters.vue";
-import { filters, customers } from "@/components/institution/create/utils";
-import { ContactType } from "@/components/institution/create/types";
-import CreateEditContactDialog from "@/components/institution/create/CreateEditContactDialog.vue";
+import { ref, watch, computed, onMounted, onBeforeUnmount } from "vue";
+import { useRoute, useRouter } from 'vue-router';
+import { useToast } from 'vue-toastification';
+import { useI18n } from "vue-i18n";
 import { v4 as uuidv4 } from "uuid";
-import { formateDate } from "@/app/common/dateFormate";
 
-const customerFilters = ref<any>(filters);
-const selectedCustomer = ref<ContactType>(customers[0]);
+// Components
+import DataTableServer from "@/app/common/components/DataTableServer.vue";
+import Status from "@/app/common/components/Status.vue";
+import ListMenuWithIcon from "@/app/common/components/ListMenuWithIcon.vue";
+import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
+import CreateEditContactDialog from "@/components/institution/create/CreateEditContactDialog.vue";
+import ViewContactDialog from "@/components/institution/create/ViewContactDialog.vue";
+import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue";
+import TableAction from "@/app/common/components/TableAction.vue";
+// Stores e Services
+import { useContactPersonStore } from "@/store/institution/contactPersonStore";
+import { contactPersonService } from "@/app/http/httpServiceProvider";
+
+// Types
+import type {
+  ContactPersonListingType,
+  ContactPersonInsertType
+} from "@/components/institution/types";
+
+// Utils
+import { contactPersonHeader } from "@/components/institution/create/utils";
+import { contactOptions as Options } from "@/components/institution/create/utils";
+
+const { t } = useI18n();
+const route = useRoute();
+const router = useRouter();
+const toast = useToast();
+const contactPersonStore = useContactPersonStore();
+
+// Estado do componente
+const institutionId = ref<string | null>(
+  typeof route.params.id === 'string' ? route.params.id :
+    Array.isArray(route.params.id) ? route.params.id[0] : null
+);
+
 const dialog = ref(false);
-const customerDetail = ref<ContactType | null>(null);
-const filteredData = ref(customers);
-const finalData = ref(filteredData.value);
+const viewDialog = ref(false);
+const deleteDialog = ref(false);
+const deleteLoading = ref(false);
+const contactPersonData = ref<ContactPersonInsertType | null>(null);
+const deleteId = ref<string | null>(null);
+const errorMsg = ref("");
+const searchQuery = ref("");
+const searchProps = "fullname,email,phone"; // Propriedades de busca
+const itemsPerPage = ref(10);
+const selectedContactPersons = ref<ContactPersonListingType[]>([]);
+const customerDetail = ref<any>(null); // Adicionado para resolver o erro
 
+let alertTimeout: ReturnType<typeof setTimeout> | null = null;
+
+// Computed properties
+const loadingList = computed(() => contactPersonStore.loading);
+const totalItems = computed(() => contactPersonStore.pagination.totalElements);
+
+interface FetchParams {
+  page: number;
+  itemsPerPage: number;
+  sortBy: Array<{ key: string; order: 'asc' | 'desc' }>;
+  search: string;
+}
+
+/**
+ * Busca pessoas de contato com paginação e filtros
+ */
+const fetchContactPersons = async ({ page, itemsPerPage, sortBy, search }: FetchParams) => {
+  if (!institutionId.value) return;
+
+  await contactPersonStore.fetchContactPersons(
+    institutionId.value,
+    page - 1, // Ajuste para API que começa em 0
+    itemsPerPage,
+    sortBy[0]?.key || 'createdAt',
+    sortBy[0]?.order || 'asc',
+    search,
+    searchProps
+  );
+};
+
+/**
+ * Alterna seleção de pessoas de contato
+ */
+const toggleSelection = (item: ContactPersonListingType) => {
+  const index = selectedContactPersons.value.findIndex(selected => selected.id === item.id);
+  if (index === -1) {
+    selectedContactPersons.value = [...selectedContactPersons.value, item];
+  } else {
+    selectedContactPersons.value = selectedContactPersons.value.filter(selected => selected.id !== item.id);
+  }
+};
+
+/**
+ * Prepara dados para criação/edição
+ */
 watch(dialog, (newVal: boolean) => {
   if (!newVal) {
-    customerDetail.value = null;
+    contactPersonData.value = null;
   }
 });
+const onCreateEditClick = (data: ContactPersonInsertType | null) => {
+  const company = institutionId.value || "";
 
-const query = computed(() => {
-  return customerFilters.value.query;
-});
-
-watch(query, (newVal: string) => {
-  filteredData.value = finalData.value.filter((customer) => {
-    const val = newVal.toLowerCase();
-    if (customer.name.toLowerCase().includes(val)) {
-      return customer;
+  contactPersonData.value = data
+    ? {
+      ...data,
+      company: company // sobrescreve com o institutionId atual
     }
-  });
-});
+    : {
+      id: undefined,
+      fullname: "",
+      phone: "",
+      email: "",
+      company: company
+    };
 
-const date = computed(() => {
-  return customerFilters.value.date;
-});
+  dialog.value = true;
+};
 
-watch(date, (newDate) => {
-  if (!newDate) {
-    filteredData.value = finalData.value;
-  } else {
-    filteredData.value = finalData.value.filter((data) => {
-      return formateDate(data.create_date) === formateDate(newDate);
-    });
+
+/**
+ * Submete dados do formulário
+ */
+const onSubmit = async (
+  data: ContactPersonInsertType,
+  callbacks?: {
+    onSuccess?: () => void,
+    onFinally?: () => void
   }
-});
+) => {
+  try {
+    if (!data.id) {
+      await contactPersonService.createContactPerson(data);
+      toast.success(t('t-toast-message-created'));
+    } else {
+      await contactPersonService.updateContactPerson(data.id, data);
+      toast.success(t('t-toast-message-update'));
+    }
 
-const status = computed(() => {
-  return customerFilters.value.status;
-});
-
-watch(status, (newStatus: string) => {
-  if (!!newStatus) {
-    filteredData.value = finalData.value.filter(
-      (data) => data.status === newStatus
+    await contactPersonStore.fetchContactPersons(
+      institutionId.value,
+      0,
+      itemsPerPage.value
     );
-  } else {
-    filteredData.value = finalData.value;
+    callbacks?.onSuccess?.();
+  } catch (error) {
+    console.error("Erro ao gravar pessoa de contacto:", error);
+    toast.error(t('t-message-save-error'));
+  } finally {
+    callbacks?.onFinally?.();
+  }
+};
+
+/**
+ * Prepara dados para visualização
+ */
+watch(viewDialog, (newVal: boolean) => {
+  if (!newVal) {
+    contactPersonData.value = null;
   }
 });
-
-const onView = (data: ContactType) => {
-  selectedCustomer.value = data;
+const onViewClick = (data: ContactPersonInsertType) => {
+  contactPersonData.value = { ...data };
+  viewDialog.value = true;
 };
 
-const onCreate = () => {
-  customerDetail.value = {
-    id: -1,
-    name: "",
-    email: "",
-    phone: "",
-    create_date: new Date().toString(),
-    status: "",
-  };
-  dialog.value = true;
+/**
+ * Prepara exclusão de contato
+ */
+const onDelete = (id: string) => {
+  deleteId.value = id;
+  deleteDialog.value = true;
 };
 
-const onEdit = (data: ContactType) => {
-  customerDetail.value = data;
-  dialog.value = true;
-};
+/**
+ * Confirma exclusão de contato
+ */
+const onConfirmDelete = async () => {
+  if (!deleteId.value) return;
 
-const onConfirm = (customer: ContactType) => {
-  if (customer.id === -1) {
-    filteredData.value.unshift({
-      ...customer,
-      id: uuidv4(),
-      create_date: formateDate(customer.create_date),
-    });
-  } else {
-    filteredData.value = filteredData.value.map((data) => {
-      if (data.id === customer.id) {
-        return {
-          ...data,
-          ...customer,
-          create_date: formateDate(customer.create_date),
-        };
-      }
-      return data;
-    });
+  deleteLoading.value = true;
+  try {
+    await contactPersonService.deleteContactPerson(deleteId.value);
+    selectedContactPersons.value = selectedContactPersons.value.filter(
+      user => user.id !== deleteId.value
+    );
+    await contactPersonStore.fetchContactPersons(
+      institutionId.value,
+      0,
+      itemsPerPage.value
+    );
+    toast.success(t('t-toast-message-deleted'));
+  } catch (error) {
+    toast.error(t('t-toast-message-deleted-erros'));
+    console.error("Delete error:", error);
+  } finally {
+    deleteLoading.value = false;
+    deleteDialog.value = false;
+    deleteId.value = null;
   }
-
-  dialog.value = false;
 };
-
+// Limpeza ao desmontar
+onBeforeUnmount(() => {
+  if (alertTimeout) {
+    clearTimeout(alertTimeout);
+    alertTimeout = null;
+  }
+});
 </script>
+
 <template>
   <Card :title="$t('t-contact-person-list')" title-class="py-5">
     <template #title-action>
       <div>
-        <v-btn color="primary" class="mx-1" @click="onCreate">
+        <v-btn color="primary" class="mx-1" @click="onCreateEditClick(null)">
           <i class="ph-plus-circle me-1" /> {{ $t('t-add-contact-person') }}
         </v-btn>
         <v-btn color="secondary" class="mx-1">
-          <i class="ph-download-simple me-1" /> {{$t('t-import')}}
+          <i class="ph-download-simple me-1" /> {{ $t('t-import') }}
         </v-btn>
         <v-btn color="info" class="mx-1" variant="tonal">
-          <i class="ph-upload-simple me-1" /> {{$t('t-export')}}
+          <i class="ph-upload-simple me-1" /> {{ $t('t-export') }}
         </v-btn>
       </div>
     </template>
   </Card>
+
   <v-row class="mt-5">
     <v-col cols="12" lg="12">
-      <Filters v-model="customerFilters" />
+      <v-card-text>
+        <v-row>
+          <v-col cols="12" lg="12">
+            <QuerySearch v-model="searchQuery" :placeholder="$t('t-search-for-contact')" />
+          </v-col>
+        </v-row>
+      </v-card-text>
+      <DataTableServer v-model="selectedContactPersons"
+        :headers="contactPersonHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
+        :items="contactPersonStore.contact_persons" :items-per-page="itemsPerPage" :total-items="totalItems"
+        :loading="loadingList" :search-query="searchQuery" :search-props="searchProps" @load-items="fetchContactPersons"
+        item-value="id" show-select>
+        <template #body="{ items }">
+          <tr v-for="item in items as ContactPersonListingType[]" :key="item.id" height="50">
+            <td>
+              <v-checkbox :model-value="selectedContactPersons.some(selected => selected.id === item.id)"
+                @update:model-value="toggleSelection(item)" hide-details density="compact" />
+            </td>
+            <td>{{ item.fullname }}</td>
+            <td>{{ item.email }}</td>
+            <td>{{ item.phone }}</td>
+            <td>
+              <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)"
+                @onDelete="onDelete(item.id)" />
+            </td>
+          </tr>
+        </template>
 
+        <template v-if="contactPersonStore.contact_persons.length === 0" #body>
+          <tr>
+            <td :colspan="contactPersonHeader.length" class="text-center py-10">
+              <v-avatar size="80" color="primary" variant="tonal">
+                <i class="ph-magnifying-glass" style="font-size: 30px" />
+              </v-avatar>
+              <div class="text-subtitle-1 font-weight-bold mt-3">
+                {{ $t('t-search-not-found-message') }}
+              </div>
+            </td>
+          </tr>
+        </template>
+      </DataTableServer>
     </v-col>
   </v-row>
 
-  <CreateEditContactDialog v-if="customerDetail" v-model="dialog" :customerDetail="customerDetail"
-    @onConfirm="onConfirm" />
-    
+  <!-- Dialogs -->
+  <CreateEditContactDialog v-model="dialog" :data="contactPersonData" @onSubmit="onSubmit" />
+  <ViewContactDialog v-model="viewDialog" :data="contactPersonData" />
+  <RemoveItemConfirmationDialog v-model="deleteDialog" :loading="deleteLoading" @onConfirm="onConfirmDelete" />
+
   <v-card-actions class="d-flex justify-space-between mt-5">
-    <v-btn color="primary" variant="text" @click="emit('onStepChange', 1)">
-      <i class="ph-arrow-left me-2" /> {{ $t('t-back-to-general-info') }}
-    </v-btn>
-    <v-btn color="success" variant="elevated" @click="emit('onStepChange', 3)">
-      {{ $t('t-save-and-proceed') }} <i class="ph-arrow-right ms-2" />
+    <v-btn color="secondary" variant="outlined" class="me-2" @click="$emit('onStepChange', 3)">
+      {{ $t('t-back-to-organizational-struture') }} <i class="ph-arrow-left ms-2" />
     </v-btn>
   </v-card-actions>
 </template>

@@ -2,7 +2,7 @@
 
 import { ref, watch, computed, onMounted } from "vue";
 import Filters from "@/components/baseTables/country/editCountry/listView/HistoryFilters.vue";
-import { filters, interactions } from "@/components/institution/create/utils";
+import { filters } from "@/components/institution/create/utils";
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
 import Table from "@/app/common/components/Table.vue";
 import { listViewHeader } from "@/components/baseTables/country/editCountry/listView/utils";

@@ -117,12 +117,6 @@ const baseTableRoutes = [
     meta: { title: "Agent Grid", authRequired: true },
   },
   {
-    path: `${baseTablePrefix}/documenttype/overview`,
-    name: "DocumentTypeOverview",
-    component: () => import("@/views/baseTables/documentType/Overview.vue"),
-    meta: { title: "Overview", authRequired: true },
-  },
-  {
     path: `${baseTablePrefix}/country/list`,
     name: "CountryListView",
     component: () => import("@/views/baseTables/country/ListView.vue"),
