@@ -68,6 +68,13 @@ export const departmentHeader: DataTableHeaderType[] = [
   { title: "action",  sortable: false,  align: "right"}
 ];
 
+export const positionHeader: DataTableHeaderType[] = [
+  { title: "name", key: "name", sortable: true},
+  { title: "description", key: "description" , sortable: true },
+  { title: "action",  sortable: false,  align: "right"}
+];
+
+
 
 
 export const contactOptions: OptionType[] = [

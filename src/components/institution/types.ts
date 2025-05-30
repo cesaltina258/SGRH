@@ -87,7 +87,7 @@ export type DepartmentListingForListType = {
     id: string;
     name: string;
     description: string | null;
-    company: string;
+    company:  { id: string; [key: string]: any } ;
     createdAt: Date | null;
     updatedAt: Date | null;
     deletedAt: Date | null;
@@ -97,7 +97,7 @@ export type DepartmentListingForListType = {
 }
 
 export type DepartmentListingType = {
-    id: string | number;
+    id: string;
     name: string;
     description: string;
     institution: {
@@ -141,6 +141,26 @@ export type PositionListingType = {
     updatedBy: string;
     deletedBy: string;
 };
+
+export type PositionInsertType = {
+    id?: string | null;
+    name: string;
+    description: string | null;
+    department: string;
+}
+
+export type PositionListingForListType = {
+    id: string;
+    name: string;
+    description: string | null;
+    department: string;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    deletedAt: Date | null;
+    createdBy: string;
+    updatedBy: string;
+    deletedBy: string;
+}
 
 export type ContactPersonListingType = {
     id: string;

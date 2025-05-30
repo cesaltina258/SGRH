@@ -640,6 +640,15 @@
   "t-edit-department": "Editar Departamento",
   "t-please-enter-department-name": "Por favor, insira o nome do departamento!",
   "t-please-enter-description": "Por favor, insira a descrição!",
-  "t-view-department": "Consultar Departamento"
+  "t-view-department": "Consultar Departamento",
+  "t-position-list": "Lista de Posições",
+  "t-add-position": "Adicionar Posição",
+  "t-edit-position": "Editar Posição",
+  "t-view-position": "Consultar Posição",
+  "t-search-for-position": "Pesquisar por Posição",
+  "t-total-institutions": "Total de Instituições",
+  "t-total-active-institutions": "Total de Instituições Activas",
+  "t-total-public-institutions": "Total de Instituições Públicas"
+
 
 }

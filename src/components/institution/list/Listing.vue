@@ -137,7 +137,7 @@ const toggleSelection = (item: InstitutionListingType) => {
               <Status :status="item.enable ? 'active' : 'unactive'" />
             </td>
             <td>
-              <TableAction @onEdit="() => router.push(`/institution/edit/${item.id}`)"
+              <TableAction @onEdit="() => router.push(`/institution/edit/${item.id}`)" 
                 @onDelete="() => openDeleteDialog(item.id)" />
             </td>
           </tr>

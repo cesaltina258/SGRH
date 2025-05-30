@@ -54,6 +54,7 @@ const viewDialog = ref(false);
 const deleteDialog = ref(false);
 const deleteLoading = ref(false);
 const departmentData = ref<DepartmentInsertType | null>(null);
+const departmentDataView = ref<DepartmentListingForListType | null>(null);
 const deleteId = ref<string | null>(null);
 const errorMsg = ref("");
 const searchQuery = ref("");
@@ -111,7 +112,7 @@ watch(dialog, (newVal: boolean) => {
     departmentData.value = null;
   }
 });
-const onCreateEditClick = (data: DepartmentInsertType | null) => {
+const onCreateClick = (data: DepartmentInsertType | null) => {
   const company = institutionId.value || "";
 
   departmentData.value = data
@@ -171,8 +172,8 @@ watch(viewDialog, (newVal: boolean) => {
     departmentData.value = null;
   }
 });
-const onViewClick = (data: DepartmentInsertType) => {
-  departmentData.value = { ...data };
+const onViewClick = (data: DepartmentListingForListType) => {
+  departmentDataView.value = { ...data };
   viewDialog.value = true;
 };
 
@@ -224,7 +225,7 @@ onBeforeUnmount(() => {
   <Card :title="$t('t-department-list')" title-class="py-5">
     <template #title-action>
       <div>
-        <v-btn color="primary" class="mx-1" @click="onCreateEditClick(null)">
+        <v-btn color="primary" class="mx-1" @click="onCreateClick(null)">
           <i class="ph-plus-circle me-1" /> {{ $t('t-add-department') }}
         </v-btn>
         <v-btn color="secondary" class="mx-1">
@@ -249,7 +250,7 @@ onBeforeUnmount(() => {
       <DataTableServer v-model="selectedDepartments"
         :headers="departmentHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
         :items="departmentStore.departmentsList" :items-per-page="itemsPerPage" :total-items="totalItems"
-        :loading="loadingList" :search-query="searchQuery" :search-props="searchProps" @load-items="fetchDepartments"
+        :loading="loadingList" :search-query="searchQuery" :search-props="searchProps" @load-items="fetchDepartments" 
         item-value="id" show-select>
         <template #body="{ items }">
           <tr v-for="item in items as DepartmentListingForListType[]" :key="item.id" height="50">
@@ -257,11 +258,13 @@ onBeforeUnmount(() => {
               <v-checkbox :model-value="selectedDepartments.some(selected => selected.id === item.id)"
                 @update:model-value="toggleSelection(item)" hide-details density="compact" />
             </td>
-            <td>{{ item.name }}</td>
-            <td>{{ item.description }}</td>
-            <td>
-              <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)"
-                @onDelete="onDelete(item.id)" />
+            <td style="padding-right: 200px;">{{ item.name }}</td>
+            <td style="padding-right: 200px;">{{ item.description }}</td>
+            <td class="text-end" style="padding-right: 5px;">
+              <TableAction 
+              @onEdit="() => router.push(`/institution/department/${item.id}`)" 
+              @onView="onViewClick(item)"
+              @onDelete="onDelete(item.id)" />
             </td>
           </tr>
         </template>
@@ -287,7 +290,8 @@ onBeforeUnmount(() => {
   <ViewDepartmentDialog v-model="viewDialog" :data="departmentData" />
   <RemoveItemConfirmationDialog v-model="deleteDialog" :loading="deleteLoading" @onConfirm="onConfirmDelete" />
 
-  <v-card-actions class="d-flex justify-space-between">
+  <v-card-actions class="d-flex justify-space-between mt-5">
+
   <v-btn color="secondary" variant="outlined" class="me-2" @click="$emit('onStepChange', 2)">
     {{ $t('t-back-to-health-plan') }} <i class="ph-arrow-left ms-2" />
   </v-btn>

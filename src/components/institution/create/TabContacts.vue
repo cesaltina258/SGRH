@@ -295,5 +295,6 @@ onBeforeUnmount(() => {
     <v-btn color="secondary" variant="outlined" class="me-2" @click="$emit('onStepChange', 3)">
       {{ $t('t-back-to-organizational-struture') }} <i class="ph-arrow-left ms-2" />
     </v-btn>
+    
   </v-card-actions>
 </template>
