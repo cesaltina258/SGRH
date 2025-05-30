@@ -31,6 +31,7 @@ const institutionPrefix = "/institution";
 const employeePrefix = "/employee";
 const baseTablePrefix = "/baseTable";
 const usersPrefix = "/users";
+const clinicsPrefix = "/clinics";
 
 
 const institutionRoutes = [
@@ -95,6 +96,44 @@ const employeeRoutes = [
     name: 'ViewEmployee',
     component: () => import('@/views/employee/View.vue'),
     meta: { title: "View Employee", requiresAuth: true }
+  }
+].map((data) => {
+  return {
+    ...data,
+    meta: { ...data.meta, layout: DefaultLayout },
+  };
+});
+
+const clinicsRoutes = [
+  {
+    path: `${clinicsPrefix}/list`,
+    name: "ClinicsList",
+    component: () => import("@/views/clinics/List.vue"),
+    meta: { title: "Clinics List", authRequired: true },
+  },
+  {
+    path: `${clinicsPrefix}/overview`,
+    name: "ClinicsOverview",
+    component: () => import("@/views/clinics/Overview.vue"),
+    meta: { title: "Clinics Overview", authRequired: true },
+  },
+  {
+    path: `${clinicsPrefix}/create`,
+    name: "CreateClinics",
+    component: () => import("@/views/clinics/Create.vue"),
+    meta: { title: "Create Clinics", authRequired: true },
+  },
+  {
+    path: '/clinics/edit/:id',
+    name: 'EditClinics',
+    component: () => import('@/views/clinics/Edit.vue'),
+    meta: { title: "Edit Clinics", requiresAuth: true }
+  },
+  {
+    path: '/clinics/view/:id',
+    name: 'ViewClinics',
+    component: () => import('@/views/clinics/View.vue'),
+    meta: { title: "View Clinics", requiresAuth: true }
   }
 ].map((data) => {
   return {
@@ -1166,6 +1205,7 @@ export const routes = [
   ...employeeRoutes,
   ...baseTableRoutes,
   ...usersRoutes,
+  ...clinicsRoutes,
   {
     path: "/widgets",
     name: "Widgets",
