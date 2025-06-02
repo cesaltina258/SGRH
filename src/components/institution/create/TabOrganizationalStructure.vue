@@ -253,7 +253,7 @@ onBeforeUnmount(() => {
         :loading="loadingList" :search-query="searchQuery" :search-props="searchProps" @load-items="fetchDepartments" 
         item-value="id" show-select>
         <template #body="{ items }">
-          <tr v-for="item in items as DepartmentListingForListType[]" :key="item.id" height="50">
+          <tr v-for="item in items as DepartmentListingForListType[]" :key="item.id" height="50"> 
             <td>
               <v-checkbox :model-value="selectedDepartments.some(selected => selected.id === item.id)"
                 @update:model-value="toggleSelection(item)" hide-details density="compact" />

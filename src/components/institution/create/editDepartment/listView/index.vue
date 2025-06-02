@@ -1,7 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch, computed, onMounted } from "vue";
-import Filters from "@/components/institution/create/editDepartment/listView/HistoryFilters.vue";
-import { filters } from "@/components/institution/create/utils";
+import { ref, computed, onMounted } from "vue";
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
 import { positionHeader } from "@/components/institution/create/utils";
 import { DepartmentInsertType, PositionInsertType, PositionListingForListType } from "@/components/institution/types";
@@ -17,7 +15,6 @@ import { useToast } from 'vue-toastification';
 import { useI18n } from "vue-i18n";
 import { useRoute } from 'vue-router';
 import DataTableServer from "@/app/common/components/DataTableServer.vue";
-import DepartmentService from "@/app/http/services/institution/departmentService";
 
 const { t } = useI18n();
 const toast = useToast();
@@ -291,7 +288,7 @@ const handleSubmit = async () => {
                   </v-col>
                 </v-row>
               </v-card-text>
-              <DataTableServer
+              <DataTableServer v-model="selectedPositions"
                 :headers="positionHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
                 :items="positionStore.positions_list"
                 :items-per-page="itemsPerPage"

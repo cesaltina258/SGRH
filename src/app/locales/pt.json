@@ -316,7 +316,7 @@
   "t-employee-list": "Lista de Colaboradores",
   "t-total-employees": "Total de Colaboradores",
   "t-total-active-employees": "Total de Colaboradores Activos",
-  "t-total-inactive-employees": "Total de Colaboradores Inativos",
+  "t-inactive-employees": "Colaboradores Inativos",
   "t-new-employees-registed": "Total de Novos Colaboradores",
   "t-users": "Utilizadores",
   "t-functions": "Funções",
@@ -407,8 +407,8 @@
   "t-employee-name": "Nome do Colaborador",
   "t-employee-number": "Número do Colaborador",
   "t-search-employee": "Procurar por Colaborador",
-  "t-total-female-employees": "Total de Colaboradores do sexo feminino",
-  "t-total-male-employees": "Total de Colaboradores do sexo masculino",
+  "t-female-employees": "Colaboradores do sexo feminino",
+  "t-male-employees": "Colaboradores do sexo masculino",
   "t-please-enter-employee-firstname": "Por favor, insira o nome do colaborador!",
   "t-please-enter-employee-number": "Por favor, insira o número do colaborador!",
   "t-please-enter-lastname": "Por favor, insira o apelido!",
@@ -649,6 +649,7 @@
   "t-total-institutions": "Total de Instituições",
   "t-total-active-institutions": "Total de Instituições Activas",
   "t-total-public-institutions": "Total de Instituições Públicas"
+
 
 
 }

@@ -221,7 +221,7 @@ const submitGeneralInfo = async () => {
         <!--<v-row class="">
         <v-col cols="12" lg="12">
           <div class="font-weight-bold mb-2">
-            {{ $t('t-contract') }} <i class="ph-asterisk ph-xs text-danger" />
+            {{ $t('t-contract') }} <i class="ph-asterisk ph-xs text-danger" /> 
           </div>
           <ImageUploader v-model="img" />
         </v-col>

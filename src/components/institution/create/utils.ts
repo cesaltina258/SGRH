@@ -3,6 +3,7 @@ import { BreadcrumbType } from "@/app/common/types/breadcrumb.type";
 import { TableHeaderType } from "@/app/common/types/table.types";
 import { OptionType } from "@/app/common/types/option.type";
 import { DataTableHeaderType } from "@/app/common/types/table.types";
+
 export const breadcrumb: BreadcrumbType[] = [
   {
     title: "institution-list",
@@ -10,6 +11,17 @@ export const breadcrumb: BreadcrumbType[] = [
   },
   {
     title: "add-institution",
+    disabled: true,
+  },
+];
+
+export const breadcrumb1: BreadcrumbType[] = [
+  {
+    title: "department-list",
+    disabled: false,
+  },
+  {
+    title: "position-list",
     disabled: true,
   },
 ];

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { PropType, computed } from "vue";
-import { PositionListingForListType } from "@/components/institution/types";
+import { PositionInsertType, PositionListingForListType } from "@/components/institution/types";
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
@@ -12,7 +12,7 @@ const props = defineProps({
     default: false,
   },
   data: {
-    type: Object as PropType<PositionListingForListType | null>,
+    type: Object as PropType<PositionInsertType | null>,
     required: false,
     default: () => ({
       id: undefined,
