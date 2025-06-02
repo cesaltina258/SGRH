@@ -49,13 +49,13 @@ interface FetchParams {
 
 // Busca os funcionários com os parâmetros atuais
 const fetchInstitutionsforListing = async ({ page, itemsPerPage, sortBy, search }: FetchParams) => {
-  await institutionStore.fetchInstitutionsforListing(
+  await institutionStore.fetchInstitutionsforListing( 
     page - 1, // Ajuste para API que começa em 0
     itemsPerPage,
     sortBy[0]?.key || 'createdAt',
     sortBy[0]?.order || 'asc',
-    searchProps, // query_props
-    search // query_values
+    search, // query_values
+    searchProps // query_props
   )
 }
 
@@ -137,7 +137,7 @@ const toggleSelection = (item: InstitutionListingType) => {
               <Status :status="item.enable ? 'active' : 'unactive'" />
             </td>
             <td>
-              <TableAction @onEdit="() => router.push(`/institution/edit/${item.id}`)"
+              <TableAction @onEdit="() => router.push(`/institution/edit/${item.id}`)" 
                 @onDelete="() => openDeleteDialog(item.id)" />
             </td>
           </tr>

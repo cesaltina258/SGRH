@@ -8,7 +8,7 @@
  * 3. Plano de Saúde
  * 4. Pessoas de Contacto
  */
-import { ref, reactive, onMounted, onBeforeUnmount } from "vue";
+import { ref, reactive, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
 import { useI18n } from 'vue-i18n';
@@ -35,13 +35,14 @@ const institutionStore = useInstitutionStore();
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
-const toast = useToast();
+const toast = useToast(); 
 
 // Refs
 const step = ref(1); // Controla a aba atual (1 ou 2)
 const institutionId = ref<string | null>(
   typeof route.params.id === 'string' ? route.params.id : Array.isArray(route.params.id) ? route.params.id[0] : null
 );
+const isCreated = ref(!institutionId.value); 
 const loading = ref(false); // Estado de loading global
 const errorMsg = ref(""); // Mensagem de erro global
 let alertTimeout: ReturnType<typeof setTimeout> | null = null; // Timeout para mensagens de erro
@@ -165,6 +166,47 @@ const onStepChange = (value: number) => {
   }
 };
 
+// Modifique a função onStepChange para:
+const onStepChangeforDialog = (value: number) => {
+  // Se veio de query param, respeita esse valor
+  if (route.query.tab) {
+    const tabFromQuery = Number(route.query.tab);
+    if (!isNaN(tabFromQuery)) {  // Corrigido: parêntese fechando
+      step.value = tabFromQuery;
+      // Remove o query param para não interferir em navegações futuras
+      router.replace({ query: {} });
+      return;
+    }
+  }
+
+  // Permite sempre voltar para tabs anteriores
+  if (value < step.value) {
+    step.value = value;
+    return;
+  }
+
+  // No modo de edição ou quando dados básicos já foram validados, permite navegar livremente
+  if (institutionId.value || basicDataValidated.value) {
+    step.value = value;
+    return;
+  }
+
+  // No modo criação, só permite avançar para a próxima tab sequencialmente
+  if (value === step.value + 1) {
+    step.value = value;
+  }
+};
+
+// E o watcher deve ficar assim:
+watch(() => route.query.tab, (newTab) => {
+  if (newTab) {
+    const tabNumber = Number(newTab);
+    if (!isNaN(tabNumber)) {  // Corrigido: parêntese fechando
+      onStepChange(tabNumber);
+    }
+  }
+}, { immediate: true });
+
 
 /**
  * Salva os dados do employee
@@ -198,9 +240,9 @@ const saveInstitution = async (isFinalStep: boolean = false) => {
     institutionStore.setDraftInstitution(institutionData);
 
     // Feedback de sucesso
-    toast.success(institutionId.value
-      ? t('t-institution-updated-success')
-      : t('t-institution-created-success'));
+    toast.success(isCreated.value
+      ? t('t-institution-created-success')
+      : t('t-institution-updated-success'));
 
     // Redirecionamento ou próxima etapa
     if (isFinalStep) {
@@ -233,6 +275,16 @@ onBeforeUnmount(() => {
     <v-card-text>
       <ButtonNav v-model="step" class="mb-2" :institution-id="institutionId as string"
         :basic-data-validated="basicDataValidated" />
+
+        <!-- Indicador de loading -->
+        <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-4"></v-progress-linear>
+
+        <!-- Mensagens de erro -->
+      <transition name="fade">
+        <v-alert v-if="errorMsg" :text="errorMsg" type="error" class="mb-4 mx-5 mt-3" variant="tonal" color="danger"
+          density="compact" @click="errorMsg = ''" style="cursor: pointer; white-space: pre-line;" />
+      </transition>
+
       <Step1 v-if="step === 1" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)"
         :loading="loading" />
       <Step2 v-if="step === 2" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)"
