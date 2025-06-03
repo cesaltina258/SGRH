@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-// Importações
-import { ref, computed } from "vue";
+
+import { ref, computed, onMounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useToast } from 'vue-toastification';
 import { ClinicInsertType } from "../types";
@@ -48,7 +48,7 @@ let alertTimeout: ReturnType<typeof setTimeout> | null = null;
 const requiredRules = {
   incomeTaxNumber: [
     (v: string) => !!v || t('t-please-enter-income-tax-number'),
-    (v: string) => v.length <= 50 || t('t-maximum-50-characters'),
+    (v: string) => /^\d{9}$/.test(v) || t('t-income-tax-number-must-have-9-digits'),
   ],
   personOfContactFullname1: [
     (v: string) => !!v || t('t-please-enter-person-of-contact-full-name1'),
@@ -56,7 +56,7 @@ const requiredRules = {
   ],
   personOfContactPhone1: [
     (v: string) => !!v || t('t-please-enter-person-of-contact-phone1'),
-    (v: string) => /^[+]?[\d\s\-()]+$/.test(v) || t('t-invalid-phone-number'),
+    (v: string) => (v.replace(/\D/g, '').length === 9) || t('t-phone-must-have-9-digits'),
   ],
   personOfContactEmail1: [
     (v: string) => !!v || t('t-please-enter-person-of-contact-email1'),
@@ -68,7 +68,7 @@ const requiredRules = {
   ],
   personOfContactPhone2: [
     (v: string) => !!v || t('t-please-enter-person-of-contact-phone2'),
-    (v: string) => /^[+]?[\d\s\-()]+$/.test(v) || t('t-invalid-phone-number'),
+    (v: string) => (v.replace(/\D/g, '').length === 9) || t('t-phone-must-have-9-digits'),
   ],
   personOfContactEmail2: [
     (v: string) => !!v || t('t-please-enter-person-of-contact-email2'),
@@ -104,60 +104,74 @@ const saveData = async () => {
           density="compact" @click="errorMsg = ''" style="cursor: pointer;" />
       </transition>
 
-      <v-card-text class="pt-0 mt-6">
-
-        <!-- Cargo e Salário -->
-        <v-row class="mt-n6">
+      <v-card-text class="pt-0">
+        <!-- Linha 1: NUIT e Nome do contacto 1 -->
+        <v-row class="mt-2">
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
               {{ $t('t-income-tax-number') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
             <TextField v-model="clinicData.incomeTaxNumber" :placeholder="t('t-enter-income-tax-number')"
-              :rules="requiredRules.incomeTaxNumber" class="mb-2" disabled />
+              :rules="requiredRules.incomeTaxNumber" disabled/>
           </v-col>
+
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
               {{ $t('t-person-of-contact-full-name1') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
             <TextField v-model="clinicData.personOfContactFullname1"
-              :placeholder="t('t-enter-person-of-contact-full-name1')" :rules="requiredRules.personOfContactFullname1"
-              class="mb-2" disabled />
+              :placeholder="t('t-enter-person-of-contact-full-name1')"
+              :rules="requiredRules.personOfContactFullname1" disabled/>
           </v-col>
+        </v-row>
+
+        <!-- Linha 2: Telefone e Email do contacto 1 -->
+        <v-row class="mt-n6">
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
               {{ $t('t-person-of-contact-phone1') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
             <TextField v-model="clinicData.personOfContactPhone1" :placeholder="t('t-enter-person-of-contact-phone1')"
-              :rules="requiredRules.personOfContactPhone1" class="mb-2" disabled />
+              :rules="requiredRules.personOfContactPhone1" disabled/>
           </v-col>
+
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
               {{ $t('t-person-of-contact-email1') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
             <TextField v-model="clinicData.personOfContactEmail1" :placeholder="t('t-enter-person-of-contact-email1')"
-              :rules="requiredRules.personOfContactEmail1" class="mb-2" disabled />
+              :rules="requiredRules.personOfContactEmail1" disabled/>
           </v-col>
+        </v-row>
+
+        <!-- Linha 3: Nome e Telefone do contacto 2 -->
+        <v-row class="mt-n6">
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
               {{ $t('t-person-of-contact-full-name2') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
             <TextField v-model="clinicData.personOfContactFullname2"
-              :placeholder="t('t-enter-person-of-contact-full-name2')" :rules="requiredRules.personOfContactFullname2"
-              class="mb-2" disabled />
+              :placeholder="t('t-enter-person-of-contact-full-name2')"
+              :rules="requiredRules.personOfContactFullname2" disabled/>
           </v-col>
+
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
               {{ $t('t-person-of-contact-phone2') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
             <TextField v-model="clinicData.personOfContactPhone2" :placeholder="t('t-enter-person-of-contact-phone2')"
-              :rules="requiredRules.personOfContactPhone2" class="mb-2" disabled />
+              :rules="requiredRules.personOfContactPhone2" disabled/>
           </v-col>
-          <v-col cols="12" lg="12">
+        </v-row>
+
+        <!-- Linha 4: Email do contacto 2 -->
+        <v-row class="mt-n6">
+          <v-col cols="12">
             <div class="font-weight-bold mb-2">
               {{ $t('t-person-of-contact-email2') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
             <TextField v-model="clinicData.personOfContactEmail2" :placeholder="t('t-enter-person-of-contact-email2')"
-              :rules="requiredRules.personOfContactEmail2" class="mb-2" disabled />
+              :rules="requiredRules.personOfContactEmail2" disabled/>
           </v-col>
         </v-row>
       </v-card-text>
@@ -171,6 +185,7 @@ const saveData = async () => {
     </Card>
   </v-form>
 </template>
+
 
 <style scoped>
 /* Estilos consistentes com os outros componentes */

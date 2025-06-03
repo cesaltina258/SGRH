@@ -137,72 +137,126 @@ const submitForm = async () => {
 <template>
   <v-form ref="form" @submit.prevent="submitForm">
     <Card :title="$t('t-general-information')" elevation="0" title-class="pb-0">
+      
       <!-- Mensagem de erro -->
       <transition name="fade">
-        <v-alert v-if="errorMsg" :text="errorMsg" type="error" class="mb-4 mx-5 mt-3" variant="tonal" color="danger"
-          density="compact" @click="errorMsg = ''" style="cursor: pointer;" />
+        <v-alert
+          v-if="errorMsg"
+          :text="errorMsg"
+          type="error"
+          class="mb-4 mx-5 mt-3"
+          variant="tonal"
+          color="danger"
+          density="compact"
+          @click="errorMsg = ''"
+          style="cursor: pointer;"
+        />
       </transition>
 
       <v-card-text class="pt-0">
-
-        <!-- Nome completo -->
+        
+        <!-- Nome da Clínica -->
         <v-row class="mt-n3">
-          <!-- Seção: Informações básicas -->
-          <v-col cols="12" lg="12">
+          <v-col cols="12">
             <div class="font-weight-bold mb-2 mt-5">
               {{ $t('t-clinic-name') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="clinicData.name" :placeholder="$t('t-enter-clinic-name')" :rules="requiredRules.name" />
+            <TextField
+              v-model="clinicData.name"
+              :placeholder="$t('t-enter-clinic-name')"
+              :rules="requiredRules.name"
+            />
           </v-col>
+        </v-row>
+
+        <!-- Endereço e Telefone -->
+        <v-row class="mt-n6">
           <v-col cols="12" lg="6">
-            <div class="font-weight-bold  mb-2">
+            <div class="font-weight-bold mb-2">
               {{ $t('t-clinic-address') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="clinicData.address" :placeholder="$t('t-enter-clinic-address')" :rules="requiredRules.address"/>
+            <TextField
+              v-model="clinicData.address"
+              :placeholder="$t('t-enter-clinic-address')"
+              :rules="requiredRules.address"
+            />
           </v-col>
           <v-col cols="12" lg="6">
-            <div class="font-weight-bold  mb-2">
+            <div class="font-weight-bold mb-2">
               {{ $t('t-clinic-phone') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="clinicData.phone" :placeholder="$t('t-enter-clinic-phone')"
-              :rules="requiredRules.phone" />
+            <TextField
+              v-model="clinicData.phone"
+              :placeholder="$t('t-enter-clinic-phone')"
+              :rules="requiredRules.phone"
+            />
           </v-col>
+        </v-row>
+
+        <!-- Email e Website -->
+        <v-row class="mt-n6">
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
               {{ $t('t-clinic-email') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="clinicData.email" :placeholder="$t('t-enter-clinic-email')"
-              :rules="requiredRules.email" />
+            <TextField
+              v-model="clinicData.email"
+              :placeholder="$t('t-enter-clinic-email')"
+              :rules="requiredRules.email"
+            />
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
               {{ $t('t-clinic-website') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="clinicData.website" :placeholder="$t('t-enter-clinic-website')" :rules="requiredRules.website" />
-          </v-col>
-          <v-col cols="12" lg="12">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-clinic-description') }} 
-            </div>
-            <TextArea v-model="clinicData.description" :placeholder="$t('t-enter-clinic-description')"
-               />
+            <TextField
+              v-model="clinicData.website"
+              :placeholder="$t('t-enter-clinic-website')"
+              :rules="requiredRules.website"
+            />
           </v-col>
         </v-row>
+
+        <!-- Descrição -->
+        <v-row class="mt-n6">
+          <v-col cols="12">
+            <div class="font-weight-bold mb-2">
+              {{ $t('t-clinic-description') }}
+            </div>
+            <TextArea
+              v-model="clinicData.description"
+              :placeholder="$t('t-enter-clinic-description')"
+            />
+          </v-col>
+        </v-row>
+
       </v-card-text>
 
-      <!-- Ações do formulário -->
+      <!-- Ações -->
       <v-card-actions class="d-flex justify-space-between mt-3">
-        <v-btn color="secondary" variant="outlined" class="me-2" @click="onBack()" :disabled="loading">
+        <v-btn
+          color="secondary"
+          variant="outlined"
+          class="me-2"
+          @click="onBack()"
+          :disabled="loading"
+        >
           {{ $t('t-back') }} <i class="ph-arrow-left ms-2" />
         </v-btn>
 
-        <v-btn color="success" variant="elevated" @click="submitForm" :loading="loading">
-          {{ $t('t-save-and-proceed') }} <i class="ph-arrow-right ms-2" />
+        <v-btn
+          color="success"
+          variant="elevated"
+          @click="submitForm"
+          :loading="loading"
+        >
+          {{ $t('t-proceed') }} <i class="ph-arrow-right ms-2" />
         </v-btn>
       </v-card-actions>
     </Card>
   </v-form>
 </template>
+
 
 <style scoped>
 /* Estilos consistentes com o index.vue */

@@ -679,6 +679,7 @@
   "t-income-tax-number-must-have-9-digits": "O NUIT deve ter 9 dígitos.",
   "t-invalid-website": "Website inválido.",
   "t-clinics-updated-success": "Registo actualizado com sucesso!",
-  "t-clinics-add-success": "Registo adicionado com sucesso!"
+  "t-clinics-add-success": "Registo adicionado com sucesso!",
+  "t-proceed": "Prosseguir"
 
 }
