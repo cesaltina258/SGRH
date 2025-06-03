@@ -2,7 +2,8 @@ import { MenuSelectItemType } from "@/app/common/components/filters/types";
 import { BreadcrumbType } from "@/app/common/types/breadcrumb.type";
 import { TableHeaderType } from "@/app/common/types/table.types";
 import { OptionType } from "@/app/common/types/option.type";
-import { ContactType, HistoryType } from "@/components/institution/create/types";
+import { DataTableHeaderType } from "@/app/common/types/table.types";
+
 export const breadcrumb: BreadcrumbType[] = [
   {
     title: "institution-list",
@@ -10,6 +11,17 @@ export const breadcrumb: BreadcrumbType[] = [
   },
   {
     title: "add-institution",
+    disabled: true,
+  },
+];
+
+export const breadcrumb1: BreadcrumbType[] = [
+  {
+    title: "department-list",
+    disabled: false,
+  },
+  {
+    title: "position-list",
     disabled: true,
   },
 ];
@@ -55,13 +67,26 @@ export const statusOptions: MenuSelectItemType[] = [
   { value: "UnPaid", label: "UnPaid" },
 ];
 
-export const productHeader: TableHeaderType[] = [
-  { title: "#" },
-  { title: "Product Details" },
-  { title: "Rate ($)" },
-  { title: "Quantity" },
-  { title: "Amount" },
+export const contactPersonHeader: DataTableHeaderType[] = [
+  { title: "full-name", key: "fullname", sortable: true},
+  { title: "email", key: "email" , sortable: true },
+  { title: "phone", key: "phone" , sortable: true },
+  { title: "action",  sortable: false,  align: "right"}
 ];
+
+export const departmentHeader: DataTableHeaderType[] = [
+  { title: "name", key: "name", sortable: true},
+  { title: "description", key: "description" , sortable: true },
+  { title: "action",  sortable: false,  align: "right"}
+];
+
+export const positionHeader: DataTableHeaderType[] = [
+  { title: "name", key: "name", sortable: true},
+  { title: "description", key: "description" , sortable: true },
+  { title: "action",  sortable: false,  align: "right"}
+];
+
+
 
 
 export const contactOptions: OptionType[] = [
@@ -96,42 +121,6 @@ export const filters = {
   date: "",
 };
 
-export const customers: ContactType[] = [
-  {
-    id: "1",
-    name: "Javon Pouros",
-    email: "rashawn@steex.com",
-    phone: "+(253) 12345 67890",
-    create_date: "28 Feb, 2023",
-    status: "unActive",
-  },
-  {
-    id: "2",
-    name: "Willy Gulgowski",
-    email: "gulgowski@steex.com",
-    phone: "+(152) 32165 49873",
-    create_date: "20 Feb, 2023",
-    status: "block",
-  },
-  {
-    id: "3",
-    name: "Verona Mosciski",
-    email: "vmosciski@steex.com",
-    phone: "+(231) 14562 32165",
-    create_date: "16 Feb, 2023",
-    status: "active",
-  },
-  {
-    id: "4",
-    name: "Vinnie Huels",
-    email: "vinnie@steex.com",
-    phone: "+(44) 98765 32104",
-    create_date: "23 Jan, 2023",
-    status: "active",
-  }
-];
-
-
 export const contactHeader: TableHeaderType[] = [
   //{ title: "id" },
   { title: "name" },
@@ -141,40 +130,6 @@ export const contactHeader: TableHeaderType[] = [
   { title: "status" },
   { title: "action" },
 ];
-
-
-
-export const interactions: HistoryType[] = [
-  {
-    id: "1",
-    name: "Javon Pouros",
-    email: "rashawn@steex.com",
-    create_date: "28 Feb, 2023",
-    status: "unActive",
-  },
-  {
-    id: "2",
-    name: "Willy Gulgowski",
-    email: "gulgowski@steex.com",
-    create_date: "20 Feb, 2023",
-    status: "block",
-  },
-  {
-    id: "3",
-    name: "Verona Mosciski",
-    email: "vmosciski@steex.com",
-    create_date: "16 Feb, 2023",
-    status: "active",
-  },
-  {
-    id: "4",
-    name: "Vinnie Huels",
-    email: "vinnie@steex.com",
-    create_date: "23 Jan, 2023",
-    status: "active",
-  }
-];
-
 
 export const historyHeader: TableHeaderType[] = [
   //{ title: "id" },

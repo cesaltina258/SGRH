@@ -1,4 +1,21 @@
+export type EmployeeCountResponse = {
+  data: number;
+  meta: {
+    timestamp: string;
+  };
+  status: string;
+}
 
+export type GenderCountItem = {
+  gender: string;
+  count: number;
+}
+
+export type GenderCountResponse = {
+  data: GenderCountItem[];
+  meta: any;
+  status: string;
+}
 
 export type EmployeeListingType = {
   id: string;
