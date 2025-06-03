@@ -142,8 +142,8 @@ export const menuItems: MenuItemType[] = [
     label: "clinics",
     icon: "ph-file-text",
     id: "sidebarClinics",
-    prefix: "/invoices",
-    link: "/invoices/list"
+    prefix: "/clinics",
+    link: "/clinics/list"
   },
   {
     label: "billing",
