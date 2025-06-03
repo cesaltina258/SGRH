@@ -59,6 +59,12 @@ const institutionRoutes = [
     component: () => import("@/views/institution/Edit.vue"),
     meta: { title: "Edit Institution", authRequired: true },
   },
+  {
+    path: `${institutionPrefix}/department/:id`,
+    name: "EditDepartment",
+    component: () => import("@/views/institution/editDepartment/List.vue"),
+    meta: { title: "EditDepartment", authRequired: true },
+  },
 ].map((data) => {
   return {
     ...data,
@@ -154,12 +160,6 @@ const baseTableRoutes = [
     name: "DocumentTypeGridView",
     component: () => import("@/views/baseTables/documentType/GridView.vue"),
     meta: { title: "Agent Grid", authRequired: true },
-  },
-  {
-    path: `${baseTablePrefix}/documenttype/overview`,
-    name: "DocumentTypeOverview",
-    component: () => import("@/views/baseTables/documentType/Overview.vue"),
-    meta: { title: "Overview", authRequired: true },
   },
   {
     path: `${baseTablePrefix}/country/list`,

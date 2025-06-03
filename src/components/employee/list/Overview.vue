@@ -1,52 +1,16 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useEmployeeStore } from '@/store/employeeStore'
+
 const employeeStore = useEmployeeStore()
 
 // Carrega os dados da API
 onMounted(async () => {
-  await employeeStore.fetchEmployees()
+  await employeeStore.fetchEmployeeStats()
 })
 
-// Cálculos baseados nos dados reais
-const employeeStats = computed(() => {
-  const employees = employeeStore.employees
-  
-  return [
-    {
-      title: "total-employees",
-      endVal: employees.length,
-      color: "primary",
-      percent: "0%", // Você pode calcular isso também
-      isProgress: true,
-      icon: "ph-buildings",
-    },
-    {
-      title: "total-female-employees",
-      endVal: employees.filter(e => e.gender === 'FEMALE').length,
-      color: "success",
-      percent: "0%",
-      isProgress: true,
-      icon: "ph-gender-female",
-    },
-    {
-      title: "total-male-employees",
-      endVal: employees.filter(e => e.gender === 'MALE').length,
-      color: "info",
-      percent: "0%",
-      isProgress: true,
-      icon: "ph-gender-male",
-    },
-    {
-      title: "total-inactive-employees",
-      endVal: employees.filter(e => e.gender === 'INACTIVE').length,
-      color: "danger",
-      percent: "0%",
-      isProgress: false,
-      icon: "ph-x-circle",
-    }
-  ]
-})
+// Usa o getter da store diretamente
+const employeeStats = computed(() => employeeStore.employeeStatsForOverview)
 </script>
 
 <template>
@@ -78,6 +42,9 @@ const employeeStats = computed(() => {
                   :endVal="item.endVal"
                   class="text-h6 font-weight-bold me-4"
                 />
+                <span v-if="item.percent" class="text-caption" :class="`text-${item.color}`">
+                  {{ item.percent }}
+                </span>
               </div>
             </v-col>
           </v-row>

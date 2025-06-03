@@ -1,4 +1,21 @@
+export type EmployeeCountResponse = {
+  data: number;
+  meta: {
+    timestamp: string;
+  };
+  status: string;
+}
 
+export type GenderCountItem = {
+  gender: string;
+  count: number;
+}
+
+export type GenderCountResponse = {
+  data: GenderCountItem[];
+  meta: any;
+  status: string;
+}
 
 export type EmployeeListingType = {
   id: string;
@@ -112,7 +129,7 @@ export type EmployeeInsertType = {
   lastName: string;
   gender: string;
   maritalStatus: string | undefined;
-  birthDate: string;
+  birthDate: string | undefined;
   bloodGroup: string;
   placeOfBirth: string;
   nationality: string;
@@ -129,12 +146,12 @@ export type EmployeeInsertType = {
   emergencyContactPhone: string;
   idCardNumber: string | null;
   idCardIssuer: string;
-  idCardExpiryDate: string;
-  idCardIssuanceDate: string;
+  idCardExpiryDate: string | undefined;
+  idCardIssuanceDate: string | undefined;
   passportNumber: string | null;
   passportIssuer: string;
-  passportExpiryDate: string;
-  passportIssuanceDate: string;
+  passportExpiryDate: string | undefined;
+  passportIssuanceDate: string | undefined;
   salary?: number | null;
   company?: string | undefined;
   department?: string | undefined;

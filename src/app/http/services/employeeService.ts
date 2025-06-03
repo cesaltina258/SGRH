@@ -1,5 +1,5 @@
 import HttpService from "@/app/http/httpService";
-import type { EmployeeListingType, EmployeeInsertType, EmployeeResponseType } from "@/components/employee/types";
+import type { EmployeeListingType, EmployeeInsertType, EmployeeResponseType, EmployeeCountResponse, GenderCountResponse, GenderCountItem } from "@/components/employee/types";
 import type { ApiErrorResponse } from "@/app/common/types/errorType";
 
 interface ApiResponse<T> {
@@ -12,6 +12,8 @@ interface ServiceResponse<T> {
   data?: T;
   error?: ApiErrorResponse;
 }
+
+
 
 export default class EmployeeService extends HttpService {
 
@@ -190,6 +192,71 @@ export default class EmployeeService extends HttpService {
       throw error;
     }
   }
+
+  async getTotalEmployees(): Promise<ServiceResponse<number>> {
+    try {
+      const response = await this.get<EmployeeCountResponse>('/human-resource/employees/count');
+      return {
+        status: 'success',
+        data: response.data
+      };
+    } catch (error: any) {
+      return error;
+    }
+  }
+
+  async getEnabledEmployees(): Promise<ServiceResponse<number>> {
+    try {
+      const response = await this.get<EmployeeCountResponse>('/human-resource/employees/count-enabled-true');
+      return {
+        status: 'success',
+        data: response.data
+      };
+    } catch (error: any) {
+      return error;
+    }
+  }
+
+  async getDisabledEmployees(): Promise<ServiceResponse<number>> {
+    try {
+      const response = await this.get<EmployeeCountResponse>('/human-resource/employees/count-enabled-false');
+      return {
+        status: 'success',
+        data: response.data
+      };
+    } catch (error: any) {
+      return error;
+    }
+  }
+
+  async getEmployeesByGender(): Promise<ServiceResponse<{ male: number; female: number; other: number }>> {
+    try {
+      const response = await this.get<GenderCountResponse>('/human-resource/employees/count-by-gender');
+      
+      // Processa os dados de gênero para o formato esperado
+      const genderData = {
+        male: 0,
+        female: 0,
+        other: 0
+      };
+
+      response.data.forEach(item => {
+        if (item.gender === 'MALE') genderData.male = item.count;
+        if (item.gender === 'FEMALE') genderData.female = item.count;
+        // Adicione outros gêneros se necessário
+      });
+
+      return {
+        status: 'success',
+        data: genderData
+      };
+    } catch (error: any) {
+      return error;
+    }
+  }
+
+
+ 
 
 
 }

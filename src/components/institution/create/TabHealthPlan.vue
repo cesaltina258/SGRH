@@ -178,7 +178,7 @@ const submitHealthPlan = async () => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-maximum-number-of-dependents') }}<i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model.number="institutionData.maxNumberOfDependents" 
+            <TextField v-model.number="institutionData.maxNumberOfDependents"
               :placeholder="t('t-enter-maximum-number-of-dependents')" :rules="requiredRules.maxNumberOfDependents"
               type="number" class="mb-2" />
           </v-col>
@@ -186,7 +186,7 @@ const submitHealthPlan = async () => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-maximum-age-of-dependents') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model.number="institutionData.childrenMaxAge" 
+            <TextField v-model.number="institutionData.childrenMaxAge"
               :placeholder="t('t-enter-maximum-age-of-dependents')" type="number" :rules="requiredRules.childrenMaxAge"
               class="mb-2" />
           </v-col>
@@ -204,8 +204,8 @@ const submitHealthPlan = async () => {
               {{ $t('t-fixed-amount') }} <i v-if="institutionData.healthPlanLimit === 'FIXED_AMOUNT'"
                 class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model.number="institutionData.fixedAmount" type="number" :placeholder="t('t-enter-fixed-amount')"
-              :rules="requiredRules.fixedAmount" class="mb-2" />
+            <TextField v-model.number="institutionData.fixedAmount" type="number"
+              :placeholder="t('t-enter-fixed-amount')" :rules="requiredRules.fixedAmount" class="mb-2" />
           </v-col>
         </v-row>
         <v-row class="mt-n5">
@@ -222,17 +222,18 @@ const submitHealthPlan = async () => {
               {{ $t('t-company-contribuition-percentage') }}
             </div>
             <TextField v-model="institutionData.companyContributionPercentage"
-              :placeholder="t('t-enter-company-contribuition-percentage')" type="number" class="mb-2" :rules="requiredRules.companyContributionPercentage" />
+              :placeholder="t('t-enter-company-contribuition-percentage')" type="number" class="mb-2"
+              :rules="requiredRules.companyContributionPercentage" />
           </v-col>
         </v-row>
       </v-card-text>
 
       <v-card-actions class="d-flex justify-space-between mt-5">
-        <v-btn color="primary" variant="text" @click="emit('onStepChange', 1)">
-          <i class="ph-arrow-left me-2" /> {{ $t('t-back-to-general-info') }}
+        <v-btn color="secondary" variant="outlined" class="me-2" @click="$emit('onStepChange', 1)">
+          {{ $t('t-back-to-general-info') }} <i class="ph-arrow-left ms-2" />
         </v-btn>
         <v-btn color="success" variant="elevated" @click="submitHealthPlan">
-          {{ $t('t-save-and-proceed') }} <i class="ph-arrow-right ms-2" />
+          {{ $t('t-save') }}
         </v-btn>
       </v-card-actions>
     </Card>
