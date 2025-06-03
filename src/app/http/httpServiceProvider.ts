@@ -52,6 +52,7 @@ export {
     languageService, 
     institutionService, 
     departmentService, 
-    positionService, clinicService,
+    positionService, 
+    clinicService,
     contactPersonService
 };
