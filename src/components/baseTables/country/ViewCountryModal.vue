@@ -20,7 +20,7 @@ const prop = defineProps({
   },
 });
 
-const isCreate = computed(() => prop.data.id === '-1');
+const isCreate = computed(() => prop.data.id === "-1");
 const formData = ref(prop.data);
 
 const dialogValue = computed({
@@ -72,7 +72,13 @@ const validateForm = () => {
   if (!code.value) {
     formErrors.value.code = t('t-please-enter-code');
     isValid = false;
+  } else if (code.value.length < 2 || code.value.length > 10) {
+    formErrors.value.code = t('t-code-must-be-between-2-and-10-chars');
+    isValid = false;
+  } else {
+    formErrors.value.code = '';
   }
+
   if (!iso2Code.value) {
     formErrors.value.iso2Code = t('t-please-enter-iso2-code');
     isValid = false;
@@ -80,6 +86,7 @@ const validateForm = () => {
     formErrors.value.iso2Code = t('t-iso2-must-have-2-characters');
     isValid = false;
   }
+
   if (!iso3Code.value) {
     formErrors.value.iso3Code = t('t-please-enter-iso3-code');
     isValid = false;
@@ -87,6 +94,7 @@ const validateForm = () => {
     formErrors.value.iso3Code = t('t-iso3-must-have-3-characters');
     isValid = false;
   }
+
   if (!phoneCode.value) {
     formErrors.value.phoneCode = t('t-please-enter-phone-code');
     isValid = false;
@@ -94,17 +102,30 @@ const validateForm = () => {
     formErrors.value.phoneCode = t('t-invalid-phone-code'); // Traduz isto no teu ficheiro pt.json
     isValid = false;
   }
+
   if (!currency.value) {
     formErrors.value.currency = t('t-please-enter-currency');
     isValid = false;
   }
+
   if (!currencySymbol.value) {
     formErrors.value.currencySymbol = t('t-please-enter-currency-symbol');
     isValid = false;
+  } else if (currencySymbol.value.length < 1 || currencySymbol.value.length > 10) {
+    formErrors.value.currencySymbol = t('t-currency-symbol-must-be-between-1-and-10-chars');
+    isValid = false;
+  } else {
+    formErrors.value.currencySymbol = '';
   }
+
   if (!currencyCode.value) {
     formErrors.value.currencyCode = t('t-please-enter-currency-code');
     isValid = false;
+  } else if (currencyCode.value.length < 2 || currencyCode.value.length > 10) {
+    formErrors.value.currencyCode = t('t-currency-code-must-be-between-2-and-10-chars');
+    isValid = false;
+  } else {
+    formErrors.value.currencyCode = '';
   }
 
   return isValid;
@@ -258,5 +279,4 @@ const onSubmit = () => {
 .text-extra-small {
   font-size: 0.70rem;
 }
-
 </style>

@@ -76,9 +76,28 @@ export type InstitutionInsertType = {
     companyContributionPercentage: number | null;
 }
 
+export type DepartmentInsertType = {
+    id?: string | null;
+    name: string;
+    description: string | null;
+    company: string;
+}
+
+export type DepartmentListingForListType = {
+    id: string;
+    name: string;
+    description: string | null;
+    company:  { id: string; [key: string]: any } ;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    deletedAt: Date | null;
+    createdBy: string;
+    updatedBy: string;
+    deletedBy: string;
+}
 
 export type DepartmentListingType = {
-    id: string | number;
+    id: string;
     name: string;
     description: string;
     institution: {
@@ -121,4 +140,74 @@ export type PositionListingType = {
     createdBy: string;
     updatedBy: string;
     deletedBy: string;
+};
+
+export type PositionInsertType = {
+    id?: string | null;
+    name: string;
+    description: string | null;
+    department: string;
+}
+
+export type PositionListingForListType = {
+    id: string;
+    name: string;
+    description: string | null;
+    department: string;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    deletedAt: Date | null;
+    createdBy: string;
+    updatedBy: string;
+    deletedBy: string;
+}
+
+export type ContactPersonListingType = {
+    id: string;
+    fullname: string;
+    email: string;
+    phone: string;
+    company: string ;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    deletedAt: Date | null;
+    createdBy: string;
+    updatedBy: string;
+    deletedBy: string;
+};
+
+export type ContactPersonInsertType = {
+    id?: string | null; 
+    fullname: string;   
+    email: string;
+    phone: string;
+    company: string; 
+};
+
+export type ClinicListingType = {
+    id: string;
+    clinic: {
+        id: string | number;
+        name: string;
+        description: string;
+        createdAt: Date | null;
+        updatedAt: Date | null;
+        deletedAt: Date | null;
+        createdBy: string;
+        updatedBy: string;
+        deletedBy: string;
+    }
+    company: string;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    deletedAt: Date | null;
+    createdBy: string;
+    updatedBy: string;
+    deletedBy: string;
+};
+
+export type ClinicInsertType = {
+    id?: string | null; 
+    clinic: string; 
+    company: string; 
 };

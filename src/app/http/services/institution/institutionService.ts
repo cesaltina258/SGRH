@@ -1,14 +1,13 @@
 import HttpService from "@/app/http/httpService";
 import type { InstitutionListingType, InstitutionInsertType, InstitutionResponseType } from "@/components/institution/types";
 import type { ApiErrorResponse } from "@/app/common/types/errorType";
-import { healthPlanLimitOptions } from "@/components/institution/create/utils";
 
 interface ApiResponse<T> {
   data: T;
   meta?: any;
 }
 
-interface ServiceResponse<T> { 
+interface ServiceResponse<T> {  
   status: 'success' | 'error';
   data?: T;
   error?: ApiErrorResponse;

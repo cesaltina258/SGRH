@@ -168,6 +168,17 @@ watch(selectedItems, (newValue) => {
   emit('update:modelValue', newValue)
 }, { deep: true })
 
+watch(() => props.searchQuery, () => {
+  emit('load-items', {
+    page: 1,
+    itemsPerPage: itemsPerPage.value,
+    sortBy: [], // ou mantém o anterior se aplicável
+    search: props.searchQuery,
+    searchProps: props.searchProps
+  })
+})
+
+
 const loadItems = async ({
   page: newPage,
   itemsPerPage: newItemsPerPage,

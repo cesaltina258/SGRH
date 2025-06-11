@@ -102,12 +102,11 @@ let alertTimeout: ReturnType<typeof setTimeout> | null = null;
  * Opções para selects (tipos de instituicao)
  */
 const institutionTypes = computed(() => {
-  return institutionTypeStore.institutiontypes.map((country: InstitutionTypeListingType) => ({
-    value: country.id,
-    label: country.name
+  return (institutionTypeStore.institutiontypes as InstitutionTypeListingType[]).map((item) => ({
+    value: item.id,
+    label: item.name,
   }));
 });
-
 
 /**
  * Carrega dados iniciais quando o componente é montado
@@ -222,7 +221,7 @@ const submitGeneralInfo = async () => {
         <!--<v-row class="">
         <v-col cols="12" lg="12">
           <div class="font-weight-bold mb-2">
-            {{ $t('t-contract') }} <i class="ph-asterisk ph-xs text-danger" />
+            {{ $t('t-contract') }} <i class="ph-asterisk ph-xs text-danger" /> 
           </div>
           <ImageUploader v-model="img" />
         </v-col>

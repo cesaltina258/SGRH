@@ -1,6 +1,46 @@
 <script lang="ts" setup>
-import { institutionOverview } from "@/components/institution/list/utils";
+import { ref, computed, onMounted } from 'vue'
+import { useInstitutionStore } from '@/store/institution/institutionStore'
+const institutionStore = useInstitutionStore()
+
+// Carrega os dados da API
+onMounted(async () => {
+  await institutionStore.fetchInstitutions()
+})
+
+// Cálculos baseados nos dados reais
+const employeeStats = computed(() => {
+  const institutions = institutionStore.institutions
+  
+  return [
+    {
+      title: "total-institutions",
+      endVal: institutions.length,
+      color: "primary",
+      percent: "0%", // Você pode calcular isso também
+      isProgress: true,
+      icon: "ph-buildings",
+    },
+    {
+      title: "total-active-institutions",
+      endVal: institutions.filter(e => e.enable === null).length,
+      color: "danger",
+      percent: "0%",
+      isProgress: false,
+      icon: "ph-x-circle",
+    },
+    {
+      title: "total-public-institutions",
+      endVal: institutions.filter(e => e.institutionType?.name === 'ESTADO').length,
+      color: "danger",
+      percent: "0%",
+      isProgress: false,
+      icon: "ph-x-circle",
+    }
+  ]
+})
 </script>
+
 <template>
   <v-row>
     <v-col cols="12" lg="12">
@@ -10,11 +50,11 @@ import { institutionOverview } from "@/components/institution/list/utils";
             <v-col
               cols="12"
               sm="6"
-              lg="3"
-              v-for="(item, index) in institutionOverview"
-              :key="'invoice-list-' + index"
+              lg="4"
+              v-for="(item, index) in employeeStats"
+              :key="'employee-stats-' + index"
               class="ps-10"
-              :class="index < institutionOverview.length - 1 ? 'right-border' : ''"
+              :class="index < employeeStats.length - 1 ? 'right-border' : ''"
             >
               <v-avatar
                 :color="item.color"
@@ -36,6 +76,5 @@ import { institutionOverview } from "@/components/institution/list/utils";
         </v-card-text>
       </v-card>
     </v-col>
-    
   </v-row>
 </template>

@@ -1,7 +1,8 @@
 import HttpService from "@/app/http/httpService";
-import type { UserInsertType, UserListingType, UserUpdateType, changePasswordType,
+import type {
+  UserInsertType, UserListingType, UserUpdateType, changePasswordType,
   updatePasswordListingType, updatePasswordResponseType
- } from "@/components/users/types";
+} from "@/components/users/types";
 
 export default class UserService extends HttpService {
 
@@ -10,40 +11,54 @@ export default class UserService extends HttpService {
     page: number = 0,
     size: number = 10,
     sortColumn: string = 'createdAt',
-    direction: string = 'asc', // Valor padrão alterado para 'asc' conforme seu exemplo
-    query_value?: string,
-    query_props?: string
-  ): Promise<{ content: UserListingType[], meta: any }> {
+    direction: string = 'asc',
+    globalSearch?: string,
+    advancedFilters: {
+      prop: string;
+      operator: string;
+      value: string;
+    }[] = [],
+    logicalOperator: string = 'AND'
+  ): Promise<{ content: UserListingType[]; meta: any }> {
     try {
-      // Construção manual da query string para controle total
-      const queryParams = [
-        `page=${page}`,
-        `size=${size}`,
-        `sortColumn=${sortColumn}`, // Apenas o nome da coluna
-        `direction=${direction}`    // Direção separada 
-      ];
+      // Construir parâmetros base
+      const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        sortColumn,
+        direction
+      });
 
-      if (query_value && query_props) {
-        queryParams.push(`query_props=${encodeURIComponent(query_props)}`);
-        queryParams.push(`query_value=${encodeURIComponent(query_value)}`);
+      // Adicionar pesquisa global se existir
+      if (globalSearch) {
+        params.append('query_props', 'firstName,lastName,email');
+        params.append('query_operator', 'OR');
+        params.append('query_value', globalSearch);
       }
 
-      const queryString = queryParams.join('&');
-      const url = `/administration/users?${queryString}`;
+      // Adicionar filtros avançados se existirem
+      if (advancedFilters.length > 0) {
+        params.append('query_props', advancedFilters.map(f => f.prop).join(','));
+        params.append('query_comparision', advancedFilters.map(f => f.operator).join(','));
+        params.append('query_value', advancedFilters.map(f => f.value).join(','));
+        params.append('query_operator', logicalOperator);
+      }
 
-      console.log('URL da requisição:', url); // Para debug
-
+      const url = `/administration/users?${params.toString()}`;
+      console.log('URL de busca de utilizadores:', url); // Log da URL para depuração
       const response = await this.get<{ data: UserListingType[]; meta: any }>(url);
-
-      console.log('Resposta da requisição user:', response); // Para debug
 
       return {
         content: response.data || [],
-        meta: response.meta || []
+        meta: response.meta || {
+          totalElements: 0,
+          page: 0,
+          size: 10,
+          totalPages: 0
+        }
       };
-
     } catch (error) {
-      console.error("❌ Erro ao buscar colaboradores:", error);
+      console.error("Erro ao buscar usuários:", error);
       throw error;
     }
   }

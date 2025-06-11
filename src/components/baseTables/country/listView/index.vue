@@ -15,6 +15,8 @@ import { useCountryStore } from "@/store/baseTables/countryStore";
 import { countryService } from "@/app/http/httpServiceProvider";
 import { useToast } from 'vue-toastification';
 import { useI18n } from "vue-i18n";
+import DataTableServer from "@/app/common/components/DataTableServer.vue";
+import { CountryOption } from "@/components/baseTables/country/types";
 
 
 const { t } = useI18n();
@@ -33,118 +35,50 @@ const deleteId = ref<string | null>(null);
 const deleteLoading = ref(false);
 const isSelectAll = ref(false);
 
-const mappedData = computed(() =>
-  countryStore.countries.map((item) => ({
-    ...item,
-    isCheck: false,
-  })).toReversed()
-);
-
-const filteredData = ref<CountryListingType[]>([]);
-const finalData = ref<CountryListingType[]>([]);
-
-watch(mappedData, (newVal) => {
-  filteredData.value = newVal;
-  finalData.value = newVal;
-}, { immediate: true });
-
 onMounted(() => {
-  countryStore.fetchCountries();
-  getPaginatedData();
+  fetchCountries({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: [], search: "" });
 });
 
-const query = ref("");
+// Campos para pesquisa
+const searchQuery = ref("");
+const searchProps = "name,code,iso2Code,iso3Code,phoneCode,currency,currencySymbol,currencyCode";
 
-const page = ref(1);
-const noOfItems = computed(() => {
-  return finalData.value.length;
-});
-const tableData = ref<CountryListingType[]>([]);
-const loading = ref(false);
+// Paginação
+const itemsPerPage = ref(10);
+const loadingList = computed(() => countryStore.loading);
+const totalItems = computed(() => countryStore.pagination.totalElements);
+const selectedCountries = ref<any[]>([])
 
-const config = ref({
-  page: page.value,
-  start: 0,
-  end: 0,
-  noOfItems: noOfItems.value,
-  itemsPerPage: 10,
+// Carregamento inicial
+onMounted(() => {
+  fetchCountries({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: [], search: "" });
 });
 
-const getPaginatedData = () => {
-  const { itemsPerPage, page } = config.value;
-  const start = (page - 1) * itemsPerPage;
-  let end = start + itemsPerPage;
-  end = end <= noOfItems.value ? end : noOfItems.value;
+// Observa mudanças nos funcionários selecionados
+watch(selectedCountries, (newSelection) => {
+  console.log('Funcionários selecionados:', newSelection)
+}, { deep: true })
 
-  config.value = {
-    ...config.value,
-    start,
-    end,
-  };
-
-  const data = finalData.value.slice(config.value.start, config.value.end);
-
-  loading.value = true;
-  tableData.value = [];
-
-  setTimeout(() => {
-    tableData.value = data;
-    loading.value = false;
-  }, 200);
+// Função de carregamento da tabela
+const fetchCountries = async ({ page, itemsPerPage, sortBy, search }: CountryOption) => {
+  await countryStore.fetchCountries(
+    page - 1,
+    itemsPerPage,
+    sortBy[0]?.key || "name",
+    sortBy[0]?.order || "asc",
+    search,
+    searchProps
+  );
 };
 
-
-
-watch(page, (newPage: number) => {
-  config.value.page = newPage;
-  getPaginatedData();
-});
-
-watch(filteredData, (newData: CountryListingType[]) => {
-  updateTableData(newData);
-});
-
-const updateTableData = (newVal: CountryListingType[]) => {
-  loading.value = true;
-  const { itemsPerPage } = config.value;
-
-  const start = 1;
-  let end = start + itemsPerPage;
-  end = end <= newVal.length ? end : newVal.length;
-  tableData.value = [];
-
-  setTimeout(() => {
-    tableData.value = newVal;
-    config.value = {
-      ...config.value,
-      start,
-      end,
-      noOfItems: newVal.length,
-    };
-    loading.value = false;
-  }, 200);
+const toggleSelection = (item: CountryListingType) => {
+  const index = selectedCountries.value.findIndex(selected => selected.id === item.id);
+  if (index === -1) {
+    selectedCountries.value = [...selectedCountries.value, item];
+  } else {
+    selectedCountries.value = selectedCountries.value.filter(selected => selected.id !== item.id);
+  }
 };
-
-watch(query, (newQuery: string) => {
-  filteredData.value = finalData.value.filter((item) => {
-    const val = newQuery.toLowerCase();
-    if (
-      item.name.toLowerCase().includes(val) ||
-      item.code.includes(val) ||
-      item.iso2Code.includes(val) ||
-      item.iso3Code.includes(val) ||
-      item.phoneCode.includes(val) ||
-      item.currency.toLowerCase().includes(val) ||
-      item.currencySymbol.toLowerCase().includes(val) ||
-      item.currencyCode.toLowerCase().includes(val)
-    ) {
-      return item;
-    }
-  });
-  updateTableData(filteredData.value);
-});
-
-//Criação e edição do utilizador
 
 watch(dialog, (newVal: boolean) => {
   if (!newVal) {
@@ -155,7 +89,7 @@ watch(dialog, (newVal: boolean) => {
 const onCreateEditClick = (data: CountryListingType | null) => {
   if (!data) {
     countryData.value = {
-      id: '-1',
+      id: "-1",
       name: "",
       code: "",
       iso2Code: "",
@@ -191,8 +125,7 @@ const onSubmit = async (data: CountryListingType, callbacks?: {
       toast.success(t('t-toast-message-update'));
     }
 
-    // Recarrega os dados
-    await countryStore.fetchCountries();
+    await fetchCountries({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: [], search: searchQuery.value });
 
     // Callback de sucesso (fecha a modal)
     callbacks?.onSuccess?.();
@@ -216,7 +149,7 @@ watch(viewDialog, (newVal: boolean) => {
 const onViewClick = (data: CountryListingType | null) => {
   if (!data) {
     countryData.value = {
-      id: '-1',
+      id: "-1",
       name: "",
       code: "",
       iso2Code: "",
@@ -253,11 +186,7 @@ const onConfirmDelete = async () => {
   try {
     await countryService.deleteCountry(deleteId.value!);
 
-    filteredData.value = filteredData.value.filter(
-      (item) => item.id !== deleteId.value
-    );
-    finalData.value = [...filteredData.value];
-    updateTableData(filteredData.value);
+    await fetchCountries({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: [], search: searchQuery.value });
 
     toast.success(t('t-toast-message-deleted'));
   } catch (error) {
@@ -274,32 +203,37 @@ const onConfirmDelete = async () => {
 <template>
   <v-card>
     <v-card-title class="mt-2">
-  <v-row justify="space-between" align="center" no-gutters>
-    <!-- Novo texto à esquerda -->
-    <v-col lg="auto" class="d-flex align-center">
-      <span class="text-body-1 font-weight-bold">{{ $t('t-country-list') }}</span>
-    </v-col>
-
-    <!-- Container dos elementos à direita -->
-    <v-col lg="8" class="d-flex justify-end">
-      <v-row justify="end" align="center" no-gutters>
-        <v-col lg="4" class="me-3">
-          <QuerySearch v-model="query" :placeholder="$t('t-search-for-country')" />
+      <v-row justify="space-between" align="center" no-gutters>
+        <!-- Novo texto à esquerda -->
+        <v-col lg="auto" class="d-flex align-center">
+          <span class="text-body-1 font-weight-bold">{{ $t('t-country-list') }}</span>
         </v-col>
-        <v-col lg="auto">
-          <v-btn color="secondary" @click="onCreateEditClick(null)">
-            <i class="ph-plus-circle me-1" /> {{ $t('t-add-country') }}
-          </v-btn>
+
+        <!-- Container dos elementos à direita -->
+        <v-col lg="8" class="d-flex justify-end">
+          <v-row justify="end" align="center" no-gutters>
+            <v-col lg="4" class="me-3">
+              <QuerySearch v-model="searchQuery" :placeholder="$t('t-search-for-country')" />
+            </v-col>
+            <v-col lg="auto">
+              <v-btn color="secondary" @click="onCreateEditClick(null)">
+                <i class="ph-plus-circle me-1" /> {{ $t('t-add-country') }}
+              </v-btn>
+            </v-col>
+          </v-row>
         </v-col>
       </v-row>
-    </v-col>
-  </v-row>
-</v-card-title>
+    </v-card-title>
     <v-card-text class="mt-2">
-      <Table v-model="page" :headerItems="listViewHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
-        :config="config" :loading="loading" is-pagination >
-        <template #body>
-          <tr v-for="(item, index) in tableData" :key="'agent-listing-item-' + index" height="50">
+      <DataTableServer :headers="listViewHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
+        :items="countryStore.countries" :items-per-page="itemsPerPage" :total-items="totalItems" :loading="loadingList"
+        :search-query="searchQuery" :search-props="searchProps" item-value="id" @load-items="fetchCountries">
+        <template #body="{ items }">
+          <tr v-for="item in items as CountryListingType[]" :key="item.id" height="50">
+            <td>
+              <v-checkbox :model-value="selectedCountries.some(selected => selected.id === item.id)"
+                @update:model-value="toggleSelection(item)" hide-details density="compact" />
+            </td>
             <td>{{ item.name }}</td>
             <td>{{ item.code }}</td>
             <td>{{ item.iso2Code }}</td>
@@ -308,27 +242,27 @@ const onConfirmDelete = async () => {
             <td>{{ item.currency }}</td>
             <td>{{ item.currencySymbol }}</td>
             <td>{{ item.currencyCode }}</td>
-            <!-- <td>
-              <Status :status="item.enabled ? 'active' : 'unactive'" />
-            </td> -->
             <td>
-              <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)"
-                @onDelete="onDelete(item.id)" />
+              <TableAction @onEdit="onCreateEditClick(item as CountryListingType)"
+                @onView="onViewClick(item as CountryListingType)"
+                @onDelete="onDelete((item as CountryListingType).id)" />
+
             </td>
           </tr>
         </template>
-      </Table>
-
-      <div v-if="!filteredData.length" class="text-center pa-7">
-        <div class="mb-3">
-          <v-avatar color="primary" variant="tonal" size="x-large">
-            <i class="ph-magnifying-glass ph-lg"></i>
-          </v-avatar>
-        </div>
-        <div class="text-subtitle-1 font-weight-bold">
-          {{ $t('t-search-not-found-message') }}
-        </div>
-      </div>
+        <template v-if="!countryStore.countries.length" #body>
+          <tr>
+            <td :colspan="listViewHeader.length + 2" class="text-center py-10">
+              <v-avatar size="80" color="primary" variant="tonal">
+                <i class="ph-magnifying-glass" style="font-size: 30px" />
+              </v-avatar>
+              <div class="text-subtitle-1 font-weight-bold mt-3">
+                {{ $t('t-search-not-found-message') }}
+              </div>
+            </td>
+          </tr>
+        </template>
+      </DataTableServer>
     </v-card-text>
   </v-card>
 

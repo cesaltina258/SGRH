@@ -19,7 +19,7 @@ import Step2 from "@/components/employee/view/TabInstitution&Classification.vue"
 
 // Stores
 import { useEmployeeStore } from '@/store/employeeStore';
-import { useProvinceStore } from '@/store/baseTables/provinceStore';
+import { useProvinceStore } from '@/store/baseTables/countryStore';
 import { useInstitutionStore } from '@/store/institution/institutionStore';
 import { useDepartmentStore } from '@/store/institution/departmentStore';
 import { usePositionStore } from '@/store/institution/positionStore';

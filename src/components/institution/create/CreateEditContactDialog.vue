@@ -1,143 +1,162 @@
 <script lang="ts" setup>
-import { computed, ref } from "vue";
-import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
-import { statusOptions } from "@/components/institution/create/utils";
-import ImageUploader from "@/app/common/components/ImageUploader.vue";
+import { PropType, computed, ref, watch } from "vue";
+import { ContactPersonInsertType } from "@/components/institution/types";
+import { useI18n } from "vue-i18n";
+import { useToast } from 'vue-toastification';
 
-const emit = defineEmits(["update:modelValue", "onConfirm"]);
+const { t } = useI18n();
+const emit = defineEmits(["update:modelValue", "onSubmit"]);
 
-const prop = defineProps({
+const props = defineProps({
   modelValue: {
     type: Boolean,
     default: false,
   },
-  customerDetail: {
-    type: Object,
-    default: () => {},
+  // No CreateEditContactDialog.vue
+  data: {
+    type: Object as PropType<ContactPersonInsertType | null>,
+    required: false,
+    default: () => ({
+      id: undefined,
+      fullname: "",
+      phone: "",
+      email: "",
+      company: ""
+    })
   },
 });
 
-const isCreate = prop.customerDetail?.id === -1;
-
-const name = ref(prop.customerDetail?.name || "");
-const email = ref(prop.customerDetail?.email || "");
-const phone = ref(prop.customerDetail?.phone || "");
-const create_date = prop.customerDetail?.create_date
-  ? ref(new Date(prop.customerDetail?.create_date))
-  : ref(new Date());
-const status = ref(prop.customerDetail?.status || "");
-const img = ref(prop.customerDetail.img ? [prop.customerDetail.img] : []);
-
+const localLoading = ref(false);
 const errorMsg = ref("");
+
+// Form fields
+const id = ref("");
+const fullname = ref("");
+const phone = ref("");
+const email = ref("");
+
+// Watch for data changes
+watch(() => props.data, (newData) => {
+  if (!newData) return;
+  id.value = newData.id || "";
+  fullname.value = newData.fullname || "";
+  phone.value = newData.phone || "";
+  email.value = newData.email || "";
+}, { immediate: true });
+
+
+const isCreate = computed(() => !id.value);
 
 const dialogValue = computed({
   get() {
-    return prop.modelValue;
+    return props.modelValue;
   },
-  set(dialog: boolean) {
-    emit("update:modelValue", dialog);
+  set(value: boolean) {
+    emit("update:modelValue", value);
   },
 });
 
-const onCreateEdit = () => {
-  if (!name.value) {
-    errorMsg.value = "Enter customer name";
-  } else if (!email.value) {
-    errorMsg.value = "Enter Email";
-  } else if (!phone.value) {
-    errorMsg.value = "Enter contact number";
-  } else if (!create_date.value) {
-    errorMsg.value = "Select date";
-  } else if (!status.value) {
-    errorMsg.value = "Select status";
-  }
+/**
+ * Regras de validação para os campos do formulário
+ */
+ const requiredRules = {
+  fullname: [
+    (v: string) => !!v || t('t-please-enter-fullname'),
+  ],
+  phone: [
+    (v: string) => !!v || t('t-please-enter-phone-number'),
+    (v: string) => /^[0-9+() -]*$/.test(v) || t('t-invalid-phone-numebr'),
+  ],
+  email: [
+    (v: string) => !!v || t('t-please-enter-email-address'),
+    (v: string) => /.+@.+\..+/.test(v) || t('t-invalid-email'),
+  ],
+};
 
-  setTimeout(() => {
-    errorMsg.value = "";
-  }, 3000);
+const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
+let alertTimeout: ReturnType<typeof setTimeout> | null = null;
+const toast = useToast();
 
-  if (
-    !name.value ||
-    !email.value ||
-    !phone.value ||
-    !create_date.value ||
-    !status.value
-  ) {
+const onSubmit = async () => {
+  if (!form.value) return;
+
+  const { valid } = await form.value.validate();
+  
+  if (!valid) {
+    toast.error(t('t-validation-error'));
+    errorMsg.value = t('t-please-correct-errors');
+    alertTimeout = setTimeout(() => {
+      errorMsg.value = "";
+      alertTimeout = null;
+    }, 5000);
     return;
   }
 
-  const data = {
-    ...prop.customerDetail,
-    name: name.value,
-    email: email.value,
+  localLoading.value = true;
+
+  const payload: ContactPersonInsertType = {
+    id: id.value || undefined,
+    fullname: fullname.value,
     phone: phone.value,
-    create_date: create_date.value,
-    status: status.value,
-    img: img.value[0],
+    email: email.value,
+    company: props.data?.company ?? ""
   };
-  emit("onConfirm", data);
+
+  emit("onSubmit", payload, {
+    onSuccess: () => dialogValue.value = false,
+    onFinally: () => localLoading.value = false
+  });
 };
 </script>
 <template>
-  <v-dialog v-model="dialogValue" width="600" persistent scrollable>
-    <Card
-      :title="isCreate ? $t('t-add-contact') : $t('t-edit-contact')"
-      title-class="bg-light"
-    >
+  <v-dialog v-model="dialogValue" width="500" scrollable>
+    <v-form ref="form" @submit.prevent="onSubmit"> 
+    <Card :title="isCreate ? $t('t-add-contact-person') : $t('t-edit-contact-person')" title-class="py-0"
+      style="overflow: hidden">
       <template #title-action>
-        <v-btn
-          icon="ph-x"
-          variant="plain"
-          density="compact"
-          @click="dialogValue = false"
-        />
+        <v-btn icon="ph-x" variant="plain" @click="dialogValue = false" />
       </template>
-      <v-card-text data-simplebar style="max-height: calc(100vh - 400px)">
-        <v-alert
-          v-show="errorMsg"
-          :text="errorMsg"
-          variant="tonal"
-          color="danger"
-          density="compact"
-          class="mb-3"
-        />
-        <div class="font-weight-bold mb-2">{{ $t('t-name') }}</div>
-        <TextField v-model="name" :placeholder="$t('t-enter-name')" />
-        <div class="font-weight-bold mb-2">{{ $t('t-email') }}</div>
-        <TextField v-model="email" :placeholder="$t('t-enter-email-address')" />
-        <div class="font-weight-bold mb-2">{{ $t('t-phone-number') }}</div>
-        <TextField v-model="phone" :placeholder="$t('t-enter-phone-number')" />
-        <div class="font-weight-bold mb-2">{{ $t('t-created-date') }}</div>
-        <VueDatePicker
-          v-model="create_date"
-          class="mb-4"
-          :teleport="true"
-          :enable-time-picker="false"
-          :clearable="false"
-        />
-        <div class="font-weight-bold mb-2">{{ $t('t-status') }}</div>
-        <MenuSelect v-model="status" :items="statusOptions" />
+      <v-divider />
+
+      <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mx-5 mt-3" density="compact" />
+      <v-card-text class="overflow-y-auto" :style="{
+        'max-height': isCreate ? '70vh' : '45vh'
+      }">
+        <v-row class="">
+          <v-col cols="12" lg="12">
+            <div class="font-weight-bold text-caption mb-1">
+              {{ $t('t-fullname') }} <i class="ph-asterisk ph-xs text-danger" />
+            </div>
+            <TextField v-model="fullname" :placeholder="$t('t-enter-fullname')" :rules="requiredRules.fullname" />
+          </v-col>
+        </v-row>
+        <v-row class="mt-n6">
+          <v-col cols="12" lg="6">
+            <div class="font-weight-bold text-caption mb-1">
+              {{ $t('t-phone') }} <i class="ph-asterisk ph-xs text-danger" />
+            </div>
+            <TextField v-model="phone" :placeholder="$t('t-enter-phone')" :rules="requiredRules.phone" />
+          </v-col>
+          <v-col cols="12" lg="6">
+            <div class="font-weight-bold text-caption mb-1">
+              {{ $t('t-email') }} <i class="ph-asterisk ph-xs text-danger" />
+            </div>
+            <TextField v-model="email" !isEmail :placeholder="$t('t-enter-email-form')" :rules="requiredRules.email" />
+          </v-col>
+        </v-row>
       </v-card-text>
-      <v-card-actions class="d-flex justify-end px-5 pb-3">
-        <v-btn
-          class=""
-          color="light"
-          elevation="0"
-          variant="elevated"
-          @click="dialogValue = false"
-        >
-          {{$t('t-cancel')}}
-        </v-btn>
-        <v-btn
-          class=""
-          color="success"
-          elevation="0"
-          variant="elevated"
-          @click="onCreateEdit"
-        >
-          {{ isCreate ? $t('t-save'): $t('t-save')}}
-        </v-btn>
+      <v-divider />
+      <v-card-actions class="d-flex justify-end">
+        <div>
+          <v-btn color="danger" class="me-1" @click="dialogValue = false">
+            <i class="ph-x me-1" /> {{ $t('t-close') }}
+          </v-btn>
+          <v-btn color="primary" variant="elevated" @click="onSubmit" :loading="localLoading" :disabled="localLoading">
+            {{ localLoading ? $t('t-saving') : $t('t-save') }}
+          </v-btn>
+        </div>
       </v-card-actions>
     </Card>
+  </v-form>
   </v-dialog>
 </template>

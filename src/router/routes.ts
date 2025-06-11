@@ -31,6 +31,7 @@ const institutionPrefix = "/institution";
 const employeePrefix = "/employee";
 const baseTablePrefix = "/baseTable";
 const usersPrefix = "/users";
+const clinicsPrefix = "/clinics";
 
 
 const institutionRoutes = [
@@ -57,6 +58,12 @@ const institutionRoutes = [
     name: "EditInstitution",
     component: () => import("@/views/institution/Edit.vue"),
     meta: { title: "Edit Institution", authRequired: true },
+  },
+  {
+    path: `${institutionPrefix}/department/:id`,
+    name: "EditDepartment",
+    component: () => import("@/views/institution/editDepartment/List.vue"),
+    meta: { title: "EditDepartment", authRequired: true },
   },
 ].map((data) => {
   return {
@@ -103,6 +110,44 @@ const employeeRoutes = [
   };
 });
 
+const clinicsRoutes = [
+  {
+    path: `${clinicsPrefix}/list`,
+    name: "ClinicsList",
+    component: () => import("@/views/clinics/List.vue"),
+    meta: { title: "Clinics List", authRequired: true },
+  },
+  {
+    path: `${clinicsPrefix}/overview`,
+    name: "ClinicsOverview",
+    component: () => import("@/views/clinics/Overview.vue"),
+    meta: { title: "Clinics Overview", authRequired: true },
+  },
+  {
+    path: `${clinicsPrefix}/create`,
+    name: "CreateClinics",
+    component: () => import("@/views/clinics/Create.vue"),
+    meta: { title: "Create Clinics", authRequired: true },
+  },
+  {
+    path: '/clinics/edit/:id',
+    name: 'EditClinics',
+    component: () => import('@/views/clinics/Edit.vue'),
+    meta: { title: "Edit Clinics", requiresAuth: true }
+  },
+  {
+    path: '/clinics/view/:id',
+    name: 'ViewClinics',
+    component: () => import('@/views/clinics/View.vue'),
+    meta: { title: "View Clinics", requiresAuth: true }
+  }
+].map((data) => {
+  return {
+    ...data,
+    meta: { ...data.meta, layout: DefaultLayout },
+  };
+});
+
 const baseTableRoutes = [
   {
     path: `${baseTablePrefix}/documenttype/list`,
@@ -117,12 +162,6 @@ const baseTableRoutes = [
     meta: { title: "Agent Grid", authRequired: true },
   },
   {
-    path: `${baseTablePrefix}/documenttype/overview`,
-    name: "DocumentTypeOverview",
-    component: () => import("@/views/baseTables/documentType/Overview.vue"),
-    meta: { title: "Overview", authRequired: true },
-  },
-  {
     path: `${baseTablePrefix}/country/list`,
     name: "CountryListView",
     component: () => import("@/views/baseTables/country/ListView.vue"),
@@ -133,6 +172,36 @@ const baseTableRoutes = [
     name: "EditCountry",
     component: () => import("@/views/baseTables/editCountry/ListView.vue"),
     meta: { title: "EditCountry", authRequired: true },
+  },
+  {
+    path: `${baseTablePrefix}/currency/list`,
+    name: "CurrencyListView",
+    component: () => import("@/views/baseTables/currency/ListView.vue"),
+    meta: { title: "CurrencyListView", authRequired: true },
+  },
+  {
+    path: `${baseTablePrefix}/hospitalproceduretype/list`,
+    name: "HospitalProcedureTypeListView",
+    component: () => import("@/views/baseTables/hospitalProcedureType/ListView.vue"),
+    meta: { title: "HospitalProcedureTypeListView", authRequired: true },
+  },
+  {
+    path: `${baseTablePrefix}/institutiontype/list`,
+    name: "InstitutionTypeListView",
+    component: () => import("@/views/baseTables/institutionTypes/ListView.vue"),
+    meta: { title: "InstitutionTypeListView", authRequired: true },
+  },
+  {
+    path: `${baseTablePrefix}/leavereason/list`,
+    name: "LeaveReasonListView",
+    component: () => import("@/views/baseTables/leaveReason/ListView.vue"),
+    meta: { title: "LeaveReasonListView", authRequired: true },
+  },
+  {
+    path: `${baseTablePrefix}/languages/list`,
+    name: "LanguagesListView",
+    component: () => import("@/views/baseTables/languages/ListView.vue"),
+    meta: { title: "LanguagesListView", authRequired: true },
   },
 ].map((data) => {
   return {
@@ -1136,6 +1205,7 @@ export const routes = [
   ...employeeRoutes,
   ...baseTableRoutes,
   ...usersRoutes,
+  ...clinicsRoutes,
   {
     path: "/widgets",
     name: "Widgets",

@@ -8,7 +8,7 @@
  * 3. Plano de Saúde
  * 4. Pessoas de Contacto
  */
-import { ref, reactive, onMounted, onBeforeUnmount } from "vue";
+import { ref, reactive, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
 import { useI18n } from 'vue-i18n';
@@ -19,6 +19,9 @@ import Step1 from "@/components/institution/create/TabGeneralInfo.vue";
 import Step4 from "@/components/institution/create/TabContacts.vue";
 import Step2 from "@/components/institution/create/TabHealthPlan.vue";
 import Step3 from "@/components/institution/create/TabOrganizationalStructure.vue";
+import Step5 from "@/components/institution/create/TabClinics.vue";
+import Step6 from "@/components/institution/create/TabHospitalProcedures.vue";
+
 
 
 //Stores
@@ -35,7 +38,7 @@ const institutionStore = useInstitutionStore();
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
-const toast = useToast();
+const toast = useToast(); 
 
 // Refs
 const step = ref(1); // Controla a aba atual (1 ou 2)
@@ -166,6 +169,47 @@ const onStepChange = (value: number) => {
   }
 };
 
+// Modifique a função onStepChange para:
+const onStepChangeforDialog = (value: number) => {
+  // Se veio de query param, respeita esse valor
+  if (route.query.tab) {
+    const tabFromQuery = Number(route.query.tab);
+    if (!isNaN(tabFromQuery)) {  // Corrigido: parêntese fechando
+      step.value = tabFromQuery;
+      // Remove o query param para não interferir em navegações futuras
+      router.replace({ query: {} });
+      return;
+    }
+  }
+
+  // Permite sempre voltar para tabs anteriores
+  if (value < step.value) {
+    step.value = value;
+    return;
+  }
+
+  // No modo de edição ou quando dados básicos já foram validados, permite navegar livremente
+  if (institutionId.value || basicDataValidated.value) {
+    step.value = value;
+    return;
+  }
+
+  // No modo criação, só permite avançar para a próxima tab sequencialmente
+  if (value === step.value + 1) {
+    step.value = value;
+  }
+};
+
+// E o watcher deve ficar assim:
+watch(() => route.query.tab, (newTab) => {
+  if (newTab) {
+    const tabNumber = Number(newTab);
+    if (!isNaN(tabNumber)) {  // Corrigido: parêntese fechando
+      onStepChange(tabNumber);
+    }
+  }
+}, { immediate: true });
+
 
 /**
  * Salva os dados do employee
@@ -250,6 +294,11 @@ onBeforeUnmount(() => {
         :loading="loading" />
       <Step3 v-if="step === 3" @onStepChange="onStepChange" />
       <Step4 v-if="step === 4" @onStepChange="onStepChange" />
+<<<<<<< HEAD
+      <Step5 v-if="step === 5" @onStepChange="onStepChange" />
+      <Step6 v-if="step === 6" @onStepChange="onStepChange" />
+=======
+>>>>>>> 6fd8d91bd0fd7eaf794b4ed9e76bfa6b51afca77
     </v-card-text>
   </Card>
 </template>

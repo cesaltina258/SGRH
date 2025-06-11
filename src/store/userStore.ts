@@ -14,31 +14,34 @@ export const useUserStore = defineStore('users', {
       totalPages: 0
     },
     loading: false,
-    error: null as string | null
+    error: null as string | null,
+    globalSearch: '',
+    advancedFilters: [] as {
+      prop: string;
+      operator: string;
+      value: string;
+    }[],
+    logicalOperator: 'AND' as 'AND' | 'OR'
   }),
   actions: {
-    async fetchUsers( 
-      page?: number,
-      size?: number,
+    async fetchUsers(
+      page: number = 0,
+      size: number = 10,
       sortColumn: string = 'createdAt',
-      direction: string = 'asc',
-      query_value?: string,
-      query_props?: string
+      direction: string = 'asc'
     ) {
       this.loading = true;
       this.error = null;
 
-      const actualPage = page ?? this.pagination.currentPage;
-      const actualSize = size ?? this.pagination.itemsPerPage;
-
       try {
         const { content, meta } = await userService.getUsers(
-          actualPage,
-          actualSize,
+          page,
+          size,
           sortColumn,
           direction,
-          query_value,
-          query_props
+          this.globalSearch,
+          this.advancedFilters,
+          this.logicalOperator
         );
 
         this.users = content;
@@ -49,12 +52,34 @@ export const useUserStore = defineStore('users', {
           totalPages: meta.totalPages || Math.ceil(meta.totalElements / meta.size)
         };
       } catch (err: any) {
-        this.error = err.message || 'Erro ao buscar utilizadores';
+        this.error = err.message || 'Erro ao buscar usuários';
         this.users = [];
         this.pagination.totalElements = 0;
       } finally {
         this.loading = false;
       }
+    },
+
+    setGlobalSearch(search: string) {
+      this.globalSearch = search;
+    },
+
+    setAdvancedFilters(filters: {
+      prop: string;
+      operator: string;
+      value: string;
+    }[]) {
+      this.advancedFilters = filters;
+      console.log('Advanced filters set:', this.advancedFilters);
+    },
+
+    setLogicalOperator(operator: 'AND' | 'OR') {
+      this.logicalOperator = operator;
+    },
+
+    clearFilters() {
+      this.globalSearch = '';
+      this.advancedFilters = [];
     }
 
   }
