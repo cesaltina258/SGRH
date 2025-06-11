@@ -19,9 +19,12 @@ import Step1 from "@/components/institution/create/TabGeneralInfo.vue";
 import Step4 from "@/components/institution/create/TabContacts.vue";
 import Step2 from "@/components/institution/create/TabHealthPlan.vue";
 import Step3 from "@/components/institution/create/TabOrganizationalStructure.vue";
+<<<<<<< HEAD
 import Step5 from "@/components/institution/create/TabClinics.vue";
 import Step6 from "@/components/institution/create/TabHospitalProcedures.vue";
 
+=======
+>>>>>>> 6fd8d91bd0fd7eaf794b4ed9e76bfa6b51afca77
 
 
 //Stores
@@ -294,8 +297,11 @@ onBeforeUnmount(() => {
         :loading="loading" />
       <Step3 v-if="step === 3" @onStepChange="onStepChange" />
       <Step4 v-if="step === 4" @onStepChange="onStepChange" />
+<<<<<<< HEAD
       <Step5 v-if="step === 5" @onStepChange="onStepChange" />
       <Step6 v-if="step === 6" @onStepChange="onStepChange" />
+=======
+>>>>>>> 6fd8d91bd0fd7eaf794b4ed9e76bfa6b51afca77
     </v-card-text>
   </Card>
 </template>

@@ -129,23 +129,23 @@ export default class UserService extends HttpService {
   }
 
   async updatePassword(userData: updatePasswordListingType): Promise<updatePasswordResponseType> {
-    try {
-      // Corpo da requisição conforme especificado
-      const payload = {
-        oldPassword: userData.oldPassword,
-        newPassword: userData.newPassword,
-        confirmPassword: userData.confirmPassword,
-        passwordsMatching: userData.passwordsMatching,
-      };
-
-
-      const response = await this.put<updatePasswordResponseType>(`/administration/users/change-own-password`, payload);
-      console.log('response update password', response);
-      return response;
-    } catch (error) {
-      console.error("❌ Erro ao actualizar Password:", error);
-      throw error;
+      try {
+        // Corpo da requisição conforme especificado
+        const payload = {
+          oldPassword: userData.oldPassword,
+          newPassword: userData.newPassword,
+          confirmPassword: userData.confirmPassword,
+          passwordsMatching: userData.passwordsMatching,
+        };
+        
+  
+        const response = await this.put<updatePasswordResponseType>(`/administration/users/change-own-password`, payload);
+        console.log('response update password', response);
+        return response;
+      } catch (error) {
+        console.error("❌ Erro ao actualizar Password:", error);
+        throw error;
+      }
     }
-  }
 
 }
