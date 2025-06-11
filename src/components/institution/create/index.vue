@@ -294,11 +294,8 @@ onBeforeUnmount(() => {
         :loading="loading" />
       <Step3 v-if="step === 3" @onStepChange="onStepChange" />
       <Step4 v-if="step === 4" @onStepChange="onStepChange" />
-<<<<<<< HEAD
       <Step5 v-if="step === 5" @onStepChange="onStepChange" />
       <Step6 v-if="step === 6" @onStepChange="onStepChange" />
-=======
->>>>>>> 6fd8d91bd0fd7eaf794b4ed9e76bfa6b51afca77
     </v-card-text>
   </Card>
 </template>
