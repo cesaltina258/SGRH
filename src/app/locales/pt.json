@@ -706,5 +706,32 @@
   "t-income-tax-number-must-have-9-digits": "O NUIT deve ter 9 dígitos.",
   "t-invalid-website": "Website inválido.",
   "t-clinics-updated-success": "Registo actualizado com sucesso!",
+<<<<<<< HEAD
+  "t-clinics-add-success": "Registo adicionado com sucesso!",
+  "t-advanced-filters": "Filtros Avançados",
+  "t-user-search": "Procurar de Utilizador",
+  "t-add-filter": "Adicionar Filtro",
+  "t-apply-filters": "Aplicar Filtros",
+  "t-and-operator": "Operador AND",
+  "t-or-operator": "Operador OU",
+  "t-operator": "Operador",
+  "t-field": "Campo",
+  "t-value": "Valor",
+  "t-contains": "Contém",
+  "t-equals": "Igual a",
+  "t-starts-with": "Começa com",
+  "t-ends-with": "Termina com",
+  "t-hospital-procedures": "Procedimentos Hospitalares",
+  "t-clinic": "Clínica",
+  "t-search-for-clinic": "Pesquisar por Clínica",
+  "t-add-contracted-clinic": "Adicionar Clínica Contratada",
+  "t-please-enter-clinic": "Por favor, insira a clínica!",
+  "t-view-contracted-clinic": "Consultar Clínica Contratada",
+  "t-back-to-contact-person": "Voltar às Pessoas de Contacto",
+  "t-account-locked?": "Conta Bloqueada?",
+  "t-active?": "Activa?"
+
+=======
   "t-clinics-add-success": "Registo adicionado com sucesso!"
+>>>>>>> 6fd8d91bd0fd7eaf794b4ed9e76bfa6b51afca77
 }

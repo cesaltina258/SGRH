@@ -67,3 +67,20 @@ export type ClinicListingType = {
   personOfContactPhone2: string;
   personOfContactEmail2: string;
 };
+
+export type ClinicListingForListType = {
+  id: string;
+  name: string;
+  description: string;
+  address: string;
+  phone: string;
+  email: string;
+  website: string;
+  incomeTaxNumber: string;
+  personOfContactFullname1: string;
+  personOfContactPhone1: string;
+  personOfContactEmail1: string;
+  personOfContactFullname2: string;
+  personOfContactPhone2: string;
+  personOfContactEmail2: string;
+};

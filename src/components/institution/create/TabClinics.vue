@@ -1,48 +1,50 @@
 <script lang="ts" setup>
 /**
- * TabContacts - Componente para  de pessoas de contato de instituições
- * 
+ * TabClinics - Componente para  de clínicas que tem convenio com instituições
+ *
  * Funcionalidades:
- * - Listagem de contatos
- * - Criação/Edição de contatos
+ * - Listagem de clínicas
+ * - Criação/Edição de clínicas
  * - Visualização de detalhes
- * - Exclusão de contatos
+ * - Exclusão de clínicas
  */
 
 import { ref, watch, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
 import { useI18n } from "vue-i18n";
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from "uuid"; 
 
 // Components
 import DataTableServer from "@/app/common/components/DataTableServer.vue";
 import Status from "@/app/common/components/Status.vue";
 import ListMenuWithIcon from "@/app/common/components/ListMenuWithIcon.vue";
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
-import CreateEditContactDialog from "@/components/institution/create/CreateEditContactDialog.vue";
-import ViewContactDialog from "@/components/institution/create/ViewContactDialog.vue";
+import CreateEditClinicDialog from "@/components/institution/create/CreateEditClinicDialog.vue";
+import ViewClinicDialog from "@/components/institution/create/ViewClinicDialog.vue";
 import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue";
-import TableAction from "@/app/common/components/TableAction.vue";
+import TableActionSimplified from "@/app/common/components/TableActionSimplified.vue";
+
 // Stores e Services
-import { useContactPersonStore } from "@/store/institution/contactPersonStore";
-import { contactPersonService } from "@/app/http/httpServiceProvider";
+import { useClinicInstitutionStore } from "@/store/institution/clinicInstitutionStore";
+import { clinicInstitutionService } from "@/app/http/httpServiceProvider";
 
 // Types
 import type {
-  ContactPersonListingType,
-  ContactPersonInsertType
+  ClinicListingType,
+  ClinicInsertType
 } from "@/components/institution/types";
 
 // Utils
-import { contactPersonHeader } from "@/components/institution/create/utils";
-import { contactOptions as Options } from "@/components/institution/create/utils";
+import { clinicHeader } from "@/components/institution/create/utils";
+
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
-const contactPersonStore = useContactPersonStore();
+const clinicInstitutionStore = useClinicInstitutionStore();
+
 
 // Estado do componente
 const institutionId = ref<string | null>(
@@ -50,24 +52,26 @@ const institutionId = ref<string | null>(
     Array.isArray(route.params.id) ? route.params.id[0] : null
 );
 
+console.log("Institution ID------------------------:", institutionId.value);
+
 const dialog = ref(false);
 const viewDialog = ref(false);
 const deleteDialog = ref(false);
 const deleteLoading = ref(false);
-const contactPersonData = ref<ContactPersonInsertType | null>(null);
+const clinicData = ref<ClinicInsertType | null>(null);
+const clinicViewData = ref<ClinicListingType | null>(null);
 const deleteId = ref<string | null>(null);
 const errorMsg = ref("");
 const searchQuery = ref("");
-const searchProps = "fullname,email,phone"; // Propriedades de busca
+const searchProps = "clinic,company"; // Propriedades de busca
 const itemsPerPage = ref(10);
-const selectedContactPersons = ref<ContactPersonListingType[]>([]);
-const customerDetail = ref<any>(null); // Adicionado para resolver o erro
+const selectedClinics = ref<ClinicListingType[]>([]);
 
 let alertTimeout: ReturnType<typeof setTimeout> | null = null;
 
 // Computed properties
-const loadingList = computed(() => contactPersonStore.loading);
-const totalItems = computed(() => contactPersonStore.pagination.totalElements);
+const loadingList = computed(() => clinicInstitutionStore.loading);
+const totalItems = computed(() => clinicInstitutionStore.pagination.totalElements);
 
 interface FetchParams {
   page: number;
@@ -77,12 +81,13 @@ interface FetchParams {
 }
 
 /**
- * Busca pessoas de contato com paginação e filtros
+ * Busca clínicas com paginação e filtros
  */
-const fetchContactPersons = async ({ page, itemsPerPage, sortBy, search }: FetchParams) => {
+const fetchInstitutionClinics = async ({ page, itemsPerPage, sortBy, search }: FetchParams) => {
   if (!institutionId.value) return;
+  console.log("Fetching clinics for institution:", institutionId.value, "Page:", page, "Items per page:", itemsPerPage, "Sort by:", sortBy, "Search props:", searchProps);
 
-  await contactPersonStore.fetchContactPersons(
+  await clinicInstitutionStore.fetchInstitutionClinics(
     institutionId.value,
     page - 1, // Ajuste para API que começa em 0
     itemsPerPage,
@@ -96,12 +101,12 @@ const fetchContactPersons = async ({ page, itemsPerPage, sortBy, search }: Fetch
 /**
  * Alterna seleção de pessoas de contato
  */
-const toggleSelection = (item: ContactPersonListingType) => {
-  const index = selectedContactPersons.value.findIndex(selected => selected.id === item.id);
+const toggleSelection = (item: ClinicListingType) => {
+  const index = selectedClinics.value.findIndex(selected => selected.id === item.id);
   if (index === -1) {
-    selectedContactPersons.value = [...selectedContactPersons.value, item];
+    selectedClinics.value = [...selectedClinics.value, item];
   } else {
-    selectedContactPersons.value = selectedContactPersons.value.filter(selected => selected.id !== item.id);
+    selectedClinics.value = selectedClinics.value.filter(selected => selected.id !== item.id);
   }
 };
 
@@ -110,22 +115,20 @@ const toggleSelection = (item: ContactPersonListingType) => {
  */
 watch(dialog, (newVal: boolean) => {
   if (!newVal) {
-    contactPersonData.value = null;
+    clinicData.value = null;
   }
 });
-const onCreateEditClick = (data: ContactPersonInsertType | null) => {
+const onCreateEditClick = (data: ClinicInsertType | null) => {
   const company = institutionId.value || "";
 
-  contactPersonData.value = data
+  clinicData.value = data
     ? {
       ...data,
       company: company // sobrescreve com o institutionId atual
     }
     : {
       id: undefined,
-      fullname: "",
-      phone: "",
-      email: "",
+      clinic: "",
       company: company
     };
 
@@ -137,7 +140,7 @@ const onCreateEditClick = (data: ContactPersonInsertType | null) => {
  * Submete dados do formulário
  */
 const onSubmit = async (
-  data: ContactPersonInsertType,
+  data: ClinicInsertType,
   callbacks?: {
     onSuccess?: () => void,
     onFinally?: () => void
@@ -145,21 +148,22 @@ const onSubmit = async (
 ) => {
   try {
     if (!data.id) {
-      await contactPersonService.createContactPerson(data);
+      await clinicInstitutionService.createClinic(data);
       toast.success(t('t-toast-message-created'));
     } else {
-      await contactPersonService.updateContactPerson(data.id, data);
+      await clinicInstitutionService.updateClinic(data.id, data);
       toast.success(t('t-toast-message-update'));
     }
 
-    await contactPersonStore.fetchContactPersons(
+    await clinicInstitutionStore.fetchInstitutionClinics(
       institutionId.value,
       0,
       itemsPerPage.value
     );
     callbacks?.onSuccess?.();
+
   } catch (error) {
-    console.error("Erro ao gravar pessoa de contacto:", error);
+    console.error("Erro ao gravar clínica:", error);
     toast.error(t('t-message-save-error'));
   } finally {
     callbacks?.onFinally?.();
@@ -171,11 +175,11 @@ const onSubmit = async (
  */
 watch(viewDialog, (newVal: boolean) => {
   if (!newVal) {
-    contactPersonData.value = null;
+    clinicViewData.value = null;
   }
 });
-const onViewClick = (data: ContactPersonInsertType) => {
-  contactPersonData.value = { ...data };
+const onViewClick = (data: ClinicListingType) => {
+  clinicViewData.value = { ...data };
   viewDialog.value = true;
 };
 
@@ -195,11 +199,11 @@ const onConfirmDelete = async () => {
 
   deleteLoading.value = true;
   try {
-    await contactPersonService.deleteContactPerson(deleteId.value);
-    selectedContactPersons.value = selectedContactPersons.value.filter(
+    await clinicInstitutionService.deleteClinic(deleteId.value);
+    selectedClinics.value = selectedClinics.value.filter(
       user => user.id !== deleteId.value
     );
-    await contactPersonStore.fetchContactPersons(
+    await clinicInstitutionStore.fetchInstitutionClinics(
       institutionId.value,
       0,
       itemsPerPage.value
@@ -224,11 +228,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <Card :title="$t('t-contact-person-list')" title-class="py-5">
+  <Card :title="$t('t-clinic-list')" title-class="py-5">
     <template #title-action>
       <div>
         <v-btn color="primary" class="mx-1" @click="onCreateEditClick(null)">
-          <i class="ph-plus-circle me-1" /> {{ $t('t-add-contact-person') }}
+          <i class="ph-plus-circle me-1" /> {{ $t('t-add-clinic') }}
         </v-btn>
         <v-btn color="secondary" class="mx-1">
           <i class="ph-download-simple me-1" /> {{ $t('t-import') }}
@@ -242,37 +246,35 @@ onBeforeUnmount(() => {
 
   <v-row class="mt-5">
     <v-col cols="12" lg="12">
-      <v-card-text>
+      <!--v-card-text
         <v-row>
           <v-col cols="12" lg="12">
-            <QuerySearch v-model="searchQuery" :placeholder="$t('t-search-for-contact')" />
+            <QuerySearch v-model="searchQuery" :placeholder="$t('t-search-for-clinic')" />
           </v-col>
         </v-row>
-      </v-card-text>
-      <DataTableServer v-model="selectedContactPersons"
-        :headers="contactPersonHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
-        :items="contactPersonStore.contact_persons" :items-per-page="itemsPerPage" :total-items="totalItems"
-        :loading="loadingList" :search-query="searchQuery" :search-props="searchProps" @load-items="fetchContactPersons"
+      </v-card-text>-->
+      <DataTableServer v-model="selectedClinics"
+        :headers="clinicHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
+        :items="clinicInstitutionStore.clinics" :items-per-page="itemsPerPage" :total-items="totalItems"
+        :loading="loadingList" :search-query="searchQuery" :search-props="searchProps" @load-items="fetchInstitutionClinics"
         item-value="id" show-select>
         <template #body="{ items }">
-          <tr v-for="item in items as ContactPersonListingType[]" :key="item.id" height="50">
+          <tr v-for="item in items as ClinicListingType[]" :key="item.id" height="50">
             <td>
-              <v-checkbox :model-value="selectedContactPersons.some(selected => selected.id === item.id)"
+              <v-checkbox :model-value="selectedClinics.some(selected => selected.id === item.id)"
                 @update:model-value="toggleSelection(item)" hide-details density="compact" />
             </td>
-            <td>{{ item.fullname }}</td>
-            <td>{{ item.email }}</td>
-            <td>{{ item.phone }}</td>
+            <td>{{ item.clinic.name }}</td>
             <td>
-              <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)"
+              <TableActionSimplified @onView="onViewClick(item)"
                 @onDelete="onDelete(item.id)" />
             </td>
           </tr>
         </template>
 
-        <template v-if="contactPersonStore.contact_persons.length === 0" #body>
+        <template v-if="clinicInstitutionStore.clinics.length === 0" #body>
           <tr>
-            <td :colspan="contactPersonHeader.length" class="text-center py-10">
+            <td :colspan="clinicHeader.length" class="text-center py-10">
               <v-avatar size="80" color="primary" variant="tonal">
                 <i class="ph-magnifying-glass" style="font-size: 30px" />
               </v-avatar>
@@ -287,17 +289,16 @@ onBeforeUnmount(() => {
   </v-row>
 
   <!-- Dialogs -->
-  <CreateEditContactDialog v-model="dialog" :data="contactPersonData" @onSubmit="onSubmit" />
-  <ViewContactDialog v-model="viewDialog" :data="contactPersonData" />
+  <CreateEditClinicDialog v-model="dialog" :data="clinicData" @onSubmit="onSubmit" />
+  <ViewClinicDialog v-model="viewDialog" :data="clinicViewData" />
   <RemoveItemConfirmationDialog v-model="deleteDialog" :loading="deleteLoading" @onConfirm="onConfirmDelete" />
 
   <v-card-actions class="d-flex justify-space-between mt-5">
-    <v-btn color="secondary" variant="outlined" class="me-2" @click="$emit('onStepChange', 3)">
-      {{ $t('t-back-to-organizational-struture') }} <i class="ph-arrow-left ms-2" />
+    <v-btn color="secondary" variant="outlined" class="me-2" @click="$emit('onStepChange', 4)">
+      {{ $t('t-back-to-contact-person') }} <i class="ph-arrow-left ms-2" />
     </v-btn>
-    <v-btn color="success" variant="elevated" @click="$emit('onStepChange', 5)">
+    <v-btn color="success" variant="elevated" @click="$emit('onStepChange', 6)">
     {{ $t('t-proceed') }} <i class="ph-arrow-right ms-2" />
   </v-btn>
-    
   </v-card-actions>
 </template>

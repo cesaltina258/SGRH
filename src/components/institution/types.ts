@@ -183,3 +183,31 @@ export type ContactPersonInsertType = {
     phone: string;
     company: string; 
 };
+
+export type ClinicListingType = {
+    id: string;
+    clinic: {
+        id: string | number;
+        name: string;
+        description: string;
+        createdAt: Date | null;
+        updatedAt: Date | null;
+        deletedAt: Date | null;
+        createdBy: string;
+        updatedBy: string;
+        deletedBy: string;
+    }
+    company: string;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    deletedAt: Date | null;
+    createdBy: string;
+    updatedBy: string;
+    deletedBy: string;
+};
+
+export type ClinicInsertType = {
+    id?: string | null; 
+    clinic: string; 
+    company: string; 
+};

@@ -13,10 +13,49 @@ interface ServiceResponse<T> {
   error?: ApiErrorResponse;
 }
 
-export default class ClinicService extends HttpService {
+export default class ClinicService extends HttpService { 
 
   // Obter todas as clínicas
   async getClinics(
+    page: number = 0,
+    size: number = 10,
+    sortColumn: string = 'createdAt',
+    direction: string = 'asc',
+    query_value?: string,
+    query_props?: string,
+    
+  ): Promise<{ content: ClinicListingType[], meta: any }> {
+    try {
+      const queryParams = [
+        `page=${page}`,
+        `size=${size}`,
+        `sortColumn=${sortColumn}`,
+        `direction=${direction}`,
+      ];
+
+      if (query_value && query_props) {
+        queryParams.push(`query_props=${encodeURIComponent(query_props)}`);
+        queryParams.push(`query_value=${encodeURIComponent(query_value)}`);
+      }
+
+      const queryString = queryParams.join('&');
+      const url = `/administration/clinics?${queryString}`;
+      console.log("🔍 Obtendo clínicas com URL:", url);
+
+      const response = await this.get<ApiResponse<ClinicListingType[]>>(url);
+
+      return {
+        content: response.data || [],
+        meta: response.meta || []
+      };
+    } catch (error) {
+      console.error("❌ Erro ao buscar clínicas:", error);
+      throw error;
+    }
+  }
+
+  // Obter clínicas para o dropdown
+  async getClinicsForDropdown(
     page: number = 0,
     size: number = 10,
     sortColumn: string = 'createdAt',

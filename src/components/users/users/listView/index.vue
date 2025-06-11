@@ -21,7 +21,7 @@ import { changePasswordType } from "@/components/users/types";
 import { onBeforeUnmount } from "vue";
 import { changePasswordListingType } from "@/components/users/types";
 import EnableAccountConfirmationDialog from "@/components/users/users/EnableAccountConfirmationDialog.vue";
-
+import AdvancedFilter from "@/components/users/users/listView/AdvancedFilter.vue";
 
 const { t } = useI18n();
 //criacao da mensagem toast
@@ -108,17 +108,14 @@ interface FetchParams {
   page: number;
   itemsPerPage: number;
   sortBy: Array<{ key: string; order: 'asc' | 'desc' }>;
-  search: string;
 }
 
-const fetchUsers = async ({ page, itemsPerPage, sortBy, search }: FetchParams) => {
+const fetchUsers = async ({ page, itemsPerPage, sortBy }: FetchParams) => {
   await userStore.fetchUsers(
     page - 1, // Ajuste para API que começa em 0
     itemsPerPage,
     sortBy[0]?.key || 'createdAt',
-    sortBy[0]?.order || 'asc',
-    search, // query_values
-    searchProps // query_props
+    sortBy[0]?.order || 'asc'
   )
 }
 
@@ -389,8 +386,12 @@ const getDynamicOptions = (user: UserListingType) => {
   <v-card>
     <v-card-title class="mt-2">
       <v-row justify="space-between">
-        <v-col lg="3">
-          <QuerySearch v-model="searchQuery" :placeholder="$t('t-search-for-users')" />
+        <v-col lg="12">
+          <AdvancedFilter />
+        </v-col>
+      </v-row>
+      <v-row justify="space-between" class="mt-n6">
+        <v-col lg="8">
         </v-col>
         <v-col lg="auto">
           <v-btn color="secondary" @click="onCreateEditClick(null)">
