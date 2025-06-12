@@ -171,7 +171,7 @@ export default class InstitutionService extends HttpService {
     };
   }
 
-  async deleteInstitution(id: number): Promise<void> {
+  async deleteInstitution(id: string): Promise<void> {
     try {
       await this.delete(`/administration/companies/${id}`);
     } catch (error) {

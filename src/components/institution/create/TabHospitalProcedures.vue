@@ -9,7 +9,7 @@
  * - Exclusão de procedimentos hospitalares
  */
 
-import { ref, watch, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, watch, computed, onMounted, onBeforeUnmount, PropType } from "vue";
 import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
 import { useI18n } from "vue-i18n";
@@ -44,11 +44,17 @@ const router = useRouter();
 const toast = useToast();
 const hospitalProcedureStore = useHospitalProcedureStore();
 
-// Estado do componente
-const institutionId = ref<string | null>(
-  typeof route.params.id === 'string' ? route.params.id :
-    Array.isArray(route.params.id) ? route.params.id[0] : null
-);
+// props
+const props = defineProps({
+  institutionId: {
+    type: String as PropType<string | null>,
+    default: null
+  }
+});
+
+// Modifique a lógica para usar o prop institutionId
+const institutionId = ref(props.institutionId);
+
 
 const dialog = ref(false);
 const viewDialog = ref(false);
