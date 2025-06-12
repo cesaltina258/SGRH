@@ -8,6 +8,7 @@ import PositionService from "@/app/http/services/institution/positionService";
 import ClinicInstitutionService from "@/app/http/services/institution/clinicService";
 import ClinicService from "@/app/http/services/clinicService";
 import ContactPersonService from "@/app/http/services/institution/contactPersonService";
+import HospitalProcedureService from "@/app/http/services/institution/hospitalProcedureService";
 
 
 //BASETABLES
@@ -29,6 +30,7 @@ const departmentService = new DepartmentService();
 const positionService = new PositionService();
 const clinicService = new ClinicService();
 const contactPersonService = new ContactPersonService();
+const hospitalProcedureService = new HospitalProcedureService();
 const clinicInstitutionService = new ClinicInstitutionService();
 
 //BASETABLES
@@ -58,5 +60,6 @@ export {
     positionService, 
     clinicService,
     contactPersonService,
-    clinicInstitutionService
+    clinicInstitutionService,
+    hospitalProcedureService
 };

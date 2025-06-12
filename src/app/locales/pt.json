@@ -706,7 +706,6 @@
   "t-income-tax-number-must-have-9-digits": "O NUIT deve ter 9 dígitos.",
   "t-invalid-website": "Website inválido.",
   "t-clinics-updated-success": "Registo actualizado com sucesso!",
-<<<<<<< HEAD
   "t-clinics-add-success": "Registo adicionado com sucesso!",
   "t-advanced-filters": "Filtros Avançados",
   "t-user-search": "Procurar de Utilizador",
@@ -729,9 +728,18 @@
   "t-view-contracted-clinic": "Consultar Clínica Contratada",
   "t-back-to-contact-person": "Voltar às Pessoas de Contacto",
   "t-account-locked?": "Conta Bloqueada?",
-  "t-active?": "Activa?"
-
-=======
-  "t-clinics-add-success": "Registo adicionado com sucesso!"
->>>>>>> 6fd8d91bd0fd7eaf794b4ed9e76bfa6b51afca77
+  "t-active?": "Activa?",
+  "t-hospital-procedure-list": "Lista de Procedimentos Hospitalares",
+  "t-add-hospital-procedure": "Adicionar Procedimento Hospitalar",
+  "t-search-for-hospital-procedure": "Pesquisar por Procedimento Hospitalar",
+  "t-hospital-procedure-type": "Tipo do Procedimento Hospitalar",
+  "t-limit-type-definition": "Tipo de Limite",
+  "t-percentage": "Percentagem",
+  "t-edit-hospital-procedure": "Editar Procedimento Hospitalar",
+  "t-enter-percentage": "Insira a percentagem",
+  "t-please-enter-hospital-procedure-type": "Por favor, insira o tipo de procedimento hospitalar!",
+  "t-please-enter-limit-type-definition": "Por favor, insira o tipo de limite!",
+  "t-please-enter-percentage": "Por favor, insira a percentagem!",
+  "t-back-to-clinics": "Voltar às Clínicas",
+  "t-view-hospital-procedure": "Consultar Procedimento Hospitalar"
 }

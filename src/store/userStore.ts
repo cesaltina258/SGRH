@@ -14,7 +14,6 @@ export const useUserStore = defineStore('users', {
       totalPages: 0
     },
     loading: false,
-<<<<<<< HEAD
     error: null as string | null,
     globalSearch: '',
     advancedFilters: [] as {
@@ -30,23 +29,10 @@ export const useUserStore = defineStore('users', {
       size: number = 10,
       sortColumn: string = 'createdAt',
       direction: string = 'asc'
-=======
-    error: null as string | null
-  }),
-  actions: {
-    async fetchUsers( 
-      page?: number,
-      size?: number,
-      sortColumn: string = 'createdAt',
-      direction: string = 'asc',
-      query_value?: string,
-      query_props?: string
->>>>>>> 6fd8d91bd0fd7eaf794b4ed9e76bfa6b51afca77
     ) {
       this.loading = true;
       this.error = null;
 
-<<<<<<< HEAD
       try {
         const { content, meta } = await userService.getUsers(
           page,
@@ -56,19 +42,6 @@ export const useUserStore = defineStore('users', {
           this.globalSearch,
           this.advancedFilters,
           this.logicalOperator
-=======
-      const actualPage = page ?? this.pagination.currentPage;
-      const actualSize = size ?? this.pagination.itemsPerPage;
-
-      try {
-        const { content, meta } = await userService.getUsers(
-          actualPage,
-          actualSize,
-          sortColumn,
-          direction,
-          query_value,
-          query_props
->>>>>>> 6fd8d91bd0fd7eaf794b4ed9e76bfa6b51afca77
         );
 
         this.users = content;
@@ -79,11 +52,7 @@ export const useUserStore = defineStore('users', {
           totalPages: meta.totalPages || Math.ceil(meta.totalElements / meta.size)
         };
       } catch (err: any) {
-<<<<<<< HEAD
         this.error = err.message || 'Erro ao buscar usuários';
-=======
-        this.error = err.message || 'Erro ao buscar utilizadores';
->>>>>>> 6fd8d91bd0fd7eaf794b4ed9e76bfa6b51afca77
         this.users = [];
         this.pagination.totalElements = 0;
       } finally {

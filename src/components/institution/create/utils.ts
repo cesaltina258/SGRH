@@ -40,6 +40,17 @@ export const healthPlanLimitOptions: MenuSelectItemType[] = [
   }
 ];
 
+export const limitTypeDefinitionOptions: MenuSelectItemType[] = [
+  {
+    label: "Valor Fixo",
+    value: "FIXED_AMOUNT"
+  },
+  {
+    label: "Porcentagem",
+    value: "PERCENTAGE"
+  }
+];
+
 export const salaryComponentOptions: MenuSelectItemType[] = [
   { 
     value: undefined, 
@@ -140,7 +151,6 @@ export const historyHeader: TableHeaderType[] = [
   { title: "action" },
 ];
 
-<<<<<<< HEAD
 export const clinicHeader: TableHeaderType[] = [
   //{ title: "id" },
   { title: "clinic" },
@@ -155,6 +165,4 @@ export const hospitalProcedureHeader: TableHeaderType[] = [
   { title: "percentage" },
   { title: "action" },
 ];
-=======
->>>>>>> 6fd8d91bd0fd7eaf794b4ed9e76bfa6b51afca77
 
