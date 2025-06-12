@@ -120,7 +120,7 @@ const requiredRules = {
 };
 
 const hospitalProceduresTypes = computed(() => {
-  return (hospitalProcedureTypeStore.hospital_procedure_types || []).map((item: HospitalProcedureTypeListing) => ({
+  return (hospitalProcedureTypeStore.hospital_procedure_types_dropdown || []).map((item: HospitalProcedureTypeListing) => ({
     value: item.id,
     label: item.name,
   }));
@@ -173,7 +173,7 @@ const onSubmit = async () => {
 
 onMounted(async () => {
   try {
-    await hospitalProcedureTypeStore.fetchHospitalProcedureTypesForDropdown();
+    await hospitalProcedureTypeStore.fetchHospitalProcedureTypesForDropdown(0,10000000);
   } catch (error) {
     console.error("Failed to load procedimentos hospitalares:", error);
     errorMsg.value = "Falha ao carregar procedimentos hospitalares";
@@ -236,7 +236,7 @@ onMounted(async () => {
         <v-divider />
         <v-card-actions class="d-flex justify-end">
           <div>
-            <v-btn color="danger" class="me-1" @click="dialogValue = false">
+            <v-btn color="danger" class="me-1" @click="dialogValue = false"> 
               <i class="ph-x me-1" /> {{ $t('t-close') }}
             </v-btn>
             <v-btn color="primary" variant="elevated" @click="onSubmit" :loading="localLoading"

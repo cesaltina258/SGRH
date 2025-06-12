@@ -2,7 +2,7 @@
 import { ref, computed, watch } from "vue"
 import { useRouter } from "vue-router"
 import { useInstitutionStore } from "@/store/institution/institutionStore"
-import { employeeService } from "@/app/http/httpServiceProvider"
+import { institutionService } from "@/app/http/httpServiceProvider"
 import { useToast } from 'vue-toastification'
 import { useI18n } from "vue-i18n"
 
@@ -71,21 +71,26 @@ const openDeleteDialog = (id: string) => {
 }
 
 // Executa a exclusão do funcionário
-const deleteEmployee = async () => {
-  if (!deleteId.value) return
+const deleteInstitution = async () => {
+  if (!deleteId.value) return;
 
-  deleteLoading.value = true
+  deleteLoading.value = true;
   try {
-    await employeeService.deleteEmployee(deleteId.value)
-    toast.success(t('t-toast-message-deleted'))
-    await institutionStore.fetchInstitutionsforListing(0, itemsPerPage.value)
+    await institutionService.deleteInstitution(deleteId.value);
+    toast.success(t('t-toast-message-deleted'));
+    await institutionStore.fetchInstitutionsforListing(0, itemsPerPage.value);
   } catch (error) {
-    toast.error(t('t-toast-message-deleted-error'))
+    if (error instanceof Error && 'response' in error) {
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      toast.error(axiosError.response?.data?.message || t('t-toast-message-error'));
+    } else {
+      toast.error(t('t-toast-message-error'));
+    }
   } finally {
-    deleteLoading.value = false
-    deleteDialog.value = false
+    deleteLoading.value = false;
+    deleteDialog.value = false;
   }
-}
+};
 
 const toggleSelection = (item: InstitutionListingType) => {
   const index = selectedInstitutions.value.findIndex(selected => selected.id === item.id);
@@ -160,5 +165,5 @@ const toggleSelection = (item: InstitutionListingType) => {
     </v-card-text>
   </Card>
 
-  <RemoveItemConfirmationDialog v-model="deleteDialog" @onConfirm="deleteEmployee" :loading="deleteLoading" />
+  <RemoveItemConfirmationDialog v-model="deleteDialog" @onConfirm="deleteInstitution" :loading="deleteLoading" />
 </template>

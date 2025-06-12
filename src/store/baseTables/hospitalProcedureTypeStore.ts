@@ -6,6 +6,7 @@ import type { HospitalProcedureTypeInsert, HospitalProcedureTypeListing, Hospita
 export const useHospitalProcedureTypeStore = defineStore('hospital_procedure_types', {
   state: () => ({
     hospital_procedure_types: [] as HospitalProcedureTypeListing[],
+    hospital_procedure_types_dropdown: [] as HospitalProcedureTypeListing[],
     pagination: {
       totalElements: 0,
       currentPage: 0,
@@ -87,7 +88,7 @@ export const useHospitalProcedureTypeStore = defineStore('hospital_procedure_typ
           query_props
         );
 
-        this.hospital_procedure_types = content;
+        this.hospital_procedure_types_dropdown = content;
         this.pagination = {
           totalElements: meta.totalElements,
           currentPage: meta.page,
@@ -95,11 +96,11 @@ export const useHospitalProcedureTypeStore = defineStore('hospital_procedure_typ
           totalPages: meta.totalPages || Math.ceil(meta.totalElements / meta.size)
         };
 
-        console.log('🏥 Tipos de Procedimentos Hospitalares:', this.hospital_procedure_types);
+        console.log('🏥 Tipos de Procedimentos Hospitalares:', this.hospital_procedure_types_dropdown);
         console.log('📄 Meta:', this.pagination);
       } catch (err: any) {
         this.error = err.message || 'Erro ao buscar os tipos de procedimentos hospitalares';
-        this.hospital_procedure_types = [];
+        this.hospital_procedure_types_dropdown = [];
         this.pagination.totalElements = 0;
         console.error("❌ Erro ao buscar hospital_procedure_types:", err);
       } finally {

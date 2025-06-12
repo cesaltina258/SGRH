@@ -34,6 +34,9 @@ import { institutionService } from "@/app/http/httpServiceProvider";
 // Inicialização de stores
 const institutionStore = useInstitutionStore();
 
+// Define emit for emitting events
+const emit = defineEmits(['institution-created']);
+
 // Composables
 const { t } = useI18n();
 const route = useRoute();
@@ -41,7 +44,7 @@ const router = useRouter();
 const toast = useToast(); 
 
 // Refs
-const step = ref(1); // Controla a aba atual (1 ou 2)
+const step = ref(1); // Controla a aba atual (1 ou 2) 
 const institutionId = ref<string | null>(
   typeof route.params.id === 'string' ? route.params.id : Array.isArray(route.params.id) ? route.params.id[0] : null
 );
@@ -234,6 +237,8 @@ const saveInstitution = async (isFinalStep: boolean = false) => {
         institutionId.value = response.data.id;
         institutionStore.setCurrentInstitutionId(response.data.id);
         basicDataValidated.value = true;
+
+        emit('institution-created', response.data.id);
       } else {
         throw new Error(response?.error?.message || t('t-error-creating-employee'));
       }
@@ -291,11 +296,11 @@ onBeforeUnmount(() => {
       <Step1 v-if="step === 1" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)"
         :loading="loading" />
       <Step2 v-if="step === 2" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)"
-        :loading="loading" />
-      <Step3 v-if="step === 3" @onStepChange="onStepChange" />
-      <Step4 v-if="step === 4" @onStepChange="onStepChange" />
-      <Step5 v-if="step === 5" @onStepChange="onStepChange" />
-      <Step6 v-if="step === 6" @onStepChange="onStepChange" />
+        :loading="loading"  />
+      <Step3 v-if="step === 3" @onStepChange="onStepChange" :institution-id="institutionId"/>
+      <Step4 v-if="step === 4" @onStepChange="onStepChange" :institution-id="institutionId"/>
+      <Step5 v-if="step === 5" @onStepChange="onStepChange" :institution-id="institutionId"/>
+      <Step6 v-if="step === 6" @onStepChange="onStepChange" :institution-id="institutionId"/>
     </v-card-text>
   </Card>
 </template>
