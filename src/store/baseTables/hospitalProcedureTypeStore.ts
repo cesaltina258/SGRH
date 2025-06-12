@@ -63,6 +63,50 @@ export const useHospitalProcedureTypeStore = defineStore('hospital_procedure_typ
       }
     },
 
+    async fetchHospitalProcedureTypesForDropdown(
+      page?: number,
+      size?: number,
+      sortColumn: string = 'name',
+      direction: string = 'asc',
+      query_value?: string,
+      query_props?: string
+    ) {
+      this.loading = true;
+      this.error = null;
+
+      const actualPage = page ?? this.pagination.currentPage;
+      const actualSize = size ?? this.pagination.itemsPerPage;
+
+      try {
+        const { content, meta } = await hospitalProcedureTypeService.getHospitalProcedureTypesForList(
+          actualPage,
+          actualSize,
+          sortColumn,
+          direction,
+          query_value,
+          query_props
+        );
+
+        this.hospital_procedure_types = content;
+        this.pagination = {
+          totalElements: meta.totalElements,
+          currentPage: meta.page,
+          itemsPerPage: meta.size,
+          totalPages: meta.totalPages || Math.ceil(meta.totalElements / meta.size)
+        };
+
+        console.log('🏥 Tipos de Procedimentos Hospitalares:', this.hospital_procedure_types);
+        console.log('📄 Meta:', this.pagination);
+      } catch (err: any) {
+        this.error = err.message || 'Erro ao buscar os tipos de procedimentos hospitalares';
+        this.hospital_procedure_types = [];
+        this.pagination.totalElements = 0;
+        console.error("❌ Erro ao buscar hospital_procedure_types:", err);
+      } finally {
+        this.loading = false;
+      }
+    },
+
     setDraftProcedureType(data: HospitalProcedureTypeInsert) {
       this.draftProcedureType = data;
       localStorage.setItem('draftProcedureType', JSON.stringify(data));
