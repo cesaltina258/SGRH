@@ -48,19 +48,22 @@ const errorMsg = ref("");
 let alertTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const handleApiError = (error: any) => {
+  console.error("🔥 ERRO COMPLETO:", JSON.stringify(error, null, 2));
+  console.error("🔥 RESPONSE:", error?.response);
   if (alertTimeout) {
     clearTimeout(alertTimeout);
     alertTimeout = null;
   }
 
   const message =
-    error?.response?.data?.error?.errors?.name?.[0] || // tenta capturar erro por campo
-    error?.response?.data?.message ||                  // erro direto da API
+    error?.response?.data?.error?.errors?.name?.[0] ||
+    error?.response?.data?.error?.errors?.symbol?.[0] ||
     error?.message ||                                  // erro genérico
     t("t-message-save-error");                         // fallback traduzido
 
-  console.log("message ==", message)
   errorMsg.value = message;
+
+  console.log("errorMsg.value ==>", errorMsg.value)
 
   alertTimeout = setTimeout(() => {
     errorMsg.value = "";
@@ -193,7 +196,7 @@ const onConfirmDelete = async () => {
   deleteLoading.value = true;
 
   try {
-    await currencyService.deleteCurrency(deleteId.value! );
+    await currencyService.deleteCurrency(deleteId.value!);
 
     await fetchCurrencies({ page: 1, itemsPerPage: itemsPerPage.value, sortBy: [], search: searchQuery.value });
 
@@ -239,7 +242,7 @@ const onConfirmDelete = async () => {
         :loading="loadingList" :search-query="searchQuery" :search-props="searchProps" item-value="id"
         @load-items="fetchCurrencies">
         <template #body="{ items }">
-          <tr v-for="item in items  as CurrencyListingType[]" :key="item.id" height="50">
+          <tr v-for="item in items as CurrencyListingType[]" :key="item.id" height="50">
             <td>
               <v-checkbox :model-value="selectedCurrencies.some(selected => selected.id === item.id)"
                 @update:model-value="toggleSelection(item)" hide-details density="compact" />

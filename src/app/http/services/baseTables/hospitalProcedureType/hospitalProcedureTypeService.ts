@@ -103,16 +103,8 @@ export default class HospitalProcedureTypeService extends HttpService {
         data: response.data
       };
     } catch (error: any) {
-      if (error.response) {
-        return {
-          status: 'error',
-          error: error.response.data as ApiErrorResponse
-        };
-      }
-      return {
-        status: 'error',
-        error: this.createNetworkErrorResponseHospitalProcedureType()
-      };
+      console.error("❌ Erro ao criar hospital-procedure-types:", error);
+      throw error;
     }
   }
 
