@@ -136,7 +136,7 @@ const onSubmit = () => {
 
 <template>
   <v-dialog v-model="dialogValue" width="500" scrollable>
-    <Card :title="isCreate ? $t('t-add-tax-rate') : $t('t-edit-tax-rate')" title-class="py-0" style="overflow: hidden">
+    <Card :title="$t('t-view-tax-rate') " title-class="py-0" style="overflow: hidden">
       <template #title-action>
         <v-btn icon="ph-x" variant="plain" @click="dialogValue = false" />
       </template>
@@ -177,9 +177,6 @@ const onSubmit = () => {
         <div>
           <v-btn color="danger" class="me-1" @click="dialogValue = false">
             <i class="ph-x me-1" /> {{ $t('t-close') }}
-          </v-btn>
-          <v-btn color="primary" variant="elevated" @click="onSubmit" :loading="localLoading" :disabled="localLoading">
-            {{ localLoading ? $t('t-saving') : $t('t-save') }}
           </v-btn>
         </div>
       </v-card-actions>
