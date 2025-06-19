@@ -23,13 +23,7 @@ export const menuItems: MenuItemType[] = [
     prefix: "/",
     link: "/"
   },
-    // Item fora do submenu, como o Dashboards
-  {
-    label: "search-base-tables",
-    icon: "ph-magnifying-glass",
-    id: "searchBaseTables",
-    action: "openBaseTableSearchModal",
-  },
+  
   {
     label: "personnel-managment",
     isHeader: true,

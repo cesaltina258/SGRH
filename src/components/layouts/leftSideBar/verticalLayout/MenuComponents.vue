@@ -1,25 +1,25 @@
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { menuItems } from "@/components/layouts/utils";
 import { useLayoutStore } from "@/store/app";
 import { SIDEBAR_SIZE } from "@/app/const";
-import { useRoute, useRouter } from "vue-router";
-import BaseTableSearchModal from "@/components/layouts/leftSideBar/verticalLayout/BaseTableSearchModal.vue";
+import QuerySearch from "@/components/layouts/leftSideBar/verticalLayout/QuerySearch.vue";
+import type { MenuItemType } from "@/components/layouts/types";
 
 const state = useLayoutStore();
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 
 const path = computed(() => route.path);
 const isCompactSideBar = computed(() => state.sideBarSize === SIDEBAR_SIZE.COMPACT);
-const showBaseTableSearchModal = ref(false);
+const searchQuery = ref("");
+const openGroups = ref<Set<string>>(new Set());
 
-const onClick = (path: string, isSingleLevel?: boolean, action?: string) => {
-  if (action === 'openBaseTableSearchModal') {
-    showBaseTableSearchModal.value = true;
-    return;
-  }
-
+// Navegação
+const onClick = (path: string, isSingleLevel?: boolean) => {
   if (isSingleLevel) {
     const openListEle = document.querySelector(".v-list-group--open");
     if (openListEle) {
@@ -39,18 +39,111 @@ const onClick = (path: string, isSingleLevel?: boolean, action?: string) => {
       }
     }
   }
-
-  if (path) router.push(path);
+  router.push(path);
 };
+
+// Atualizar grupos abertos com base na pesquisa
+watch(searchQuery, () => {
+  openGroups.value.clear();
+  const query = searchQuery.value.toLowerCase().trim();
+  if (!query) return;
+
+  menuItems.forEach((menu) => {
+    const matchMenu =
+      menu.label.toLowerCase().includes(query) ||
+      t(`t-${menu.label}`).toLowerCase().includes(query);
+
+    const matchSubMenu = (menu.subMenu || []).some((sub) => {
+      const subMatch =
+        sub.label.toLowerCase().includes(query) ||
+        t(`t-${sub.label}`).toLowerCase().includes(query);
+
+      const nestedMatch = (sub.subMenu || []).some((nested) =>
+        nested.label.toLowerCase().includes(query) ||
+        t(`t-${nested.label}`).toLowerCase().includes(query)
+      );
+
+      return subMatch || nestedMatch;
+    });
+
+    if (matchMenu || matchSubMenu) {
+      openGroups.value.add(menu.label);
+    }
+  });
+});
+
+// Filtragem multilíngue com submenus incluídos se o menu principal for correspondente
+const filteredMenuItems = computed(() => {
+  const query = searchQuery.value.toLowerCase().trim();
+  if (!query) return menuItems;
+
+  const result: MenuItemType[] = [];
+
+  for (let i = 0; i < menuItems.length; i++) {
+    const item = menuItems[i];
+
+    const labelMatch = item.label.toLowerCase().includes(query) || t(`t-${item.label}`).toLowerCase().includes(query);
+
+    if (item.isHeader && labelMatch) {
+      // Adiciona o header
+      result.push(item);
+
+      // Adiciona todos os itens seguintes até ao próximo header
+      for (let j = i + 1; j < menuItems.length; j++) {
+        const nextItem = menuItems[j];
+        if (nextItem.isHeader) break;
+        result.push(nextItem);
+      }
+      continue;
+    }
+
+    // Verifica submenus e aninhados
+    const hasSubMenu = item.subMenu?.some((sub) => {
+      const subMatch = sub.label.toLowerCase().includes(query) || t(`t-${sub.label}`).toLowerCase().includes(query);
+      const nestedMatch = sub.subMenu?.some((nested) =>
+        nested.label.toLowerCase().includes(query) || t(`t-${nested.label}`).toLowerCase().includes(query)
+      );
+      return subMatch || nestedMatch;
+    });
+
+    if (labelMatch || hasSubMenu) {
+      const filteredSubMenu = item.subMenu?.map((sub) => {
+        const subMatch = sub.label.toLowerCase().includes(query) || t(`t-${sub.label}`).toLowerCase().includes(query);
+        const nestedFiltered = sub.subMenu?.filter((nested) =>
+          nested.label.toLowerCase().includes(query) || t(`t-${nested.label}`).toLowerCase().includes(query)
+        ) || [];
+
+        if (subMatch || nestedFiltered.length > 0) {
+          return { ...sub, subMenu: nestedFiltered };
+        }
+
+        return null;
+      }).filter((s): s is NonNullable<typeof s> => s !== null);
+
+      result.push({
+        ...item,
+        subMenu: filteredSubMenu?.length ? filteredSubMenu : item.subMenu,
+      });
+    }
+  }
+
+  return result;
+});
+
 </script>
+
 
 <template>
   <v-container fluid class="py-0 px-3">
     <v-list class="navbar-nav h-100 vertical-menu-component pt-0" id="navbar-nav" open-strategy="single">
-      <v-list-group v-for="(menuItem, index) in menuItems" :key="`${menuItem.label}-${index}`"
-        :class="menuItem.isHeader ? 'menu-title' : 'nav-item'">
+      <div>
+        <QuerySearch v-model="searchQuery" />
+      </div>
+
+      <v-list-group v-for="(menuItem, index) in filteredMenuItems" :key="`${menuItem.label}-${index}`"
+        :class="menuItem.isHeader ? 'menu-title' : 'nav-item'" :model-value="openGroups.has(menuItem.label)">
         <template #activator="{ props }">
-          <!-- Header -->
+          <!-- Cabeçalho -->
           <v-list-item v-if="menuItem.isHeader" :data-key="`t-${menuItem.label}`" prepend-icon="" class="px-2"
             variant="text" append-icon="">
             <template #title>
@@ -60,11 +153,10 @@ const onClick = (path: string, isSingleLevel?: boolean, action?: string) => {
             </template>
           </v-list-item>
 
-          <!-- Item simples com link -->
-          <v-list-item v-else-if="!(menuItem.subMenu && menuItem.subMenu.length) && menuItem.link"
-            :data-key="`t-${menuItem.label}`" append-icon="" class="py-0 ps-5" :value="menuItem.link"
-            :active="menuItem.link === path" :to="menuItem.link" height="45" min-height="45"
-            @click.prevent="menuItem.link && onClick(menuItem.link, true)">
+          <!-- Item sem submenu (com link) -->
+          <v-list-item v-else-if="!menuItem.subMenu?.length && menuItem.link" :data-key="`t-${menuItem.label}`"
+            append-icon="" class="py-0 ps-5" :value="menuItem.link" :active="menuItem.link === path" :to="menuItem.link"
+            height="45" min-height="45" @click.prevent="onClick(menuItem.link, true)">
             <template #title>
               <router-link :to="menuItem.link">
                 <div class="nav-link menu-link" :class="isCompactSideBar ? 'pa-2' : 'd-flex align-center'">
@@ -75,21 +167,9 @@ const onClick = (path: string, isSingleLevel?: boolean, action?: string) => {
             </template>
           </v-list-item>
 
-          <!-- Item principal com action -->
-          <v-list-item v-else-if="!(menuItem.subMenu && menuItem.subMenu.length) && menuItem.action"
-            :data-key="`t-${menuItem.label}`" append-icon="" class="py-0 ps-5" height="45" min-height="45"
-            @click.prevent="onClick('', true, menuItem.action)">
-            <template #title>
-              <div class="nav-link menu-link" :class="isCompactSideBar ? 'pa-2' : 'd-flex align-center'">
-                <i :class="menuItem.icon" class="ph-lg" />
-                <div>{{ $t(`t-${menuItem.label}`) }}</div>
-              </div>
-            </template>
-          </v-list-item>
-
-          <!-- Item com submenus -->
-          <v-list-item v-if="menuItem.subMenu && menuItem.subMenu.length" :data-key="`t-${menuItem.label}`"
-            v-bind="props" class="py-0 nav-link ps-5 menu-header-title" height="45" min-height="45">
+          <!-- Menu principal sem link mas com submenus ou texto -->
+          <v-list-item v-else :data-key="`t-${menuItem.label}`" v-bind="props"
+            class="py-0 nav-link ps-5 menu-header-title" height="45" min-height="45">
             <template #title>
               <span class="nav-link menu-link" :class="isCompactSideBar ? 'pa-2' : 'd-flex align-center'">
                 <i :class="menuItem.icon" class="ph-lg"></i>
@@ -102,13 +182,13 @@ const onClick = (path: string, isSingleLevel?: boolean, action?: string) => {
           </v-list-item>
         </template>
 
-        <!-- Submenu -->
+        <!-- Submenus -->
         <v-list-group v-for="(subMenu, index) in menuItem.subMenu" :key="`submenu-${subMenu.label}-${index}`"
           :value="subMenu.link" :active="subMenu.link === path" :to="subMenu.link">
           <template #activator="{ props }">
             <v-list-item class="py-0 nav nav-sm nav-link sub-menu-list-item" density="compact" v-bind="props"
               :value="subMenu.link" :active="subMenu.link === path" :to="subMenu.link" height="38" min-height="38"
-              @click.prevent="onClick(subMenu.link ?? '', true, subMenu.action ?? '' )">
+              @click.prevent="subMenu.link && onClick(subMenu.link)">
               <template #title>
                 <span class="nav-link menu-link py-0">
                   {{ $t(`t-${subMenu.label}`) }}
@@ -121,7 +201,7 @@ const onClick = (path: string, isSingleLevel?: boolean, action?: string) => {
             </v-list-item>
           </template>
 
-          <!-- Sub-submenu -->
+          <!-- Itens de submenu aninhado -->
           <v-list-item v-for="(nestedItem, index) in subMenu.subMenu" :key="index"
             class="py-0 nav nav-sm rail-navigation-list" density="compact" :to="nestedItem.link" height="38"
             min-height="38">
@@ -140,7 +220,4 @@ const onClick = (path: string, isSingleLevel?: boolean, action?: string) => {
       </v-list-group>
     </v-list>
   </v-container>
-
-  <!-- Modal -->
-  <BaseTableSearchModal v-model="showBaseTableSearchModal" />
 </template>

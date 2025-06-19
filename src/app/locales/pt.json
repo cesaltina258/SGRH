@@ -756,8 +756,9 @@
   "t-tax-rates": "Taxas de Imposto",
   "t-tax-rate-list": "Lista de Taxas de Imposto",
   "t-rate": "Taxa",
-  "t-enter-tax-rate":"Insira a taxa de imposto",
+  "t-enter-tax-rate": "Insira a taxa de imposto",
   "t-enter-rate": "Insira a taxa (%)",
   "t-view-tax-rate-list": "Vista em Lista",
-  "t-please-enter-valid-rate": "Por favor, insira uma taxa válida!"
+  "t-please-enter-valid-rate": "Por favor, insira uma taxa válida!",
+  "t-search-for-menu": "Pesquisar por menu"
 }
