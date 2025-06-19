@@ -19,6 +19,7 @@ import HospitalProcedureTypeService from "@/app/http/services/baseTables/hospita
 import InstitutionTypeService from "@/app/http/services/baseTables/institutionTypes/institutionTypeService";
 import LeaveReasonService from "@/app/http/services/baseTables/leaveReason/leaveReasonService";
 import LanguageService from "@/app/http/services/baseTables/languages/languageService";
+import TaxRateTypeTypeService from "./services/baseTables/taxRate/taxRateService";
 
 // FakeBackendService is used for mocking API responses
 import FakeBackendService from "@/app/http/services/fakeBackendService";
@@ -43,6 +44,7 @@ const hospitalProcedureTypeService = new HospitalProcedureTypeService();
 const institutionTypeService = new InstitutionTypeService();
 const leaveReasonService = new LeaveReasonService();
 const languageService = new LanguageService();
+const taxRateTypeService = new TaxRateTypeTypeService();
 
 // FakeBackendService is used for mocking API responses
 const fakeBackendService = new FakeBackendService();
@@ -66,5 +68,6 @@ export {
     clinicInstitutionService,
     hospitalProcedureService,
     invoiceService,
-    dependentEmployeeService
+    dependentEmployeeService,
+    taxRateTypeService
 };

@@ -15,7 +15,7 @@ export const breadcrumb: BreadcrumbType[] = [
 
 export const clinicsHeader: DataTableHeaderType[] = [
   { title: "name", key: "name", sortable: true },
-  { title: "description", key: "description", sortable: true },
+  // { title: "description", key: "description", sortable: true },
   { title: "address", key: "address", sortable: true },
   { title: "phone", key: "phone", sortable: true },
   { title: "email", key: "email", sortable: true },

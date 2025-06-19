@@ -23,6 +23,13 @@ export const menuItems: MenuItemType[] = [
     prefix: "/",
     link: "/"
   },
+    // Item fora do submenu, como o Dashboards
+  {
+    label: "search-base-tables",
+    icon: "ph-magnifying-glass",
+    id: "searchBaseTables",
+    action: "openBaseTableSearchModal",
+  },
   {
     label: "personnel-managment",
     isHeader: true,
@@ -208,6 +215,7 @@ export const menuItems: MenuItemType[] = [
       { label: "institution-types", link: "/baseTable/institutiontype/list" },
       { label: "leave-reason", link: "/baseTable/leavereason/list" },
       { label: "languages", link: "/baseTable/languages/list" },
+      { label: "tax-rates", link: "/baseTable/tax-rates/list" },
     ],
   },
   /*{

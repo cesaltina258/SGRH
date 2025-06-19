@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch, computed, onMounted } from "vue";
+import { ref, watch, computed, onMounted, onBeforeUnmount } from "vue";
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
 import Table from "@/app/common/components/Table.vue";
 import { listViewHeader } from "@/components/baseTables/country/listView/utils";
@@ -48,6 +48,46 @@ const itemsPerPage = ref(10);
 const loadingList = computed(() => countryStore.loading);
 const totalItems = computed(() => countryStore.pagination.totalElements);
 const selectedCountries = ref<any[]>([])
+const errorMsg = ref("");
+let alertTimeout: ReturnType<typeof setTimeout> | null = null;
+
+const handleApiError = (error: any) => {
+  if (alertTimeout) {
+    clearTimeout(alertTimeout);
+    alertTimeout = null;
+  }
+
+  const message =
+    error?.response?.data?.error?.errors?.name?.[0] ||
+    error?.response?.data?.error?.errors?.code?.[0] ||
+    error?.response?.data?.error?.errors?.currency?.[0] ||
+    error?.response?.data?.error?.errors?.currencyCode?.[0] ||
+    error?.response?.data?.error?.errors?.currencySymbol?.[0] ||
+    error?.response?.data?.error?.errors?.iso2Code?.[0] ||
+    error?.response?.data?.error?.errors?.iso3Code?.[0] ||
+    error?.response?.data?.error?.errors?.phoneCode?.[0] ||
+    error?.response?.data?.message ||
+    error?.message ||
+    t("t-message-save-error");
+
+  errorMsg.value = message;
+
+
+
+  console.log("errorMsg.value ==>", errorMsg.value)
+
+  alertTimeout = setTimeout(() => {
+    errorMsg.value = "";
+    alertTimeout = null;
+  }, 5000);
+};
+
+onBeforeUnmount(() => {
+  if (alertTimeout) {
+    clearTimeout(alertTimeout);
+    alertTimeout = null;
+  }
+});
 
 // Carregamento inicial
 onMounted(() => {
@@ -131,6 +171,7 @@ const onSubmit = async (data: CountryListingType, callbacks?: {
     callbacks?.onSuccess?.();
   } catch (error) {
     toast.error(t('t-message-save-error'));
+    handleApiError(error);
 
   } finally {
     // Callback para desativar o loading
@@ -191,6 +232,7 @@ const onConfirmDelete = async () => {
     toast.success(t('t-toast-message-deleted'));
   } catch (error) {
     toast.error(t('t-toast-message-deleted-erros'));
+    handleApiError(error);
   } finally {
     deleteLoading.value = false;
     deleteDialog.value = false;
@@ -266,7 +308,8 @@ const onConfirmDelete = async () => {
     </v-card-text>
   </v-card>
 
-  <CreateUpdateCountryModal v-if="countryData" v-model="dialog" :data="countryData" @onSubmit="onSubmit" />
+  <CreateUpdateCountryModal v-if="countryData" v-model="dialog" :data="countryData" @onSubmit="onSubmit"
+    :error="errorMsg" />
 
   <ViewCountryModal v-if="countryData" v-model="viewDialog" :data="countryData" />
 

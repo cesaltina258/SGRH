@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-import { PropType, computed, ref } from "vue";
-import { LanguagesInsert } from "@/components/baseTables/languages/types";
+import { PropType, computed, ref, watch } from "vue";
+import { TaxRateTypeInsert } from "@/components/baseTables/TaxRate/types";
 import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
-import { propertyTypes } from "@/components/baseTables/languages/listView/utils";
+import { statusOptions } from "@/components/realEstate/agent/utils";
+import { colors } from "@/components/ui/utils";
 import { useI18n } from "vue-i18n";
 
 const localLoading = ref(false);
@@ -14,7 +15,7 @@ const prop = defineProps({
     default: false,
   },
   data: {
-    type: Object as PropType<LanguagesInsert>,
+    type: Object as PropType<TaxRateTypeInsert>,
     required: true,
   },
   error: {
@@ -37,40 +38,51 @@ const dialogValue = computed({
 
 const id = ref(formData.value.id || "");
 const name = ref(formData.value.name || "");
-const code = ref(formData.value.code || "");
-const localizedName = ref(formData.value.localizedName || "");
-const region = ref(formData.value.region || "");
-const rtl = ref(isCreate.value ? null : formData.value.rtl ?? false);
-
-// Erro vindo da API
+const description = ref(formData.value.description || "");
+const rate = ref(formData.value.rate || "");
 const errorMessage = computed(() => prop.error);
 
-// Erros de validação local
+
 const validationAlertMessage = ref('');
+
 let validationAlertTimeout: ReturnType<typeof setTimeout> | null = null;
+
+const formErrors = ref<Record<string, string>>({
+  name: '',
+  description: '',
+  rate: '',
+});
 
 const { t } = useI18n();
 
-// Validação do formulário
 const validateForm = () => {
   let isValid = true;
-  const messages: string[] = [];
+
+  // Limpar erros anteriores
+  Object.keys(formErrors.value).forEach((key) => {
+    formErrors.value[key] = '';
+  });
 
   if (validationAlertTimeout) {
     clearTimeout(validationAlertTimeout);
     validationAlertTimeout = null;
   }
-
   validationAlertMessage.value = '';
 
+  // Verificações de erro — mostrar só o primeiro
   if (!name.value.trim()) {
-    messages.push(t('t-please-enter-language'));
+    const msg = t('t-please-enter-name-tax-rate');
+    formErrors.value.name = msg;
+    validationAlertMessage.value = msg;
+    isValid = false;
+  } else if (rate.value === "" || isNaN(Number(rate.value))) {
+    const msg = t('t-please-enter-valid-rate');
+    formErrors.value.rate = msg;
+    validationAlertMessage.value = msg;
     isValid = false;
   }
 
-  if (messages.length > 0) {
-    validationAlertMessage.value = messages.join('<br/>');
-
+  if (!isValid) {
     validationAlertTimeout = setTimeout(() => {
       validationAlertMessage.value = '';
       validationAlertTimeout = null;
@@ -80,6 +92,17 @@ const validateForm = () => {
   return isValid;
 };
 
+
+watch(
+  () => prop.data,
+  (newVal) => {
+    id.value = newVal.id || "";
+    name.value = newVal.name || "";
+    description.value = newVal.description || "";
+    rate.value = newVal.rate || "";
+  },
+  { immediate: true }
+);
 const onSubmit = () => {
   if (!validateForm()) {
     return;
@@ -90,13 +113,11 @@ const onSubmit = () => {
   const data = {
     ...(!isCreate.value && { id: id.value }),
     name: name.value,
-    code: code.value,
-    localizedName: localizedName.value,
-    region: region.value,
-    rtl: rtl.value,
+    description: description.value,
+    rate: rate.value,
   };
 
-  emit("onSubmit", data, {
+  emit('onSubmit', data, {
     onSuccess: () => {
       dialogValue.value = false;
       if (validationAlertTimeout) {
@@ -110,63 +131,48 @@ const onSubmit = () => {
     }
   });
 };
+
 </script>
 
 <template>
   <v-dialog v-model="dialogValue" width="500" scrollable>
-    <Card :title="isCreate ? $t('t-add-language') : $t('t-edit-language')" title-class="py-0" style="overflow: hidden">
+    <Card :title="isCreate ? $t('t-add-tax-rate') : $t('t-edit-tax-rate')" title-class="py-0" style="overflow: hidden">
       <template #title-action>
         <v-btn icon="ph-x" variant="plain" @click="dialogValue = false" />
       </template>
-
       <v-divider />
 
-      <v-card-text class="overflow-y-auto" :style="{ 'max-height': isCreate ? '70vh' : '45vh' }">
-
-        <!-- Erro da API -->
-        <v-alert v-if="errorMessage" :text="errorMessage" type="error" variant="tonal" color="danger" class="mb-4"
+      <v-card-text class="overflow-y-auto" :style="{
+        'max-height': isCreate ? '70vh' : '45vh'
+      }">
+        <v-alert v-if="errorMessage" :text="errorMessage" type="error" class="mb-4" variant="tonal" color="danger"
           density="compact" />
 
-        <!-- Erros de validação -->
-        <v-alert v-if="validationAlertMessage" :text="validationAlertMessage" type="error" variant="tonal" color="danger"
-          class="mb-4" density="compact" />
-          
+        <v-alert v-if="validationAlertMessage" :text="validationAlertMessage" type="error" class="mb-4" variant="tonal"
+          color="danger" density="compact" />
+
         <v-row>
-          <v-col cols="12" lg="6">
+          <v-col cols="6" lg="6">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-language') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-name') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="name" :placeholder="$t('t-enter-language')" hide-details />
+            <TextField v-model="name" :placeholder="$t('t-enter-name')" hide-details />
           </v-col>
-          <v-col cols="12" lg="6">
+          <v-col cols="6" lg="6">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-code') }}
+              {{ $t('t-rate') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="code" :placeholder="$t('t-enter-code')" hide-details />
+            <TextField v-model="rate" :placeholder="$t('t-enter-rate')" hide-details />
           </v-col>
-          <v-col cols="12" lg="6">
+          <v-col cols="12" lg="12">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-localized-name') }}
+              {{ $t('t-description') }}
             </div>
-            <TextField v-model="localizedName" :placeholder="$t('t-enter-localized-name')" hide-details />
-          </v-col>
-          <v-col cols="12" lg="6">
-            <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-region') }}
-            </div>
-            <TextField v-model="region" :placeholder="$t('t-enter-region')" hide-details />
-          </v-col>
-          <v-col cols="12">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-right-to-left') }}
-            </div>
-            <MenuSelect v-model="rtl as any" :items="propertyTypes" />
+            <TextArea v-model="description" :placeholder="$t('t-enter-description')" hide-details />
           </v-col>
         </v-row>
       </v-card-text>
-
       <v-divider />
-
       <v-card-actions class="d-flex justify-end">
         <div>
           <v-btn color="danger" class="me-1" @click="dialogValue = false">
@@ -180,9 +186,3 @@ const onSubmit = () => {
     </Card>
   </v-dialog>
 </template>
-
-<style>
-.text-extra-small {
-  font-size: 0.70rem;
-}
-</style>

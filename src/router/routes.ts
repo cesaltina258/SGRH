@@ -203,6 +203,12 @@ const baseTableRoutes = [
     component: () => import("@/views/baseTables/languages/ListView.vue"),
     meta: { title: "LanguagesListView", authRequired: true },
   },
+  {
+    path: `${baseTablePrefix}/tax-rates/list`,
+    name: "TaxRatesListView",
+    component: () => import("@/views/baseTables/taxRate/ListView.vue"),
+    meta: { title: "TaxRatesListView", authRequired: true },
+  },
 ].map((data) => {
   return {
     ...data,

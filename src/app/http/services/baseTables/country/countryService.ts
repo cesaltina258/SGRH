@@ -91,16 +91,9 @@ export default class CountryService extends HttpService {
       };
 
     } catch (error: any) {
-      if (error.response) {
-        return {
-          status: 'error',
-          error: error.response.data as ApiErrorResponse
-        };
-      }
-      return {
-        status: 'error',
-        error: this.createNetworkErrorResponseCountry()
-      };
+     
+      console.error("❌ Erro ao criar País:", error);
+      throw error;
     }
   }
 
@@ -239,16 +232,19 @@ export default class CountryService extends HttpService {
       };
 
     } catch (error: any) {
-      if (error.response) {
-        return {
-          status: 'error',
-          error: error.response.data as ApiErrorResponse
-        };
-      }
-      return {
-        status: 'error',
-        error: this.createNetworkErrorResponseProvince()
-      };
+      //   if (error.response) {
+      //     return {
+      //       status: 'error',
+      //       error: error.response.data as ApiErrorResponse
+      //     };
+      //   }
+      //   return {
+      //     status: 'error',
+      //     error: this.createNetworkErrorResponseProvince()
+      //   };
+      // }
+      console.error("❌ Erro ao buscar províncias por país:", error);
+      throw error;
     }
   }
 
