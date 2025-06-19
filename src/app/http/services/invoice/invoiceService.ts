@@ -148,7 +148,7 @@ export default class InvoiceService extends HttpService {
   async getInvoiceById(id: string): Promise<{ data: InvoiceResponseType }> {
     try {
       const response = await this.get<{ data: InvoiceResponseType; meta: any }>(
-        `/amm/invoices/${id}?includes=employee,clinic,currency` 
+        `/amm/invoices/${id}?includes=employee,clinic,currency,dependent` 
       );
       console.log('Resposta da requisição de facturas:------------------------', response); 
   
@@ -184,7 +184,7 @@ export default class InvoiceService extends HttpService {
     }
   }
 
-   async updateInvoice(id: string, invoiceData: InvoiceInsertType): Promise<InvoiceResponseType> {
+   async updateInvoice(id: string, invoiceData: InvoiceInsertType):  Promise<ServiceResponse<InvoiceResponseType>> {
       try {
   
         // Corpo da requisição conforme especificado
@@ -199,12 +199,12 @@ export default class InvoiceService extends HttpService {
           isEmployeeInvoice: invoiceData.isEmployeeInvoice,
           dependent: invoiceData.dependent,
           authorizedBy: invoiceData.authorizedBy,
-          invoiceReferenceNumber: invoiceData.authorizedBy
+          invoiceReferenceNumber: invoiceData.invoiceReferenceNumber
         };
 
         console.log("payload do update invoice: ", payload);
 
-        const response = await this.put<InvoiceResponseType>(`/amm/invoices/${id}`, payload);
+        const response = await this.put<ServiceResponse<InvoiceResponseType>>(`/amm/invoices/${id}`, payload);
         console.log('response update invoice', response)
         return response;
 

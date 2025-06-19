@@ -807,5 +807,8 @@
   "t-enter-tax-rate":"Insira a taxa de imposto",
   "t-enter-rate": "Insira a taxa (%)",
   "t-view-tax-rate-list": "Vista em Lista",
-  "t-please-enter-valid-rate": "Por favor, insira uma taxa válida!"
+  "t-please-enter-valid-rate": "Por favor, insira uma taxa válida!",
+  "t-dependent-required": "Dependente é obrigatório",
+  "t-select-procedure": "Selecione o procedimento hospitalar",
+  "t-tax-rate-required": "Taxa do imposto é obrigatória!"
 }

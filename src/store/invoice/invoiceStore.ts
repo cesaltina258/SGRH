@@ -15,7 +15,7 @@ export const useInvoiceStore = defineStore('invoices', {
     loading: false,
     error: null as string | null,
     draftInvoice: null as InvoiceInsertType | null,
-    currentInvoiceId: null as string | null
+    currentInvoiceId: undefined as string | undefined
   }),
 
   actions: {
@@ -113,7 +113,7 @@ export const useInvoiceStore = defineStore('invoices', {
     },
     clearDraft() {
       this.draftInvoice = null;
-      this.currentInvoiceId = null;
+      this.currentInvoiceId = undefined;
       localStorage.removeItem('invoiceDraft');
       localStorage.removeItem('currentInvoiceId');
     },

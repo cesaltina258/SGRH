@@ -11,6 +11,7 @@ import ContactPersonService from "@/app/http/services/institution/contactPersonS
 import HospitalProcedureService from "@/app/http/services/institution/hospitalProcedureService";
 import InvoiceService from "@/app/http/services/invoice/invoiceService";
 import DependentEmployeeService from "@/app/http/services/employee/dependentService";
+import InvoiceItemService from "@/app/http/services/invoice/invoiceItemService";
 
 //BASETABLES
 import CountryService from "@/app/http/services/baseTables/country/countryService";
@@ -36,6 +37,7 @@ const hospitalProcedureService = new HospitalProcedureService();
 const clinicInstitutionService = new ClinicInstitutionService();
 const invoiceService = new InvoiceService();
 const dependentEmployeeService = new DependentEmployeeService();
+const invoiceItemService = new InvoiceItemService();
 
 //BASETABLES
 const countryService = new CountryService();
@@ -69,5 +71,6 @@ export {
     hospitalProcedureService,
     invoiceService,
     dependentEmployeeService,
-    taxRateTypeService
+    taxRateTypeService,
+    invoiceItemService
 };

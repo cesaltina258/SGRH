@@ -114,9 +114,39 @@ export type InvoiceItemInsertType = {
     id?: string;
     unitPrice: number;
     quantity: number;
-    taxRate: number;
+    taxRate: string;
     description: string;
     companyAllowedHospitalProcedure: string | undefined;
     invoice: string | undefined;
-    
+    totalAmount?: number;
 }
+
+export type InvoiceItemListingType = {
+    id: string;
+    unitPrice: number;
+    quantity: number;
+    taxRate: {
+        id: string;
+        name: string;
+    };
+    description: string;
+    companyAllowedHospitalProcedure: {
+        id: string;
+        hospitalProcedureType:{
+            id: string;
+            name: string;
+        }
+    };
+    invoice: {
+        id: string;
+        totalAmount: number;
+    };
+    totalAmount: number;
+    createdAt: Date ;
+    updatedAt: Date | null;
+    deletedAt: Date | null;
+    createdBy: string;
+    updatedBy: string;
+    deletedBy: string;
+}
+

@@ -18,6 +18,50 @@ export default class HospitalProcedureService extends HttpService {
   async getHospitalProcedureByInstitution(
     id: string | null,
     page: number = 0,
+    size: number = 10,
+    sortColumn: string = 'createdAt',
+    direction: string = 'asc',
+    query_value?: string,
+    query_props?: string
+  ): Promise<{ content: HospitalProcedureListingType[], meta: any }> {
+    try {
+      const queryParams = [
+        `id=${id}`,
+        `page=${page}`,
+        `size=${size}`,
+        `sortColumn=${sortColumn}`,
+        `direction=${direction}`
+      ];
+
+      if (query_value && query_props) {
+        queryParams.push(`query_props=${encodeURIComponent(query_props)}`);
+        queryParams.push(`query_value=${encodeURIComponent(query_value)}`);
+      }
+
+      const includesToUse = 'company,hospitalProcedureType';
+      queryParams.push(`includes=${includesToUse}`);
+
+      const queryString = queryParams.join('&');
+      const url = `/administration/company/allowed-hospital-procedures/in-company?${queryString}`;
+
+      console.log('URL da requisição:', url);
+      const response = await this.get<ApiResponse<HospitalProcedureListingType[]>>(url);
+
+      return {
+        content: response.data || [],
+        meta: response.meta || []
+      };
+
+    } catch (error) {
+      console.error("❌ Erro ao buscar procedimentos hospitalares:", error);
+      throw error;
+    }
+  }
+
+
+  async getHospitalProcedureByInstitutionForDropdown(
+    id: string | null,
+    page: number = 0,
     size: number = 10000000,
     sortColumn: string = 'createdAt',
     direction: string = 'asc',

@@ -13,11 +13,13 @@ import ValidatedDatePicker from "@/app/common/components/ValidatedDatePicker.vue
 import { useI18n } from "vue-i18n";
 import { useToast } from 'vue-toastification';
 import { useRouter } from "vue-router";
+import { useInvoiceStore } from "@/store/invoice/invoiceStore";
 
 // Composables
 const { t } = useI18n();
 const toast = useToast();
 const router = useRouter();
+const invoiceStore = useInvoiceStore();
 
 // Props
 const props = defineProps({
@@ -32,13 +34,20 @@ const props = defineProps({
   isEditMode: {
     type: Boolean,
     default: false
+  },
+  initialItems: {
+    type: Array as () => InvoiceItemInsertType[],
+    default: () => []
   }
 });
 
 // Emits
+// Em InvoiceForm.vue, modifique a seção defineEmits para:
 const emit = defineEmits<{
   (e: 'save', invoiceData: InvoiceInsertType): void;
+  (e: 'save-with-items', payload: { invoiceData: InvoiceInsertType, items: InvoiceItemInsertType[] }): void;
   (e: 'update:modelValue', value: InvoiceInsertType): void;
+  (e: 'items-ready', items: InvoiceItemInsertType[]): void; // Adicione esta linha
 }>();
 
 // Stores
@@ -66,10 +75,10 @@ const invoiceData = computed({
 const invoiceItemData = reactive<InvoiceItemInsertType>({
   unitPrice: 0,
   quantity: 0,
-  taxRate: 0,
+  taxRate: '',
   description: '',
   companyAllowedHospitalProcedure: '',
-  invoice: ''
+  invoice: invoiceStore.currentInvoiceId
 });
 
 const institutions = computed(() => {
@@ -125,7 +134,7 @@ watch(() => invoiceData.value.company, async (newInstitutionId) => {
   if (newInstitutionId) {
     try {
       await employeeStore.fetchEmployeesForDropdown(newInstitutionId);
-      
+
       if (invoiceData.value.employee) {
         const currentEmployee = employeeStore.employeesForDropdown.find(
           c => c.id === invoiceData.value.employee
@@ -147,7 +156,7 @@ watch(() => invoiceData.value.employee, async (newEmployeeId) => {
   if (newEmployeeId) {
     try {
       await dependentStore.fetchDependentsEmployeeForDropdown(newEmployeeId);
-      
+
       if (invoiceData.value.dependent) {
         const currentDependent = dependentStore.dependentsForDropdown.find(
           c => c.id === invoiceData.value.dependent
@@ -169,7 +178,7 @@ watch(() => invoiceData.value.employee, async (newEmployeeId) => {
 const handleLoadError = (resource: string, error: any) => {
   console.error(`Failed to load ${resource}:`, error);
   errorMsg.value = t(`t-failed-to-load-${resource}`);
-  
+
   if (alertTimeout) clearTimeout(alertTimeout);
   alertTimeout = setTimeout(() => {
     errorMsg.value = "";
@@ -177,11 +186,14 @@ const handleLoadError = (resource: string, error: any) => {
   }, 5000);
 };
 
+// No InvoiceForm.vue, modifique a função submitInvoice
+const productCardRef = ref<{ emitItemsReady: () => boolean }>();
+
 const submitInvoice = async () => {
   if (!form.value) return;
 
   const { valid } = await form.value.validate();
-  
+
   if (!valid) {
     toast.error(t('t-validation-error'));
     errorMsg.value = t('t-please-correct-errors');
@@ -196,12 +208,31 @@ const submitInvoice = async () => {
       return;
     }
 
+    // Emite apenas os dados básicos primeiro
     emit('save', { ...invoiceData.value });
+    
+    // Se houver itens, emite-os separadamente
+    if (productCardRef.value) {
+      productCardRef.value.emitItemsReady();
+    }
+
   } catch (error) {
     console.error("Erro ao submeter fatura:", error);
     toast.error(t('t-message-save-error'));
   }
 };
+
+// Modifique para apenas preparar os itens sem emitir salvamento
+const handleItemsReady = (items: InvoiceItemInsertType[]) => {
+  // Calcula o totalAmount baseado nos valores do backend quando em edição
+  if (props.isEditMode) {
+    const totalAmount = props.initialItems.reduce((sum, item) => sum + (item.totalAmount || 0), 0);
+    invoiceData.value.totalAmount = totalAmount;
+  }
+  
+  emit('items-ready', items);
+};
+
 
 const onBack = () => {
   institutionStore.clearDraft();
@@ -220,6 +251,9 @@ onMounted(async () => {
     handleLoadError("institutions", error);
   }
 });
+
+
+
 </script>
 
 <template>
@@ -232,136 +266,89 @@ onMounted(async () => {
         <v-row justify="end" class="mt-4 pt-16 pt-md-0">
           <v-col cols="12" lg="4">
             <div class="font-weight-bold">{{ $t('t-institution') }} <i class="ph-asterisk ph-xs text-danger" /></div>
-            <MenuSelect 
-              v-model="invoiceData.company" 
-              :items="institutions" 
-              :loading="institutionStore.loading"
-              :rules="requiredRules.institution" 
-              :placeholder="$t('t-institution')" 
-            />
+            <MenuSelect v-model="invoiceData.company" :items="institutions" :loading="institutionStore.loading"
+              :rules="requiredRules.institution" :placeholder="$t('t-institution')" />
 
             <div class="font-weight-bold mt-n1">{{ $t('t-clinic') }} <i class="ph-asterisk ph-xs text-danger" /></div>
-            <MenuSelect 
-              v-model="invoiceData.clinic" 
-              :items="clinics" 
-              :loading="clinicStore.loading"
-              :rules="requiredRules.clinic" 
-              :placeholder="$t('t-clinic')"
-              :disabled="!clinics.length" 
-            />
+            <MenuSelect v-model="invoiceData.clinic" :items="clinics" :loading="clinicStore.loading"
+              :rules="requiredRules.clinic" :placeholder="$t('t-clinic')" :disabled="!clinics.length" />
 
             <div class="font-weight-bold">{{ $t('t-employee-or-dependent') }}</div>
-            <v-checkbox 
-              v-model="invoiceData.isEmployeeInvoice" 
-              density="compact" 
-              color="primary"
-            >
+            <v-checkbox v-model="invoiceData.isEmployeeInvoice" density="compact" color="primary">
               <template #label>
                 <span>{{ $t('t-is-employee-invoice') }}</span>
               </template>
             </v-checkbox>
           </v-col>
         </v-row>
-        
+
         <v-row class="mt-n6">
           <v-col cols="12" lg="4">
             <div class="font-weight-bold">{{ $t('t-invoice-number') }} <i class="ph-asterisk ph-xs text-danger" /></div>
-            <TextField 
-              v-model="invoiceData.invoiceNumber" 
-              :placeholder="$t('t-enter-invoice-number')"
-              :rules="requiredRules.invoiceNumber" 
-            />
+            <TextField v-model="invoiceData.invoiceNumber" :placeholder="$t('t-enter-invoice-number')"
+              :rules="requiredRules.invoiceNumber" />
           </v-col>
-          
+
           <v-col cols="12" lg="">
             <div class="font-weight-bold">{{ $t('t-employee') }} <i class="ph-asterisk ph-xs text-danger" /></div>
-            <MenuSelect 
-              v-model="invoiceData.employee" 
-              :items="employees" 
-              :loading="employeeStore.loading"
-              :rules="requiredRules.employee" 
-              :placeholder="$t('t-select-employee')"
-              :disabled="!invoiceData.company || !employees.length" 
-            />
+            <MenuSelect v-model="invoiceData.employee" :items="employees" :loading="employeeStore.loading"
+              :rules="requiredRules.employee" :placeholder="$t('t-select-employee')"
+              :disabled="!invoiceData.company || !employees.length" />
           </v-col>
-          
+
           <v-col cols="12" lg="4" v-if="!invoiceData.isEmployeeInvoice">
             <div class="font-weight-bold">{{ $t('t-dependent') }} <i class="ph-asterisk ph-xs text-danger" /></div>
-            <MenuSelect 
-              v-model="invoiceData.dependent" 
-              :items="dependents" 
-              :loading="dependentStore.loading"
-              :rules="requiredRules.dependent" 
-              :placeholder="$t('t-select-dependent')"
-              :disabled="!invoiceData.employee || !dependents.length" 
-            />
+            <MenuSelect v-model="invoiceData.dependent" :items="dependents" :loading="dependentStore.loading"
+              :rules="requiredRules.dependent" :placeholder="$t('t-select-dependent')"
+              :disabled="!invoiceData.employee || !dependents.length" />
           </v-col>
         </v-row>
-        
+
         <v-row class="mt-n6">
           <v-col cols="12" lg="4">
             <div class="font-weight-bold">{{ $t('t-issue-date') }} <i class="ph-asterisk ph-xs text-danger" /></div>
-            <ValidatedDatePicker 
-              v-model="invoiceData.issueDate" 
-              :teleport="true" 
-              :enable-time-picker="false"
-              :rules="requiredRules.issueDate" 
-              :placeholder="$t('t-select-issue-date')" 
-            />
+            <ValidatedDatePicker v-model="invoiceData.issueDate" :teleport="true" :enable-time-picker="false"
+              :rules="requiredRules.issueDate" :placeholder="$t('t-select-issue-date')" />
           </v-col>
-          
+
           <v-col cols="12" lg="4">
             <div class="font-weight-bold">{{ $t('t-currency') }} <i class="ph-asterisk ph-xs text-danger" /></div>
-            <MenuSelect 
-              v-model="invoiceData.currency" 
-              :items="currencies" 
-              :rules="requiredRules.currency"
-              :placeholder="$t('t-select-currency')" 
-            />
+            <MenuSelect v-model="invoiceData.currency" :items="currencies" :rules="requiredRules.currency"
+              :placeholder="$t('t-select-currency')" />
           </v-col>
-          
+
           <v-col cols="12" lg="4">
             <div class="font-weight-bold">{{ $t('t-due-date') }} <i class="ph-asterisk ph-xs text-danger" /></div>
-            <ValidatedDatePicker 
-              v-model="invoiceData.dueDate" 
-              :teleport="true" 
-              :enable-time-picker="false"
-              :rules="requiredRules.dueDate" 
-              :placeholder="$t('t-select-due-date')" 
-            />
+            <ValidatedDatePicker v-model="invoiceData.dueDate" :teleport="true" :enable-time-picker="false"
+              :rules="requiredRules.dueDate" :placeholder="$t('t-select-due-date')" />
           </v-col>
         </v-row>
 
         <v-row class="mt-n6 mb-2">
           <v-col cols="12" lg="6">
             <div class="font-weight-bold">{{ $t('t-invoice-reference') }}</div>
-            <TextField 
-              v-model="invoiceData.invoiceReferenceNumber" 
-              :placeholder="$t('t-enter-invoice-reference')"
-            />
+            <TextField v-model="invoiceData.invoiceReferenceNumber" :placeholder="$t('t-enter-invoice-reference')" />
           </v-col>
-          
+
           <v-col cols="12" lg="6">
             <div class="font-weight-bold">{{ $t('t-authorized-by') }} <i class="ph-asterisk ph-xs text-danger" /></div>
-            <TextField 
-              v-model="invoiceData.authorizedBy" 
-              :placeholder="$t('t-enter-authorized-by')"
-              :rules="requiredRules.authorizedBy" 
-            />
+            <TextField v-model="invoiceData.authorizedBy" :placeholder="$t('t-enter-authorized-by')"
+              :rules="requiredRules.authorizedBy" />
           </v-col>
         </v-row>
-        
+
         <div class="mb-12">
-          <ProductCard v-model="invoiceItemData" />
+          <ProductCard ref="productCardRef" v-model="invoiceItemData" :institution-id="invoiceData.company || ''"
+            :initial-items="initialItems" @items-ready="handleItemsReady" />
         </div>
       </v-card-text>
-      
+
       <v-card-actions class="d-flex justify-space-between mt-5">
         <v-btn color="secondary" variant="outlined" class="me-4" @click="onBack">
           {{ $t('t-back-to-list') }} <i class="ph-arrow-left ms-2" />
         </v-btn>
         <v-btn color="success" variant="elevated" @click="submitInvoice">
-          <i class="ph-printer me-1" /> {{ $t('t-save') }} 
+          <i class="ph-printer me-1" /> {{ $t('t-save') }}
         </v-btn>
       </v-card-actions>
     </v-card>
