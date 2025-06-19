@@ -1,15 +1,15 @@
 <script lang="ts" setup>
 /**
- * TabContacts - Componente para  de pessoas de contato de instituições
- * 
+ * TabHospitalProcedures - Componente para gestão de procedimentos hospitalares de instituições
+ *
  * Funcionalidades:
- * - Listagem de contatos
- * - Criação/Edição de contatos
+ * - Listagem de procedimentos hospitalares
+ * - Criação/Edição de procedimentos hospitalares
  * - Visualização de detalhes
- * - Exclusão de contatos
+ * - Exclusão de procedimentos hospitalares
  */
 
-import { ref, watch, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, watch, computed, onMounted, onBeforeUnmount, PropType } from "vue";
 import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
 import { useI18n } from "vue-i18n";
@@ -20,54 +20,61 @@ import DataTableServer from "@/app/common/components/DataTableServer.vue";
 import Status from "@/app/common/components/Status.vue";
 import ListMenuWithIcon from "@/app/common/components/ListMenuWithIcon.vue";
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
-import CreateEditContactDialog from "@/components/institution/create/CreateEditContactDialog.vue";
-import ViewContactDialog from "@/components/institution/create/ViewContactDialog.vue";
+import CreateEditHospitalProcedureDialog from "@/components/institution/create/CreateEditHospitalProcedureDialog.vue";
+import ViewHospitalProcedureDialog from "@/components/institution/create/ViewHospitalProcedureDialog.vue";
 import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue";
 import TableAction from "@/app/common/components/TableAction.vue";
 // Stores e Services
-import { useContactPersonStore } from "@/store/institution/contactPersonStore";
-import { contactPersonService } from "@/app/http/httpServiceProvider";
-
+import { useHospitalProcedureStore } from "@/store/institution/hospitalProcedureStore";
+import { hospitalProcedureService } from "@/app/http/httpServiceProvider";
+import type { ApiErrorResponse } from "@/app/common/types/errorType";
 // Types
 import type {
-  ContactPersonListingType,
-  ContactPersonInsertType
+  HospitalProcedureInsertType,
+  HospitalProcedureListingType
 } from "@/components/institution/types";
 
 // Utils
-import { contactPersonHeader } from "@/components/institution/create/utils";
-import { contactOptions as Options } from "@/components/institution/create/utils";
+import { hospitalProcedureHeader } from "@/components/institution/create/utils";
+import { limitTypeDefinitionOptions } from "@/components/institution/create/utils";
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
-const contactPersonStore = useContactPersonStore();
+const hospitalProcedureStore = useHospitalProcedureStore();
 
-// Estado do componente
-const institutionId = ref<string | null>(
-  typeof route.params.id === 'string' ? route.params.id :
-    Array.isArray(route.params.id) ? route.params.id[0] : null
-);
+// props
+const props = defineProps({
+  institutionId: {
+    type: String as PropType<string | null>,
+    default: null
+  }
+});
+
+// Modifique a lógica para usar o prop institutionId
+const institutionId = ref(props.institutionId);
+
 
 const dialog = ref(false);
 const viewDialog = ref(false);
 const deleteDialog = ref(false);
 const deleteLoading = ref(false);
-const contactPersonData = ref<ContactPersonInsertType | null>(null);
+const hospitalProcedureData = ref<HospitalProcedureInsertType | HospitalProcedureListingType| null>(null);
+const hospitalProcedureDataView = ref<HospitalProcedureListingType | null>(null);
 const deleteId = ref<string | null>(null);
 const errorMsg = ref("");
 const searchQuery = ref("");
-const searchProps = "fullname,email,phone"; // Propriedades de busca
+const searchProps = "fixedAmount,percentage,limitTypeDefinition,hospitalProcedureType"; // Propriedades de busca
 const itemsPerPage = ref(10);
-const selectedContactPersons = ref<ContactPersonListingType[]>([]);
+const selectedHospitalProcedures = ref<HospitalProcedureListingType[]>([]);
 const customerDetail = ref<any>(null); // Adicionado para resolver o erro
 
 let alertTimeout: ReturnType<typeof setTimeout> | null = null;
 
 // Computed properties
-const loadingList = computed(() => contactPersonStore.loading);
-const totalItems = computed(() => contactPersonStore.pagination.totalElements);
+const loadingList = computed(() => hospitalProcedureStore.loading);
+const totalItems = computed(() => hospitalProcedureStore.pagination.totalElements);
 
 interface FetchParams {
   page: number;
@@ -77,12 +84,12 @@ interface FetchParams {
 }
 
 /**
- * Busca pessoas de contato com paginação e filtros
+ * Busca procedimentos hospitalares com paginação e filtros
  */
-const fetchContactPersons = async ({ page, itemsPerPage, sortBy, search }: FetchParams) => {
+const fetchHospitalProcedures = async ({ page, itemsPerPage, sortBy, search }: FetchParams) => {
   if (!institutionId.value) return;
 
-  await contactPersonStore.fetchContactPersons(
+  await hospitalProcedureStore.fetchHospitalProcedures(
     institutionId.value,
     page - 1, // Ajuste para API que começa em 0
     itemsPerPage,
@@ -94,38 +101,44 @@ const fetchContactPersons = async ({ page, itemsPerPage, sortBy, search }: Fetch
 };
 
 /**
- * Alterna seleção de pessoas de contato
+ * Alterna seleção de procedimentos hospitalares
  */
-const toggleSelection = (item: ContactPersonListingType) => {
-  const index = selectedContactPersons.value.findIndex(selected => selected.id === item.id);
+const toggleSelection = (item: HospitalProcedureListingType) => {
+  const index = selectedHospitalProcedures.value.findIndex(selected => selected.id === item.id);
   if (index === -1) {
-    selectedContactPersons.value = [...selectedContactPersons.value, item];
+    selectedHospitalProcedures.value = [...selectedHospitalProcedures.value, item];
   } else {
-    selectedContactPersons.value = selectedContactPersons.value.filter(selected => selected.id !== item.id);
+    selectedHospitalProcedures.value = selectedHospitalProcedures.value.filter(selected => selected.id !== item.id);
   }
 };
 
 /**
  * Prepara dados para criação/edição
  */
+const getLimitTypeLabel = (value: string) => {
+  const option = limitTypeDefinitionOptions.find(opt => opt.value === value);
+  return option ? option.label : value;
+};
+
 watch(dialog, (newVal: boolean) => {
   if (!newVal) {
-    contactPersonData.value = null;
+    hospitalProcedureData.value = null;
   }
 });
-const onCreateEditClick = (data: ContactPersonInsertType | null) => {
+const onCreateEditClick = (data: HospitalProcedureInsertType | HospitalProcedureListingType | null) => {
   const company = institutionId.value || "";
 
-  contactPersonData.value = data
+  hospitalProcedureData.value = data
     ? {
       ...data,
       company: company // sobrescreve com o institutionId atual
     }
     : {
       id: undefined,
-      fullname: "",
-      phone: "",
-      email: "",
+      fixedAmount: 0,
+      percentage: 0,
+      limitTypeDefinition: "",
+      hospitalProcedureType: "",
       company: company
     };
 
@@ -136,30 +149,46 @@ const onCreateEditClick = (data: ContactPersonInsertType | null) => {
 /**
  * Submete dados do formulário
  */
+interface ServiceResponse<T> {
+  status: 'success' | 'error';
+  data?: T;
+  error?: ApiErrorResponse;
+}
+
 const onSubmit = async (
-  data: ContactPersonInsertType,
+  data: HospitalProcedureInsertType,
   callbacks?: {
     onSuccess?: () => void,
     onFinally?: () => void
   }
 ) => {
   try {
+    let response: ServiceResponse<HospitalProcedureListingType>;
+
     if (!data.id) {
-      await contactPersonService.createContactPerson(data);
-      toast.success(t('t-toast-message-created'));
+      response = await hospitalProcedureService.createHospitalProcedure(data);
     } else {
-      await contactPersonService.updateContactPerson(data.id, data);
-      toast.success(t('t-toast-message-update'));
+      response = await hospitalProcedureService.updateHospitalProcedure(data.id, data);
     }
 
-    await contactPersonStore.fetchContactPersons(
+    // Verifica se a resposta contém erro
+    if (response.status === 'error') {
+      toast.error(response.error?.message || t('t-message-save-error'));
+      return;
+    }
+
+    // Só mostra sucesso se realmente foi bem-sucedido
+    toast.success(data.id ? t('t-toast-message-update') : t('t-toast-message-created'));
+
+    await hospitalProcedureStore.fetchHospitalProcedures(
       institutionId.value,
       0,
       itemsPerPage.value
     );
     callbacks?.onSuccess?.();
-  } catch (error) {
-    console.error("Erro ao gravar pessoa de contacto:", error);
+
+  } catch (error: any) {
+    console.error("Erro ao gravar procedimento hospitalar:", error);
     toast.error(t('t-message-save-error'));
   } finally {
     callbacks?.onFinally?.();
@@ -171,11 +200,11 @@ const onSubmit = async (
  */
 watch(viewDialog, (newVal: boolean) => {
   if (!newVal) {
-    contactPersonData.value = null;
+    hospitalProcedureData.value = null;
   }
 });
-const onViewClick = (data: ContactPersonInsertType) => {
-  contactPersonData.value = { ...data };
+const onViewClick = (data: HospitalProcedureListingType) => {
+  hospitalProcedureDataView.value = { ...data };
   viewDialog.value = true;
 };
 
@@ -195,11 +224,11 @@ const onConfirmDelete = async () => {
 
   deleteLoading.value = true;
   try {
-    await contactPersonService.deleteContactPerson(deleteId.value);
-    selectedContactPersons.value = selectedContactPersons.value.filter(
+    await hospitalProcedureService.deleteHospitalProcedure(deleteId.value);
+    selectedHospitalProcedures.value = selectedHospitalProcedures.value.filter(
       user => user.id !== deleteId.value
     );
-    await contactPersonStore.fetchContactPersons(
+    await hospitalProcedureStore.fetchHospitalProcedures(
       institutionId.value,
       0,
       itemsPerPage.value
@@ -224,11 +253,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <Card :title="$t('t-contact-person-list')" title-class="py-5">
+  <Card :title="$t('t-hospital-procedure-list')" title-class="py-5">
     <template #title-action>
       <div>
         <v-btn color="primary" class="mx-1" @click="onCreateEditClick(null)">
-          <i class="ph-plus-circle me-1" /> {{ $t('t-add-contact-person') }}
+          <i class="ph-plus-circle me-1" /> {{ $t('t-add-hospital-procedure') }}
         </v-btn>
         <v-btn color="secondary" class="mx-1">
           <i class="ph-download-simple me-1" /> {{ $t('t-import') }}
@@ -242,27 +271,28 @@ onBeforeUnmount(() => {
 
   <v-row class="mt-5">
     <v-col cols="12" lg="12">
-      <v-card-text>
+      <!--<v-card-text>
         <v-row>
           <v-col cols="12" lg="12">
-            <QuerySearch v-model="searchQuery" :placeholder="$t('t-search-for-contact')" />
+            <QuerySearch v-model="searchQuery" :placeholder="$t('t-search-for-hospital-procedure')" />
           </v-col>
         </v-row>
-      </v-card-text>
-      <DataTableServer v-model="selectedContactPersons"
-        :headers="contactPersonHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
-        :items="contactPersonStore.contact_persons" :items-per-page="itemsPerPage" :total-items="totalItems"
-        :loading="loadingList" :search-query="searchQuery" :search-props="searchProps" @load-items="fetchContactPersons"
-        item-value="id" show-select>
+      </v-card-text>-->
+      <DataTableServer v-model="selectedHospitalProcedures"
+        :headers="hospitalProcedureHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
+        :items="hospitalProcedureStore.hospital_procedure" :items-per-page="itemsPerPage" :total-items="totalItems"
+        :loading="loadingList" :search-query="searchQuery" :search-props="searchProps"
+        @load-items="fetchHospitalProcedures" item-value="id" show-select>
         <template #body="{ items }">
-          <tr v-for="item in items as ContactPersonListingType[]" :key="item.id" height="50">
+          <tr v-for="item in items as HospitalProcedureListingType[]" :key="item.id" height="50">
             <td>
-              <v-checkbox :model-value="selectedContactPersons.some(selected => selected.id === item.id)"
+              <v-checkbox :model-value="selectedHospitalProcedures.some(selected => selected.id === item.id)"
                 @update:model-value="toggleSelection(item)" hide-details density="compact" />
             </td>
-            <td>{{ item.fullname }}</td>
-            <td>{{ item.email }}</td>
-            <td>{{ item.phone }}</td>
+            <td>{{ item.hospitalProcedureType.name }}</td>
+            <td>{{ getLimitTypeLabel(item.limitTypeDefinition) }}</td>
+            <td>{{ item.fixedAmount }}</td>
+            <td>{{ item.percentage }}%</td>
             <td>
               <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)"
                 @onDelete="onDelete(item.id)" />
@@ -270,9 +300,9 @@ onBeforeUnmount(() => {
           </tr>
         </template>
 
-        <template v-if="contactPersonStore.contact_persons.length === 0" #body>
+        <template v-if="hospitalProcedureStore.hospital_procedure.length === 0" #body>
           <tr>
-            <td :colspan="contactPersonHeader.length" class="text-center py-10">
+            <td :colspan="hospitalProcedureHeader.length" class="text-center py-10">
               <v-avatar size="80" color="primary" variant="tonal">
                 <i class="ph-magnifying-glass" style="font-size: 30px" />
               </v-avatar>
@@ -287,14 +317,14 @@ onBeforeUnmount(() => {
   </v-row>
 
   <!-- Dialogs -->
-  <CreateEditContactDialog v-model="dialog" :data="contactPersonData" @onSubmit="onSubmit" />
-  <ViewContactDialog v-model="viewDialog" :data="contactPersonData" />
+  <CreateEditHospitalProcedureDialog v-model="dialog" :data="hospitalProcedureData" @onSubmit="onSubmit" />
+  <ViewHospitalProcedureDialog v-model="viewDialog" :data="hospitalProcedureDataView" />
   <RemoveItemConfirmationDialog v-model="deleteDialog" :loading="deleteLoading" @onConfirm="onConfirmDelete" />
-
+ 
   <v-card-actions class="d-flex justify-space-between mt-5">
-    <v-btn color="secondary" variant="outlined" class="me-2" @click="$emit('onStepChange', 3)">
-      {{ $t('t-back-to-organizational-struture') }} <i class="ph-arrow-left ms-2" />
+    <v-btn color="secondary" variant="outlined" class="me-2" @click="$emit('onStepChange', 5)">
+      {{ $t('t-back-to-clinics') }} <i class="ph-arrow-left ms-2" />
     </v-btn>
-    
+
   </v-card-actions>
 </template>

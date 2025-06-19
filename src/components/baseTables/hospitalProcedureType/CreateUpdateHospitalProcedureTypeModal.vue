@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { PropType, computed, ref } from "vue";
+import { PropType, computed, ref, watch } from "vue";
 import { HospitalProcedureTypeInsert } from "@/components/baseTables/hospitalProcedureType/types";
 import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
 import { statusOptions } from "@/components/realEstate/agent/utils";
@@ -26,7 +26,6 @@ const prop = defineProps({
 
 const isCreate = computed(() => prop.data.id === "-1");
 const formData = ref(prop.data);
-const errorMessage = computed(() => prop.error);
 
 const dialogValue = computed({
   get() {
@@ -41,11 +40,18 @@ const id = ref(formData.value.id || "");
 const name = ref(formData.value.name || "");
 const description = ref(formData.value.description || "");
 
-const formErrors = ref<Record<string, string>>({
-  name: '',
-  description: '',
-});
+// Novo errorMsg local
+const errorMsg = ref("");
 
+// Sincronizar com prop.error da API
+watch(() => prop.error, (newError) => {
+  if (newError) {
+    errorMsg.value = newError;
+    setTimeout(() => {
+      errorMsg.value = "";
+    }, 5000);
+  }
+});
 
 const { t } = useI18n();
 
@@ -53,18 +59,19 @@ const { t } = useI18n();
 const validateForm = () => {
   let isValid = true;
 
-  // Limpa os erros antigos
-  Object.keys(formErrors.value).forEach(key => {
-    formErrors.value[key] = '';
-  });
+  errorMsg.value = ""; // limpa erro global
 
   if (!name.value) {
-    formErrors.value.name = t('t-please-enter-name-hospital-procedure-type');
+    errorMsg.value = t('t-please-enter-name-hospital-procedure-type');
     isValid = false;
+    setTimeout(() => {
+      errorMsg.value = "";
+    }, 5000);
+    return false;
   }
+
   return isValid;
 };
-
 
 const onSubmit = () => {
   if (!validateForm()) {
@@ -88,8 +95,8 @@ const onSubmit = () => {
     }
   });
 };
-
 </script>
+
 <template>
   <v-dialog v-model="dialogValue" width="500" scrollable>
     <Card :title="isCreate ? $t('t-add-hospital-procedure-type') : $t('t-edit-hospital-procedure-type')"
@@ -99,37 +106,28 @@ const onSubmit = () => {
       </template>
       <v-divider />
 
-      <!-- <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mx-5 mt-3" density="compact" /> -->
-      <v-card-text class="overflow-y-auto" :style="{
-        'max-height': isCreate ? '70vh' : '45vh'
-      }">
-        <v-alert v-if="errorMessage" :text="errorMessage" type="error" class="mb-4" variant="tonal" color="danger"
-          density="compact" />
+      <!-- ALERT igual aos outros modais -->
+      <v-alert v-if="errorMsg" :text="errorMsg" type="error" variant="tonal" color="danger" class="mx-5 mt-3" density="compact" />
 
+      <v-card-text class="overflow-y-auto" :style="{ 'max-height': isCreate ? '70vh' : '45vh' }">
         <v-row>
           <v-col cols="12" lg="12">
             <div class="font-weight-bold text-caption mb-1">
               {{ $t('t-name') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="name" :placeholder="$t('t-enter-name')"
-              :error-messages="formErrors.name ? [formErrors.name] : []" hide-details />
-            <div v-if="formErrors.name" class="text-red text-extra-small pt-1">
-              {{ formErrors.name }}
-            </div>
+            <TextField v-model="name" :placeholder="$t('t-enter-name')" hide-details />
           </v-col>
           <v-col cols="12" lg="12">
             <div class="font-weight-bold text-caption mb-1">
               {{ $t('t-description') }}
             </div>
-            <TextArea v-model="description" :placeholder="$t('t-enter-description')"
-              :error-messages="formErrors.description ? [formErrors.description] : []" hide-details />
-            <div v-if="formErrors.description" class="text-red text-extra-small pt-1">
-              {{ formErrors.description }}
-            </div>
+            <TextArea v-model="description" :placeholder="$t('t-enter-description')" hide-details />
           </v-col>
         </v-row>
       </v-card-text>
+
       <v-divider />
+
       <v-card-actions class="d-flex justify-end">
         <div>
           <v-btn color="danger" class="me-1" @click="dialogValue = false">

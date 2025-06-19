@@ -8,6 +8,7 @@ import PositionService from "@/app/http/services/institution/positionService";
 import ClinicInstitutionService from "@/app/http/services/institution/clinicService";
 import ClinicService from "@/app/http/services/clinicService";
 import ContactPersonService from "@/app/http/services/institution/contactPersonService";
+import HospitalProcedureService from "@/app/http/services/institution/hospitalProcedureService";
 
 
 //BASETABLES
@@ -17,6 +18,7 @@ import HospitalProcedureTypeService from "@/app/http/services/baseTables/hospita
 import InstitutionTypeService from "@/app/http/services/baseTables/institutionTypes/institutionTypeService";
 import LeaveReasonService from "@/app/http/services/baseTables/leaveReason/leaveReasonService";
 import LanguageService from "@/app/http/services/baseTables/languages/languageService";
+import TaxRateTypeTypeService from "./services/baseTables/taxRate/taxRateService";
 
 // FakeBackendService is used for mocking API responses
 import FakeBackendService from "@/app/http/services/fakeBackendService";
@@ -29,6 +31,7 @@ const departmentService = new DepartmentService();
 const positionService = new PositionService();
 const clinicService = new ClinicService();
 const contactPersonService = new ContactPersonService();
+const hospitalProcedureService = new HospitalProcedureService();
 const clinicInstitutionService = new ClinicInstitutionService();
 
 //BASETABLES
@@ -38,6 +41,7 @@ const hospitalProcedureTypeService = new HospitalProcedureTypeService();
 const institutionTypeService = new InstitutionTypeService();
 const leaveReasonService = new LeaveReasonService();
 const languageService = new LanguageService();
+const taxRateTypeService = new TaxRateTypeTypeService();
 
 // FakeBackendService is used for mocking API responses
 const fakeBackendService = new FakeBackendService();
@@ -58,5 +62,7 @@ export {
     positionService, 
     clinicService,
     contactPersonService,
-    clinicInstitutionService
+    clinicInstitutionService,
+    hospitalProcedureService,
+    taxRateTypeService
 };

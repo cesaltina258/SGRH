@@ -9,7 +9,7 @@
  * - Exclusão de clínicas
  */
 
-import { ref, watch, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, watch, computed, onMounted, onBeforeUnmount, PropType } from "vue";
 import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
 import { useI18n } from "vue-i18n";
@@ -46,13 +46,19 @@ const toast = useToast();
 const clinicInstitutionStore = useClinicInstitutionStore();
 
 
-// Estado do componente
-const institutionId = ref<string | null>(
-  typeof route.params.id === 'string' ? route.params.id :
-    Array.isArray(route.params.id) ? route.params.id[0] : null
-);
+// props
+const props = defineProps({
+  institutionId: {
+    type: String as PropType<string | null>,
+    default: null
+  }
+});
 
-console.log("Institution ID------------------------:", institutionId.value);
+// Modifique a lógica para usar o prop institutionId
+const institutionId = ref(props.institutionId);
+
+
+//console.log("Institution ID------------------------:", institutionId.value);
 
 const dialog = ref(false);
 const viewDialog = ref(false);
@@ -85,7 +91,7 @@ interface FetchParams {
  */
 const fetchInstitutionClinics = async ({ page, itemsPerPage, sortBy, search }: FetchParams) => {
   if (!institutionId.value) return;
-  console.log("Fetching clinics for institution:", institutionId.value, "Page:", page, "Items per page:", itemsPerPage, "Sort by:", sortBy, "Search props:", searchProps);
+  //console.log("Fetching clinics for institution:", institutionId.value, "Page:", page, "Items per page:", itemsPerPage, "Sort by:", sortBy, "Search props:", searchProps);
 
   await clinicInstitutionStore.fetchInstitutionClinics(
     institutionId.value,

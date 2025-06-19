@@ -111,14 +111,14 @@ export const menuItems: MenuItemType[] = [
   },*/
   {
     label: "institutions",
-    icon: "ph-file-text",
-    id: "sidebarInstitution",
+    icon: "ph ph-buildings",
+    id: "sidebarInstitution", 
     prefix: "/institution",
     link: "/institution/list"
   },
   {
     label: "employees",
-    icon: "ph-file-text",
+    icon: "ph ph-users-three",
     id: "sidebarEmployees",
     prefix: "/employee",
     link: "/employee/list"
@@ -140,14 +140,14 @@ export const menuItems: MenuItemType[] = [
   },
   {
     label: "clinics",
-    icon: "ph-file-text",
+    icon: "ph ph-first-aid",
     id: "sidebarClinics",
     prefix: "/clinics",
     link: "/clinics/list"
   },
   {
     label: "billing",
-    icon: "ph-file-text",
+    icon: "ph ph-files",
     id: "sidebarBilling",
     prefix: "/invoices",
     link: "/invoices/list"
@@ -199,7 +199,7 @@ export const menuItems: MenuItemType[] = [
   },
   {
     label: "base-tables",
-    icon: "ph-user-circle",
+    icon: "ph ph-database",
     id: "sidebarAuth",
     subMenu: [
       { label: "countries", link: "/baseTable/country/list" },
@@ -208,6 +208,7 @@ export const menuItems: MenuItemType[] = [
       { label: "institution-types", link: "/baseTable/institutiontype/list" },
       { label: "leave-reason", link: "/baseTable/leavereason/list" },
       { label: "languages", link: "/baseTable/languages/list" },
+      { label: "tax-rates", link: "/baseTable/tax-rates/list" },
     ],
   },
   /*{

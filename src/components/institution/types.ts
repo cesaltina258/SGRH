@@ -211,3 +211,30 @@ export type ClinicInsertType = {
     clinic: string; 
     company: string; 
 };
+
+export type HospitalProcedureListingType = {
+    id: string;
+    fixedAmount: number | null;
+    percentage: number | null;
+    limitTypeDefinition: string;
+    hospitalProcedureType: {
+        id: string;
+        name: string;
+    };
+    company: string ;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    deletedAt: Date | null;
+    createdBy: string;
+    updatedBy: string;
+    deletedBy: string;
+};
+
+export type HospitalProcedureInsertType = {
+    id?: string | null; 
+    fixedAmount: number | null;
+    percentage: number | null;
+    limitTypeDefinition: string;
+    hospitalProcedureType: string;
+    company: string; 
+};

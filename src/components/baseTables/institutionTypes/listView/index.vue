@@ -55,12 +55,11 @@ const handleApiError = (error: any) => {
   }
 
   const message =
-    error?.response?.data?.error?.errors?.name?.[0] || // tenta capturar erro por campo
-    error?.response?.data?.message ||                  // erro direto da API
+    error?.error?.errors?.name?.[0] || // tenta capturar erro por campo
+    error?.error?.errors?.description?.[0]
     error?.message ||                                  // erro genérico
     t("t-message-save-error");                         // fallback traduzido
 
-  console.error("Erro:", message);
   errorMsg.value = message;
 
   alertTimeout = setTimeout(() => {
@@ -271,7 +270,7 @@ const onConfirmDelete = async () => {
   </v-card>
 
   <CreateUpdateInstitutionTypeModal v-if="institutionTypeData" v-model="dialog" :data="institutionTypeData"
-    :error="errorMsg" @onSubmit="onSubmit" />
+    :error="errorMsg" @onSubmit="onSubmit"/>
 
   <ViewInstitutionTypeModal v-if="institutionTypeData" v-model="viewDialog" :data="institutionTypeData" />
 

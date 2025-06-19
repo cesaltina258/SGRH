@@ -67,16 +67,9 @@ export default class LanguagesService extends HttpService {
         data: response.data
       };
     } catch (error: any) {
-      if (error.response) {
-        return {
-          status: 'error',
-          error: error.response.data as ApiErrorResponse
-        };
-      }
-      return {
-        status: 'error',
-        error: this.createNetworkErrorResponseLanguages()
-      };
+      console.error("❌ Erro ao criar language:", error);
+      throw this.handleError(error);
+      
     }
   }
 

@@ -56,6 +56,42 @@ export default class HospitalProcedureTypeService extends HttpService {
     }
   }
 
+  async getHospitalProcedureTypesForList(
+    page: number = 0,
+    size: number = 10000000,
+    sortColumn: string = 'name',
+    direction: string = 'asc',
+    query_value?: string,
+    query_props?: string
+  ): Promise<{ content: HospitalProcedureTypeListing[], meta: any }> {
+    try {
+      const queryParams = [
+        `page=${page}`,
+        `size=${size}`,
+        `sortColumn=${sortColumn}`,
+        `direction=${direction}`
+      ];
+
+      if (query_value && query_props) {
+        queryParams.push(`query_props=${encodeURIComponent(query_props)}`);
+        queryParams.push(`query_value=${encodeURIComponent(query_value)}`);
+      }
+
+      const queryString = queryParams.join('&');
+      const url = `/administration/setup/hospital-procedure-types?${queryString}`;
+
+      const response = await this.get<ApiResponse<HospitalProcedureTypeListing[]>>(url);
+      return {
+        content: response.data || [],
+        meta: response.meta || {}
+      };
+
+    } catch (error) {
+      console.error("❌ Erro ao buscar hospital-procedure-types:", error);
+      throw this.handleError(error);
+    }
+  }
+
   async createHospitalProcedureType(data: HospitalProcedureTypeInsert): Promise<ServiceResponse<HospitalProcedureTypeResponse>> {
     try {
       const response = await this.post<ApiResponse<HospitalProcedureTypeResponse>>(
@@ -67,16 +103,8 @@ export default class HospitalProcedureTypeService extends HttpService {
         data: response.data
       };
     } catch (error: any) {
-      if (error.response) {
-        return {
-          status: 'error',
-          error: error.response.data as ApiErrorResponse
-        };
-      }
-      return {
-        status: 'error',
-        error: this.createNetworkErrorResponseHospitalProcedureType()
-      };
+      console.error("❌ Erro ao criar hospital-procedure-types:", error);
+      throw error;
     }
   }
 

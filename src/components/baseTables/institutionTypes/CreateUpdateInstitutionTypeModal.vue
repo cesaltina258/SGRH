@@ -41,27 +41,50 @@ const name = ref(formData.value.name || "");
 const description = ref(formData.value.description || "");
 const errorMessage = computed(() => prop.error);
 
+
+const validationAlertMessage = ref('');
+
+let validationAlertTimeout: ReturnType<typeof setTimeout> | null = null;
+
 const formErrors = ref<Record<string, string>>({
   name: '',
   description: '',
 });
 
-
 const { t } = useI18n();
 
-// Função de validação geral
+
 const validateForm = () => {
   let isValid = true;
+  const messages: string[] = [];
 
-  // Limpa os erros antigos
+
   Object.keys(formErrors.value).forEach(key => {
     formErrors.value[key] = '';
   });
 
-  if (!name.value) {
+  if (validationAlertTimeout) {
+    clearTimeout(validationAlertTimeout);
+    validationAlertTimeout = null;
+  }
+  validationAlertMessage.value = '';
+
+
+  if (!name.value.trim()) {
     formErrors.value.name = t('t-please-enter-name-institution-type');
+    messages.push(t('t-please-enter-name-institution-type'));
     isValid = false;
   }
+
+  if (messages.length > 0) {
+    validationAlertMessage.value = messages.join('<br/>');
+
+    validationAlertTimeout = setTimeout(() => {
+      validationAlertMessage.value = '';
+      validationAlertTimeout = null;
+    }, 5000);
+  }
+
   return isValid;
 };
 
@@ -81,15 +104,21 @@ const onSubmit = () => {
 
   emit('onSubmit', data, {
     onSuccess: () => {
-      dialogValue.value = false; // Fecha modal
+      dialogValue.value = false;
+      if (validationAlertTimeout) {
+        clearTimeout(validationAlertTimeout);
+        validationAlertTimeout = null;
+      }
+      validationAlertMessage.value = '';
     },
     onFinally: () => {
-      localLoading.value = false; // Desativa loading
+      localLoading.value = false;
     }
   });
 };
 
 </script>
+
 <template>
   <v-dialog v-model="dialogValue" width="500" scrollable>
     <Card :title="isCreate ? $t('t-add-institution-type') : $t('t-edit-institution-type')" title-class="py-0"
@@ -99,33 +128,27 @@ const onSubmit = () => {
       </template>
       <v-divider />
 
-      <!-- <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mx-5 mt-3" density="compact" /> -->
       <v-card-text class="overflow-y-auto" :style="{
         'max-height': isCreate ? '70vh' : '45vh'
       }">
         <v-alert v-if="errorMessage" :text="errorMessage" type="error" class="mb-4" variant="tonal" color="danger"
           density="compact" />
 
+        <v-alert v-if="validationAlertMessage" :text="validationAlertMessage" type="error" class="mb-4" variant="tonal"
+          color="danger" density="compact" />
+
         <v-row>
           <v-col cols="12" lg="12">
             <div class="font-weight-bold text-caption mb-1">
               {{ $t('t-name') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="name" :placeholder="$t('t-enter-name')"
-              :error-messages="formErrors.name ? [formErrors.name] : []" hide-details />
-            <div v-if="formErrors.name" class="text-red text-extra-small pt-1">
-              {{ formErrors.name }}
-            </div>
+            <TextField v-model="name" :placeholder="$t('t-enter-name')" hide-details />
           </v-col>
           <v-col cols="12" lg="12">
             <div class="font-weight-bold text-caption mb-1">
               {{ $t('t-description') }}
             </div>
-            <TextArea v-model="description" :placeholder="$t('t-enter-description')"
-              :error-messages="formErrors.description ? [formErrors.description] : []" hide-details />
-            <div v-if="formErrors.description" class="text-red text-extra-small pt-1">
-              {{ formErrors.description }}
-            </div>
+            <TextArea v-model="description" :placeholder="$t('t-enter-description')" hide-details />
           </v-col>
         </v-row>
       </v-card-text>
@@ -143,9 +166,3 @@ const onSubmit = () => {
     </Card>
   </v-dialog>
 </template>
-
-<style>
-.text-extra-small {
-  font-size: 0.70rem;
-}
-</style>

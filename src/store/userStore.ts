@@ -98,6 +98,7 @@ export const useProfileStore = defineStore('profile', {
       try {
         const response = await authService.getUserProfile();
         this.profile = response.data;
+        console.log("this.profile ===> ", this.profile)
         console.log('response profile', response);
       } catch (err: any) {
         this.error = err.message || 'Erro ao buscar profile';
