@@ -16,9 +16,10 @@ import { useI18n } from 'vue-i18n';
 import ButtonNav from "@/components/employee/create/ButtonNav.vue";
 import Step1 from "@/components/employee/create/TabGeneralInfo.vue";
 import Step2 from "@/components/employee/create/TabInstitution&Classification.vue";
+import Step3 from "@/components/employee/create/TabDependents.vue";
 
 // Stores
-import { useEmployeeStore } from '@/store/employeeStore';
+import { useEmployeeStore } from '@/store/employee/employeeStore';
 import { useProvinceStore } from '@/store/baseTables/countryStore';
 import { useInstitutionStore } from '@/store/institution/institutionStore';
 import { useDepartmentStore } from '@/store/institution/departmentStore';
@@ -27,7 +28,6 @@ import { usePositionStore } from '@/store/institution/positionStore';
 // Services & Types
 import { employeeService } from "@/app/http/httpServiceProvider";
 import { EmployeeInsertType } from "../types";
-import { nullLiteralTypeAnnotation } from "@babel/types";
 
 // Inicialização de stores
 const provinceStore = useProvinceStore();
@@ -221,6 +221,7 @@ const saveEmployee = async (payload: EmployeeInsertType, isFinalStep: boolean = 
   try {
     loading.value = true;
     errorMsg.value = "";
+    console.log('EmployeeInsertType:', payload);
 
     // Usa os dados recebidos do payload
     Object.assign(employeeData, payload);
@@ -298,6 +299,7 @@ onBeforeUnmount(() => {
       <Step2 v-if="step === 2" @onStepChange="onStepChange" v-model="employeeData"
         @save="(payload) => saveEmployee(payload, true)" :loading="loading" />
 
+      <Step3 v-if="step === 3" @onStepChange="onStepChange" :loading="loading" :employee-id="employeeId" />
 
     </v-card-text>
   </Card>

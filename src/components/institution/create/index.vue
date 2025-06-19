@@ -46,7 +46,7 @@ const toast = useToast();
 // Refs
 const step = ref(1); // Controla a aba atual (1 ou 2) 
 const institutionId = ref<string | null>(
-  typeof route.params.id === 'string' ? route.params.id : Array.isArray(route.params.id) ? route.params.id[0] : null
+  typeof route.params.id === 'string' ? route.params.id : Array.isArray(route.params.id) ? route.params.id[0] : null 
 );
 const isCreated = ref(!institutionId.value); 
 const loading = ref(false); // Estado de loading global

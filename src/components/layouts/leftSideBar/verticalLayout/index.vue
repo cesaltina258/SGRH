@@ -62,21 +62,21 @@ watch(sideBarSize, () => {
     <div class="app-menu navbar-menu h-100">
       <div class="navbar-brand-box">
         <router-link to="/" class="logo logo-dark">
-  <span class="logo-sm">
-    <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
-  </span>
-  <span class="logo-lg">
-    <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
-  </span>
-</router-link>
-<router-link to="/" class="logo logo-light">
-  <span class="logo-sm">
-    <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
-  </span>
-  <span class="logo-lg">
-    <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
-  </span>
-</router-link>
+          <span class="logo-sm">
+            <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
+          </span>
+          <span class="logo-lg">
+            <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
+          </span>
+        </router-link>
+        <router-link to="/" class="logo logo-light">
+          <span class="logo-sm">
+            <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
+          </span>
+          <span class="logo-lg">
+            <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
+          </span>
+        </router-link>
         <v-btn text="" class="header-item btn-vertical-sm-hover">
           <i class="ri-record-circle-line"></i>
         </v-btn>
@@ -95,21 +95,21 @@ watch(sideBarSize, () => {
     <div class="app-menu navbar-menu">
       <div class="navbar-brand-box">
         <router-link to="/" class="logo logo-dark">
-  <span class="logo-sm">
-    <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
-  </span>
-  <span class="logo-lg">
-    <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
-  </span>
-</router-link>
-<router-link to="/" class="logo logo-light">
-  <span class="logo-sm">
-    <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
-  </span>
-  <span class="logo-lg">
-    <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
-  </span>
-</router-link>
+          <span class="logo-sm">
+            <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
+          </span>
+          <span class="logo-lg">
+            <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
+          </span>
+        </router-link>
+        <router-link to="/" class="logo logo-light">
+          <span class="logo-sm">
+            <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
+          </span>
+          <span class="logo-lg">
+            <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
+          </span>
+        </router-link>
         <v-btn text="" class="header-item btn-vertical-sm-hover">
           <i class="ri-record-circle-line"></i>
         </v-btn>

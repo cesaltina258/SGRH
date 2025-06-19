@@ -1,25 +1,25 @@
-// stores/clinicStore.ts
 import { defineStore } from 'pinia';
-import { clinicInstitutionService } from "@/app/http/httpServiceProvider";
-import type { ClinicListingType } from '@/components/institution/types';
+import { invoiceService } from "@/app/http/httpServiceProvider";
+import type { InvoiceListingType, InvoiceInsertType } from '@/components/invoice/types';
 
-export const useClinicInstitutionStore = defineStore('clinics_institution', { 
+export const useInvoiceStore = defineStore('invoices', {
   state: () => ({
-    clinics: [] as ClinicListingType[],
-    clinicsForDropdown: [] as ClinicListingType[],
-    pagination: { 
+    invoices: [] as InvoiceListingType[],
+    invoices_list: [] as InvoiceListingType[],
+    pagination: {
       totalElements: 0,
       currentPage: 0,
-      itemsPerPage: 10000000, 
+      itemsPerPage: 10000000,
       totalPages: 0
     },
     loading: false,
-    error: null as string | null
+    error: null as string | null,
+    draftInvoice: null as InvoiceInsertType | null,
+    currentInvoiceId: null as string | null
   }),
 
   actions: {
-    async fetchInstitutionClinics(
-      id: string | null,
+    async fetchInvoices(
       page?: number,
       size?: number,
       sortColumn: string = 'createdAt',
@@ -29,23 +29,12 @@ export const useClinicInstitutionStore = defineStore('clinics_institution', {
     ) {
       this.loading = true;
       this.error = null;
-    
+
       const actualPage = page ?? this.pagination.currentPage;
       const actualSize = size ?? this.pagination.itemsPerPage;
-      
-      console.log('🔍 Parâmetros da requisição de clínicas por instituição:', {
-        id,
-        page: actualPage,
-        size: actualSize,
-        sortColumn,
-        direction,
-        query_value,
-        query_props
-      });
-    
+
       try {
-        const { content, meta } = await clinicInstitutionService.getClinicByInstitution( 
-          id,
+        const { content, meta } = await invoiceService.getInvoices(
           actualPage,
           actualSize,
           sortColumn,
@@ -53,27 +42,26 @@ export const useClinicInstitutionStore = defineStore('clinics_institution', {
           query_value,
           query_props
         );
-    
-        this.clinics = content;
+
+        this.invoices = content;
         this.pagination = {
           totalElements: meta.totalElements,
           currentPage: meta.page,
           itemsPerPage: meta.size,
           totalPages: meta.totalPages || Math.ceil(meta.totalElements / meta.size)
         };
-        console.log('Clinicas:', this.clinics);
+        console.log('Facturas:', this.invoices);
         console.log('Meta:', this.pagination);
       } catch (err: any) {
-        this.error = err.message || 'Erro ao buscar clinicas';
-        console.error("❌ Erro ao buscar clinicas:", err);
-        this.clinics = [];
+        this.error = err.message || 'Erro ao buscar facturas';
+        console.error("❌ Erro ao buscar facturas:", err);
+        this.invoices = [];
         this.pagination.totalElements = 0;
       } finally {
         this.loading = false;
       }
     },
-    async fetchInstitutionClinicsForDropdown(
-      id: string | null,
+    async fetchInvoicesForListing(
       page?: number,
       size?: number,
       sortColumn: string = 'createdAt',
@@ -83,23 +71,12 @@ export const useClinicInstitutionStore = defineStore('clinics_institution', {
     ) {
       this.loading = true;
       this.error = null;
-    
+
       const actualPage = page ?? this.pagination.currentPage;
       const actualSize = size ?? this.pagination.itemsPerPage;
-      
-      console.log('🔍 Parâmetros da requisição de clínicas por instituição:', {
-        id,
-        page: actualPage,
-        size: actualSize,
-        sortColumn,
-        direction,
-        query_value,
-        query_props
-      });
-    
+
       try {
-        const { content, meta } = await clinicInstitutionService.getClinicByInstitutionForDropdown( 
-          id,
+        const { content, meta } = await invoiceService.getInvoicesForDropdown(
           actualPage,
           actualSize,
           sortColumn,
@@ -107,28 +84,44 @@ export const useClinicInstitutionStore = defineStore('clinics_institution', {
           query_value,
           query_props
         );
-    
-        this.clinicsForDropdown = content;
+
+        this.invoices_list = content;
         this.pagination = {
           totalElements: meta.totalElements,
           currentPage: meta.page,
           itemsPerPage: meta.size,
           totalPages: meta.totalPages || Math.ceil(meta.totalElements / meta.size)
         };
-        console.log('Clinicas:', this.clinicsForDropdown);
+        console.log('Facturas:', this.invoices_list);
         console.log('Meta:', this.pagination);
       } catch (err: any) {
-        this.error = err.message || 'Erro ao buscar clinicas';
-        console.error("❌ Erro ao buscar clinicas:", err);
-        this.clinicsForDropdown = [];
+        this.error = err.message || 'Erro ao buscar facturas';
+        console.error("❌ Erro ao buscar facturas:", err);
+        this.invoices_list = [];
         this.pagination.totalElements = 0;
       } finally {
         this.loading = false;
       }
     },
-     clearClinics() {
-      this.clinicsForDropdown = [];
+    setDraftInvoice(data: InvoiceInsertType) {
+      this.draftInvoice = data;
+      localStorage.setItem('invoiceDraft', JSON.stringify(data));
+    },
+    setCurrentInvoiceId(id: string) {
+      this.currentInvoiceId = id;
+      localStorage.setItem('currentInvoiceId', id);
+    },
+    clearDraft() {
+      this.draftInvoice = null;
+      this.currentInvoiceId = null;
+      localStorage.removeItem('invoiceDraft');
+      localStorage.removeItem('currentInvoiceId');
+    },
+    loadFromStorage() {
+      const draft = localStorage.getItem('invoiceDraft');
+      const id = localStorage.getItem('currentInvoiceId');
+      if (draft) this.draftInvoice = JSON.parse(draft);
+      if (id) this.currentInvoiceId = id;
     }
-    
   }
 });

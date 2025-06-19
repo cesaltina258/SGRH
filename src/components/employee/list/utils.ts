@@ -22,4 +22,13 @@ export const employeeHeader: DataTableHeaderType[] = [
   { title: "action", sortable: false },
 ];
 
+export const dependentHeader: DataTableHeaderType[] = [
+  { title: "dependent-name", key: "firstName", sortable: true},
+  { title: "gender", key: "gender" , sortable: true },
+  { title: "relationship", key: "relationship" , sortable: true },
+  { title: "id-card-number", key: "idCardNumber" , sortable: true },
+  { title: "action",  sortable: false,  align: "right"}
+];
+
+
 

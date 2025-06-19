@@ -1,235 +1,369 @@
 <script lang="ts" setup>
 import InvoiceSVG from "@/assets/images/invoice.vue";
 import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
-import { statusOptions } from "@/components/invoice/createInvoice/utils";
 import ProductCard from "@/components/invoice/createInvoice/ProductCard.vue";
-import { ref } from "vue";
+import { ref, computed, onMounted, watch, reactive } from "vue";
+import { InvoiceInsertType, InvoiceItemInsertType } from "@/components/invoice/types";
+import { useClinicStore } from "@/store/clinicStore";
+import { useInstitutionStore } from "@/store/institution/institutionStore";
+import { useEmployeeStore } from "@/store/employee/employeeStore";
+import { useCurrencyStore } from "@/store/baseTables/currencyStore";
+import { useDependentEmployeeStore } from "@/store/employee/dependentStore";
+import ValidatedDatePicker from "@/app/common/components/ValidatedDatePicker.vue";
+import { useI18n } from "vue-i18n";
+import { useToast } from 'vue-toastification';
+import { useRouter } from "vue-router";
 
-const regNo = ref("");
-const email = ref("");
-const website = ref("");
-const contact = ref("");
-const createDate = ref("");
-const date = ref("");
-const paymentStatus = ref("");
-const amount = ref("");
-const buildingName = ref("");
-const buildingAddress = ref("");
-const buildingPhone = ref("");
-const buildingTax = ref("");
-const shippingName = ref("");
-const shippingAddress = ref("");
-const shippingPhone = ref("");
-const shippingTax = ref("");
-const isSame = ref("");
-const cardHolderName = ref("");
-const cardNumber = ref("");
-const cardAmount = ref("");
+// Composables
+const { t } = useI18n();
+const toast = useToast();
+const router = useRouter();
+
+// Props
+const props = defineProps({
+  modelValue: {
+    type: Object as () => InvoiceInsertType,
+    required: true
+  },
+  loading: {
+    type: Boolean,
+    default: false
+  },
+  isEditMode: {
+    type: Boolean,
+    default: false
+  }
+});
+
+// Emits
+const emit = defineEmits<{
+  (e: 'save', invoiceData: InvoiceInsertType): void;
+  (e: 'update:modelValue', value: InvoiceInsertType): void;
+}>();
+
+// Stores
+const clinicStore = useClinicStore();
+const institutionStore = useInstitutionStore();
+const employeeStore = useEmployeeStore();
+const currencyStore = useCurrencyStore();
+const dependentStore = useDependentEmployeeStore();
+
+// Refs
+const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
+const errorMsg = ref("");
+let alertTimeout: ReturnType<typeof setTimeout> | null = null;
+
+// Computed
+const invoiceData = computed({
+  get() {
+    return props.modelValue;
+  },
+  set(value) {
+    emit('update:modelValue', value);
+  }
+});
+
+const invoiceItemData = reactive<InvoiceItemInsertType>({
+  unitPrice: 0,
+  quantity: 0,
+  taxRate: 0,
+  description: '',
+  companyAllowedHospitalProcedure: '',
+  invoice: ''
+});
+
+const institutions = computed(() => {
+  return institutionStore.institutions.map((item) => ({
+    value: item.id,
+    label: item.name,
+  }));
+});
+
+const clinics = computed(() => {
+  return clinicStore.clinics_list.map((clinic) => ({
+    value: clinic.id,
+    label: clinic.name
+  }));
+});
+
+const employees = computed(() => {
+  return employeeStore.employeesForDropdown.map((item) => ({
+    value: item.id,
+    label: `${item.firstName} ${item.lastName}`,
+  }));
+});
+
+const currencies = computed(() => {
+  return currencyStore.currenciesForDropdown.map((item) => ({
+    value: item.id,
+    label: item.name,
+  }));
+});
+
+const dependents = computed(() => {
+  return dependentStore.dependentsForDropdown.map((item) => ({
+    value: item.id,
+    label: `${item.firstName} ${item.lastName}`,
+  }));
+});
+
+// Validation rules
+const requiredRules = {
+  institution: [(v: string) => !!v || t('t-institution-required')],
+  clinic: [(v: string) => !!v || t('t-clinic-required')],
+  employee: [(v: string) => !!v || t('t-employee-required')],
+  issueDate: [(v: Date) => !!v || t('t-issue-date-required')],
+  dueDate: [(v: Date) => !!v || t('t-due-date-required')],
+  currency: [(v: string) => !!v || t('t-currency-required')],
+  invoiceNumber: [(v: string) => !!v || t('t-invoice-number-required')],
+  dependent: [(v: string) => invoiceData.value.isEmployeeInvoice ? true : !!v || t('t-dependent-required')],
+  authorizedBy: [(v: string) => !!v || t('t-authorized-by-required')]
+};
+
+// Watchers
+watch(() => invoiceData.value.company, async (newInstitutionId) => {
+  if (newInstitutionId) {
+    try {
+      await employeeStore.fetchEmployeesForDropdown(newInstitutionId);
+      
+      if (invoiceData.value.employee) {
+        const currentEmployee = employeeStore.employeesForDropdown.find(
+          c => c.id === invoiceData.value.employee
+        );
+        if (!currentEmployee) {
+          invoiceData.value.employee = undefined;
+        }
+      }
+    } catch (error) {
+      handleLoadError("employees", error);
+    }
+  } else {
+    employeeStore.clearEmployeesForDropdown();
+    invoiceData.value.employee = undefined;
+  }
+});
+
+watch(() => invoiceData.value.employee, async (newEmployeeId) => {
+  if (newEmployeeId) {
+    try {
+      await dependentStore.fetchDependentsEmployeeForDropdown(newEmployeeId);
+      
+      if (invoiceData.value.dependent) {
+        const currentDependent = dependentStore.dependentsForDropdown.find(
+          c => c.id === invoiceData.value.dependent
+        );
+        if (!currentDependent) {
+          invoiceData.value.dependent = undefined;
+        }
+      }
+    } catch (error) {
+      handleLoadError("dependents", error);
+    }
+  } else {
+    dependentStore.clearDependentForDropdown();
+    invoiceData.value.dependent = undefined;
+  }
+});
+
+// Methods
+const handleLoadError = (resource: string, error: any) => {
+  console.error(`Failed to load ${resource}:`, error);
+  errorMsg.value = t(`t-failed-to-load-${resource}`);
+  
+  if (alertTimeout) clearTimeout(alertTimeout);
+  alertTimeout = setTimeout(() => {
+    errorMsg.value = "";
+    alertTimeout = null;
+  }, 5000);
+};
+
+const submitInvoice = async () => {
+  if (!form.value) return;
+
+  const { valid } = await form.value.validate();
+  
+  if (!valid) {
+    toast.error(t('t-validation-error'));
+    errorMsg.value = t('t-please-correct-errors');
+    return;
+  }
+
+  try {
+    if (invoiceData.value.isEmployeeInvoice) {
+      invoiceData.value.dependent = undefined;
+    } else if (!invoiceData.value.dependent) {
+      toast.error(t('t-dependent-required'));
+      return;
+    }
+
+    emit('save', { ...invoiceData.value });
+  } catch (error) {
+    console.error("Erro ao submeter fatura:", error);
+    toast.error(t('t-message-save-error'));
+  }
+};
+
+const onBack = () => {
+  institutionStore.clearDraft();
+  router.push('/invoices/list');
+};
+
+// Lifecycle hooks
+onMounted(async () => {
+  try {
+    await Promise.all([
+      institutionStore.fetchInstitutions(),
+      currencyStore.fetchCurrenciesForDropdown(),
+      clinicStore.fetchClinicsForDropdown()
+    ]);
+  } catch (error) {
+    handleLoadError("institutions", error);
+  }
+});
 </script>
+
 <template>
-  <v-card elevation="0" class="position-relative h-100 d-block">
-    <div class="invoice-detail-card-image">
-      <img
-        src="@/assets/images/logo-light.png"
-        class="invoice-logo"
-        height="28"
-      />
-
-      <InvoiceSVG />
-    </div>
-    <v-card-text>
-      <v-row justify="end" class="me-4 mt-4 pt-16 pt-md-0">
-        <v-col cols="12" lg="4">
-          <TextField
-            isRequired
-            v-model="regNo"
-            placeholder="Legal Registration No"
-            hide-details
-          />
-          <TextField
-            isRequired
-            isEmail
-            v-model="email"
-            placeholder="Email Address"
-            hide-details
-            class="mt-2"
-          />
-          <TextField
-            v-model="website"
-            isRequired
-            placeholder="Website"
-            hide-details
-            class="mt-2"
-          />
-          <TextField
-            v-model="contact"
-            isRequired
-            placeholder="Contact No"
-            hide-details
-            class="mt-2"
-          />
-          <TextField
-            v-model="createDate"
-            isRequired
-            placeholder="Create Date"
-            hide-details
-            class="mt-2"
-          />
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-col cols="12" lg="3">
-          <div class="font-weight-bold">Invoice No</div>
-          <TextField disabled :model-value="'#TBS24301915'" />
-        </v-col>
-        <v-col cols="12" lg="3">
-          <div class="font-weight-bold">Date</div>
-          <VueDatePicker
-            v-model="date"
-            :teleport="true"
-            :enable-time-picker="false"
-          />
-        </v-col>
-        <v-col cols="12" lg="3">
-          <div class="font-weight-bold">Payment Status</div>
-          <MenuSelect
-            v-model="paymentStatus"
-            hide-details
-            :items="statusOptions"
-          />
-        </v-col>
-        <v-col cols="12" lg="3">
-          <div class="font-weight-bold">Total Amount</div>
-          <TextField v-model="amount" placeholder="$0.00" />
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-col cols="12" lg="6">
-          <div class="text-muted text-uppercase font-weight-bold mb-3">
-            Building Address
-          </div>
-          <TextField
-            v-model="buildingName"
-            isRequired
-            placeholder="Full Name"
-            hide-details
-            class="mb-2"
-          />
-          <TextArea
-            v-model="buildingAddress"
-            isRequired
-            placeholder="Address"
-            hide-details
-            class="mb-2"
-          />
-          <TextField
-            v-model="buildingPhone"
-            isRequired
-            placeholder="(123)456-7890"
-            hide-details
-            class="mb-2"
-          />
-          <TextField
-            v-model="buildingTax"
-            isRequired
-            placeholder="Tax Number"
-            hide-details
-            class="mb-2"
-          />
-        </v-col>
-        <v-col cols="12" lg="6">
-          <div class="text-muted text-uppercase font-weight-bold mb-3">
-            Shipping Address
-          </div>
-          <TextField
-            v-model="shippingName"
-            isRequired
-            placeholder="Full Name"
-            hide-details
-            class="mb-2"
-          />
-          <TextArea
-            v-model="shippingAddress"
-            isRequired
-            placeholder="Address"
-            hide-details
-            class="mb-2"
-          />
-          <TextField
-            v-model="shippingPhone"
-            isRequired
-            placeholder="(123)456-7890"
-            hide-details
-            class="mb-2"
-          />
-          <TextField
-            v-model="shippingTax"
-            isRequired
-            placeholder="Tax Number"
-            hide-details
-            class="mb-2"
-          />
-        </v-col>
-      </v-row>
-      <v-checkbox v-model="isSame" color="primary">
-        <template #label>
-          <span> Will your billing and shopping address same? </span>
-        </template>
-      </v-checkbox>
-
-      <ProductCard />
-      <v-row class="my-4">
-        <v-col cols="12" lg="4">
-          <div class="text-muted font-weight-bold text-uppercase mb-2">
-            Payment Details
-          </div>
-          <TextField
-            v-model="cardHolderName"
-            isRequired
-            placeholder="Card Holder Name"
-            hide-details
-            class="mb-2"
-          />
-          <TextField
-            v-model="cardNumber"
-            isRequired
-            placeholder="xxxx xxxx xxxx xxxx"
-            hide-details
-            type="number"
-            class="mb-2"
-          />
-          <TextField
-            v-model="cardAmount"
-            isRequired
-            placeholder="$0.00"
-            hide-details
-            class="mb-2"
-            type="number"
-          />
-        </v-col>
-      </v-row>
-      <div class="text-muted font-weight-bold text-uppercase mb-2">Notes</div>
-      <v-alert color="danger" variant="tonal">
-        <template #text>
-          All accounts are to be paid within 7 days from receipt of invoice. To
-          be paid by cheque or credit card or direct payment online. If account
-          is not paid within 7 days the credits details supplied as confirmation
-          of work undertaken will be charged the agreed quoted fee noted above.
-        </template>
-      </v-alert>
-      <p class="mt-4 border pa-2">
-        <b>Congratulations on your recent purchase!</b> It has been our pleasure
-        to serve you, and we hope we see you again soon.
-      </p>
-      <v-row class="invoice-auth-signature">
-        <v-col cols="auto" class="text-center">
-          <img src="@/assets/images/invoice-signature.svg" alt="" height="30" />
-          <h6 class="mb-0 mt-3">Authorized Sign</h6>
-        </v-col>
-      </v-row>
-      <div class="invoice-detail-card-image-bottom">
+  <v-form ref="form">
+    <v-card elevation="0" class="position-relative h-100 d-block">
+      <div class="invoice-detail-card-image">
         <InvoiceSVG />
       </div>
-    </v-card-text>
-  </v-card>
+      <v-card-text>
+        <v-row justify="end" class="mt-4 pt-16 pt-md-0">
+          <v-col cols="12" lg="4">
+            <div class="font-weight-bold">{{ $t('t-institution') }} <i class="ph-asterisk ph-xs text-danger" /></div>
+            <MenuSelect 
+              v-model="invoiceData.company" 
+              :items="institutions" 
+              :loading="institutionStore.loading"
+              :rules="requiredRules.institution" 
+              :placeholder="$t('t-institution')" 
+            />
+
+            <div class="font-weight-bold mt-n1">{{ $t('t-clinic') }} <i class="ph-asterisk ph-xs text-danger" /></div>
+            <MenuSelect 
+              v-model="invoiceData.clinic" 
+              :items="clinics" 
+              :loading="clinicStore.loading"
+              :rules="requiredRules.clinic" 
+              :placeholder="$t('t-clinic')"
+              :disabled="!clinics.length" 
+            />
+
+            <div class="font-weight-bold">{{ $t('t-employee-or-dependent') }}</div>
+            <v-checkbox 
+              v-model="invoiceData.isEmployeeInvoice" 
+              density="compact" 
+              color="primary"
+            >
+              <template #label>
+                <span>{{ $t('t-is-employee-invoice') }}</span>
+              </template>
+            </v-checkbox>
+          </v-col>
+        </v-row>
+        
+        <v-row class="mt-n6">
+          <v-col cols="12" lg="4">
+            <div class="font-weight-bold">{{ $t('t-invoice-number') }} <i class="ph-asterisk ph-xs text-danger" /></div>
+            <TextField 
+              v-model="invoiceData.invoiceNumber" 
+              :placeholder="$t('t-enter-invoice-number')"
+              :rules="requiredRules.invoiceNumber" 
+            />
+          </v-col>
+          
+          <v-col cols="12" lg="">
+            <div class="font-weight-bold">{{ $t('t-employee') }} <i class="ph-asterisk ph-xs text-danger" /></div>
+            <MenuSelect 
+              v-model="invoiceData.employee" 
+              :items="employees" 
+              :loading="employeeStore.loading"
+              :rules="requiredRules.employee" 
+              :placeholder="$t('t-select-employee')"
+              :disabled="!invoiceData.company || !employees.length" 
+            />
+          </v-col>
+          
+          <v-col cols="12" lg="4" v-if="!invoiceData.isEmployeeInvoice">
+            <div class="font-weight-bold">{{ $t('t-dependent') }} <i class="ph-asterisk ph-xs text-danger" /></div>
+            <MenuSelect 
+              v-model="invoiceData.dependent" 
+              :items="dependents" 
+              :loading="dependentStore.loading"
+              :rules="requiredRules.dependent" 
+              :placeholder="$t('t-select-dependent')"
+              :disabled="!invoiceData.employee || !dependents.length" 
+            />
+          </v-col>
+        </v-row>
+        
+        <v-row class="mt-n6">
+          <v-col cols="12" lg="4">
+            <div class="font-weight-bold">{{ $t('t-issue-date') }} <i class="ph-asterisk ph-xs text-danger" /></div>
+            <ValidatedDatePicker 
+              v-model="invoiceData.issueDate" 
+              :teleport="true" 
+              :enable-time-picker="false"
+              :rules="requiredRules.issueDate" 
+              :placeholder="$t('t-select-issue-date')" 
+            />
+          </v-col>
+          
+          <v-col cols="12" lg="4">
+            <div class="font-weight-bold">{{ $t('t-currency') }} <i class="ph-asterisk ph-xs text-danger" /></div>
+            <MenuSelect 
+              v-model="invoiceData.currency" 
+              :items="currencies" 
+              :rules="requiredRules.currency"
+              :placeholder="$t('t-select-currency')" 
+            />
+          </v-col>
+          
+          <v-col cols="12" lg="4">
+            <div class="font-weight-bold">{{ $t('t-due-date') }} <i class="ph-asterisk ph-xs text-danger" /></div>
+            <ValidatedDatePicker 
+              v-model="invoiceData.dueDate" 
+              :teleport="true" 
+              :enable-time-picker="false"
+              :rules="requiredRules.dueDate" 
+              :placeholder="$t('t-select-due-date')" 
+            />
+          </v-col>
+        </v-row>
+
+        <v-row class="mt-n6 mb-2">
+          <v-col cols="12" lg="6">
+            <div class="font-weight-bold">{{ $t('t-invoice-reference') }}</div>
+            <TextField 
+              v-model="invoiceData.invoiceReferenceNumber" 
+              :placeholder="$t('t-enter-invoice-reference')"
+            />
+          </v-col>
+          
+          <v-col cols="12" lg="6">
+            <div class="font-weight-bold">{{ $t('t-authorized-by') }} <i class="ph-asterisk ph-xs text-danger" /></div>
+            <TextField 
+              v-model="invoiceData.authorizedBy" 
+              :placeholder="$t('t-enter-authorized-by')"
+              :rules="requiredRules.authorizedBy" 
+            />
+          </v-col>
+        </v-row>
+        
+        <div class="mb-12">
+          <ProductCard v-model="invoiceItemData" />
+        </div>
+      </v-card-text>
+      
+      <v-card-actions class="d-flex justify-space-between mt-5">
+        <v-btn color="secondary" variant="outlined" class="me-4" @click="onBack">
+          {{ $t('t-back-to-list') }} <i class="ph-arrow-left ms-2" />
+        </v-btn>
+        <v-btn color="success" variant="elevated" @click="submitInvoice">
+          <i class="ph-printer me-1" /> {{ $t('t-save') }} 
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-form>
 </template>

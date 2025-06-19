@@ -456,8 +456,14 @@ const invoicesRoutes = [
   {
     path: `${invoicePrefix}/create`,
     name: "CreateInvoice",
-    component: () => import("@/views/invoices/CreateInvoice.vue"),
+    component: () => import("@/views/invoices/Create.vue"),
     meta: { title: "Create Invoice", authRequired: true },
+  },
+  {
+    path: `${invoicePrefix}/edit/:id`,
+    name: "EditInvoice",
+    component: () => import("@/views/invoices/Edit.vue"),
+    meta: { title: "Edit Invoice", authRequired: true },
   },
 ].map((data) => {
   return {

@@ -68,6 +68,58 @@ export default class EmployeeService extends HttpService {
     }
   }
 
+  async getEmployeesForDropdown(
+    id: string | undefined,
+    page: number = 0,
+    size: number = 10000000,
+    sortColumn: string = 'createdAt',
+    direction: string = 'asc', 
+    query_props?: string,
+    query_value?: string
+  ): Promise<{ content: EmployeeListingType[], meta: any }> {
+    try {
+      // Construção manual da query string para controle total
+      const queryParams = [
+        `id=${id}`,
+        `page=${page}`,
+        `size=${size}`,
+        `sortColumn=${sortColumn}`, 
+        `direction=${direction}`,
+      ];
+
+      
+  
+      if (query_value && query_props) {
+        queryParams.push(`query_props=${encodeURIComponent(query_props)}`);
+        queryParams.push(`query_value=${encodeURIComponent(query_value)}`);
+      }
+
+      const includesToUse = 'position,department,company,province,country';
+      queryParams.push(`includes=${includesToUse}`);
+
+      const queryString = queryParams.join('&');
+
+
+      const url = `/human-resource/employees/in-company?${queryString}`;
+  
+      console.log('URL da requisição:', url); // Para debug
+  
+      const response = await this.get<ApiResponse<EmployeeListingType[]>>(url);
+
+
+      console.log('Resposta da requisição:', response); // Para debug
+      
+      return {
+        content: response.data || [],
+        meta: response.meta || []
+      };
+      
+    } catch (error) {
+      console.error("❌ Erro ao buscar colaboradores:", error);
+      throw error;
+    }
+  }
+
   async createEmployee(employeeData: EmployeeInsertType): Promise<ServiceResponse<EmployeeResponseType>> {
     try {
       const response = await this.post<ApiResponse<EmployeeResponseType>>('/human-resource/employees', employeeData);

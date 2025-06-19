@@ -23,8 +23,9 @@ export const statusOptions: MenuSelectItemType[] = [
 
 export const productHeader: TableHeaderType[] = [
   { title: "#" },
-  { title: "Product Details" },
-  { title: "Rate ($)" },
-  { title: "Quantity" },
-  { title: "Amount" },
+  { title: "hospital-procedure" },
+  { title: "unit-price" },
+  { title: "quantity" },
+  { title: "tax-rate" },
+  { title: "amount" },
 ];
