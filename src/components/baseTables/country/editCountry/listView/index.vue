@@ -532,7 +532,7 @@ const handleSubmit = async () => {
           <Filters v-model="customerFilters" />
           <v-card class="mt-5">
             <v-card-text>
-              <DataTableServer :headers="listViewHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
+              <DataTableServer v-model="selectedProvinces" :headers="listViewHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
                 :items="provinceByCountryStoreID.province_by_country" :items-per-page="itemsPerPage"
                 :total-items="totalItems" :loading="loadingList" :search-query="searchQuery" :search-props="searchProps"
                 item-value="id" @load-items="fetchProvinces">

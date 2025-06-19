@@ -231,7 +231,7 @@ const onConfirmDelete = async () => {
       </v-row>
     </v-card-title>
     <v-card-text class="mt-2">
-      <DataTableServer :headers="listViewHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
+      <DataTableServer v-model="selectedLeaveReasons" :headers="listViewHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
         :items="leaveReasonStore.leave_reason" :items-per-page="itemsPerPage" :total-items="totalItems"
         :loading="loadingList" :search-query="searchQuery" :search-props="searchProps" item-value="id"
         @load-items="fetchLeaveReasons">
