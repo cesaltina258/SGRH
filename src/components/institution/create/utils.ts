@@ -40,6 +40,17 @@ export const healthPlanLimitOptions: MenuSelectItemType[] = [
   }
 ];
 
+export const limitTypeDefinitionOptions: MenuSelectItemType[] = [
+  {
+    label: "Valor Fixo",
+    value: "FIXED_AMOUNT"
+  },
+  {
+    label: "Porcentagem",
+    value: "PERCENTAGE"
+  }
+];
+
 export const salaryComponentOptions: MenuSelectItemType[] = [
   { 
     value: undefined, 

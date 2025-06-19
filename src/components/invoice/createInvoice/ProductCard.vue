@@ -2,6 +2,7 @@
 import { computed, ref } from "vue";
 import { productHeader } from "@/components/invoice/createInvoice/utils";
 import NumberSpinner from "@/app/common/components/NumberSpinner.vue";
+import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
 import Table from "@/app/common/components/Table.vue";
 
 const productDetails = ref([
@@ -11,6 +12,7 @@ const productDetails = ref([
     detail: "",
     rate: 0,
     quantity: 0,
+    tax_rate: 0,
   },
 ]);
 
@@ -48,6 +50,7 @@ const onAdd = () => {
     detail: "",
     rate: 0,
     quantity: 0,
+    tax_rate: 0
   });
 };
 
@@ -56,105 +59,58 @@ const onDelete = (id: number) => {
 };
 </script>
 <template>
-  <Table :headerItems="productHeader">
+  <Table :headerItems="productHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))">
     <template #body>
-      <tr
-        v-for="(item, index) in productDetails"
-        :key="'product-item-' + index"
-      >
+      <tr v-for="(item, index) in productDetails" :key="'product-item-' + index">
         <td class="font-weight-bold">{{ item.id }}</td>
         <td class="pt-4">
-          <TextField
-            v-model="item.name"
-            isRequired
-            hide-details
-            placeholder="Product Name"
-            class="mb-2"
-          />
-          <TextArea
-            v-model="item.detail"
-            isRequired
-            placeholder="Product Details"
-          />
+          <TextField v-model="item.name" isRequired hide-details placeholder="Product Name" class="mb-2" />
+          <TextField v-model="item.detail" isRequired placeholder="Product Details" />
         </td>
         <td>
-          <TextField
-            v-model="item.rate"
-            hide-details
-            placeholder="0.00"
-            type="number"
-          />
+          <TextField v-model="item.rate" hide-details placeholder="0.00" type="number" />
         </td>
         <td>
-          <NumberSpinner
-            v-model="item.quantity"
-            @onAdd="item.quantity < 100 && item.quantity++"
-            @onReduce="item.quantity > 0 && item.quantity--"
-          />
+          <NumberSpinner v-model="item.quantity" @onAdd="item.quantity < 100 && item.quantity++"
+            @onReduce="item.quantity > 0 && item.quantity--" />
+        </td>
+        <td>
+          <NumberSpinner v-model="item.quantity" @onAdd="item.quantity < 100 && item.quantity++"
+            @onReduce="item.quantity > 0 && item.quantity--" />
         </td>
         <td>
           <div class="d-flex">
-            <TextField
-              disabled
-              :model-value="(item.quantity * item.rate).toFixed(2)"
-              type="number"
-              placeholder="0.00"
-              hide-details
-            />
-            <v-btn color="danger" class="ms-3" @click="onDelete(item.id)">
-              Delete</v-btn
-            >
+            <TextField disabled :model-value="(item.quantity * item.rate).toFixed(2)" type="number" placeholder="0.00"
+              hide-details />
+            <v-btn class="ms-3" icon variant="text" color="error" size="small" @click="onDelete(item.id)">
+              <i class="ph-trash"></i>
+            </v-btn>
           </div>
         </td>
       </tr>
     </template>
   </Table>
-  <v-btn color="light" @click="onAdd"> + Add Item </v-btn>
+  <v-btn color="light" @click="onAdd" class="mt-2">+ {{ $t("t-add-invoice-item") }} </v-btn>
   <v-divider class="my-4" />
   <v-row justify="end" class="mt-4">
     <v-col cols="12" lg="4">
       <v-row class="d-flex align-center mb-2" no-gutters>
         <v-col cols="6">
-          <span class="font-weight-bold me-4"> Sub Total </span>
+          <span class="font-weight-bold me-4"> {{ $t('t-sub-total') }} </span>
         </v-col>
         <v-col cols="6">
-          <TextField
-            :model-value="subTotal"
-            placeholder="$0.00"
-            disabled
-            hide-details
-          />
+          <TextField :model-value="subTotal" placeholder="$0.00" disabled hide-details />
         </v-col>
       </v-row>
       <v-row class="d-flex align-center mb-2" no-gutters>
         <v-col cols="6">
-          <span class="font-weight-bold me-4"> Estimated Tax(18%) </span>
+          <span class="font-weight-bold me-4"> {{ $t('t-tax-rate') }} </span>
         </v-col>
         <v-col cols="6">
-          <TextField
-            :model-value="taxCount"
-            placeholder="$0.00"
-            disabled
-            hide-details
-          />
+          <TextField :model-value="taxCount" placeholder="$0.00" disabled hide-details />
         </v-col>
       </v-row>
-      <v-row class="d-flex align-center mb-2" no-gutters>
-        <v-col cols="6">
-          <span class="font-weight-bold me-4">
-            Discount <span class="text-muted"> (STEEX30) </span>
-          </span>
-        </v-col>
-        <v-col cols="6">
-          <TextField
-            :model-value="discount"
-            placeholder="$0.00"
-            disabled
-            hide-details
-          />
-        </v-col>
-      </v-row>
-      <v-row class="d-flex align-center mb-2" no-gutters>
+      <!--<v-row class="d-flex align-center mb-2" no-gutters>
         <v-col cols="6">
           <span class="font-weight-bold me-4"> Shipping Charge </span>
         </v-col>
@@ -166,19 +122,14 @@ const onDelete = (id: number) => {
             hide-details
           />
         </v-col>
-      </v-row>
+      </v-row>-->
       <v-divider class="my-4" />
-      <v-row class="d-flex align-center mb-2" no-gutters>
+      <v-row class="d-flex align-center mb-12" no-gutters>
         <v-col cols="6">
-          <span class="font-weight-bold me-4"> Total Amount </span>
+          <span class="font-weight-bold me-4"> {{ $t('t-total-amount') }} </span>
         </v-col>
         <v-col cols="6">
-          <TextField
-            :model-value="finalTotal"
-            placeholder="$0.00"
-            disabled
-            hide-details
-          />
+          <TextField :model-value="finalTotal" placeholder="$0.00" disabled hide-details />
         </v-col>
       </v-row>
     </v-col>

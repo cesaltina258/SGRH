@@ -48,15 +48,13 @@ export const invoiceOverview = [
 ];
 
 export const invoiceHeader: TableHeaderType[] = [
-  { title: "", isCheck: true },
-  { title: "ID" },
-  { title: "Customer Name" },
-  { title: "Email" },
-  { title: "Create Date" },
-  { title: "Due Date" },
-  { title: "Amount" },
-  { title: "Status" },
-  { title: "Action" },
+  { title: "invoice-number" },
+  { title: "employee-name" },
+  { title: "clinic-name" },
+  { title: "total-amount" },
+  { title: "issue-date" },
+  { title: "due-date" },
+  { title: "action" },
 ];
 
 export const invoicesList = [

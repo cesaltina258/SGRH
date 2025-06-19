@@ -34,7 +34,7 @@ axiosInstance.interceptors.response.use(
           const { data } = await axios.post(`${appConfigs.baseUrl}auth/refresh-token`, { refreshToken });
           setAccessToken(data.data.token);
           setRefreshToken(data.data.refreshToken);
-          console.log('------------------------------token actualizado')
+          console.log('------------------------------token actualizado', data)
 
           // Atualizar o token e refazer a requisição original
           originalRequest!.headers["Authorization"] = `Bearer ${data.data.token}`;

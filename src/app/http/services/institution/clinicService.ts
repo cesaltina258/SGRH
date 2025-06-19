@@ -60,6 +60,51 @@ export default class ClinicService extends HttpService {
         }
     }
 
+    async getClinicByInstitutionForDropdown(
+        id: string | null,
+        page: number = 0,
+        size: number = 10000000,
+        sortColumn: string = 'createdAt',
+        direction: string = 'asc',
+        query_value?: string,
+        query_props?: string
+    ): Promise<{ content: ClinicListingType[], meta: any }> {
+        try {
+            const queryParams = [
+                `id=${id}`,
+                `page=${page}`,
+                `size=${size}`,
+                `sortColumn=${sortColumn}`,
+                `direction=${direction}`
+            ];
+
+            if (query_value && query_props) {
+                queryParams.push(`query_props=${encodeURIComponent(query_props)}`);
+                queryParams.push(`query_value=${encodeURIComponent(query_value)}`);
+
+            }
+
+             const includesToUse = 'clinic';
+                queryParams.push(`includes=${includesToUse}`);
+
+                const queryString = queryParams.join('&');
+
+            const url = `/administration/company/contracted-clinics/in-company?${queryString}`;
+
+            console.log('URL da requisição:', url);
+            const response = await this.get<ApiResponse<ClinicListingType[]>>(url);
+
+            return {
+                content: response.data || [],
+                meta: response.meta || []
+            };
+
+        } catch (error) {
+            console.error("❌ Erro ao buscar clinicas:", error);
+            throw error;
+        }
+    }
+
     async createClinic(clinicData: ClinicInsertType): Promise<ServiceResponse<ClinicListingType>> {
         try {
             const response = await this.post<ApiResponse<ClinicListingType>>('/administration/company/contracted-clinics', clinicData);

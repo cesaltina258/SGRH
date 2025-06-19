@@ -1,14 +1,16 @@
 
 import AuthService from "@/app/http/services/authService";
 import UserService from "@/app/http/services/userService";
-import EmployeeService from "@/app/http/services/employeeService";
+import EmployeeService from "@/app/http/services/employee/employeeService";
 import InstitutionService from "@/app/http/services/institution/institutionService";
 import DepartmentService from "@/app/http/services/institution/departmentService";
 import PositionService from "@/app/http/services/institution/positionService";
 import ClinicInstitutionService from "@/app/http/services/institution/clinicService";
 import ClinicService from "@/app/http/services/clinicService";
 import ContactPersonService from "@/app/http/services/institution/contactPersonService";
-
+import HospitalProcedureService from "@/app/http/services/institution/hospitalProcedureService";
+import InvoiceService from "@/app/http/services/invoice/invoiceService";
+import DependentEmployeeService from "@/app/http/services/employee/dependentService";
 
 //BASETABLES
 import CountryService from "@/app/http/services/baseTables/country/countryService";
@@ -29,7 +31,10 @@ const departmentService = new DepartmentService();
 const positionService = new PositionService();
 const clinicService = new ClinicService();
 const contactPersonService = new ContactPersonService();
+const hospitalProcedureService = new HospitalProcedureService();
 const clinicInstitutionService = new ClinicInstitutionService();
+const invoiceService = new InvoiceService();
+const dependentEmployeeService = new DependentEmployeeService();
 
 //BASETABLES
 const countryService = new CountryService();
@@ -58,5 +63,8 @@ export {
     positionService, 
     clinicService,
     contactPersonService,
-    clinicInstitutionService
+    clinicInstitutionService,
+    hospitalProcedureService,
+    invoiceService,
+    dependentEmployeeService
 };

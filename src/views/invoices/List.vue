@@ -3,6 +3,6 @@ import { breadcrumb } from "@/components/invoice/list/utils";
 import InvoiceList from "@/components/invoice/list/index.vue";
 </script>
 <template>
-  <Breadcrumb title="Invoice List" :items="breadcrumb" />
+  <Breadcrumb title="invoice-list" :items="breadcrumb" />
   <InvoiceList />
 </template>

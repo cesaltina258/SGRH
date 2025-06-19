@@ -19,7 +19,7 @@ import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
 import ValidatedDatePicker from "@/app/common/components/ValidatedDatePicker.vue";
 
 // Stores
-import { useEmployeeStore } from '@/store/employeeStore';
+import { useEmployeeStore } from '@/store/employee/employeeStore';
 import { useCountryStore } from '@/store/baseTables/countryStore';
 import { useProvinceStore } from '@/store/baseTables/countryStore';
 

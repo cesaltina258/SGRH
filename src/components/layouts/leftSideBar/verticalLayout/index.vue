@@ -63,18 +63,18 @@ watch(sideBarSize, () => {
       <div class="navbar-brand-box">
         <router-link to="/" class="logo logo-dark">
           <span class="logo-sm">
-            <img src="@/assets/images/logo-sm.png" alt="" height="50"  width="150"/>
+            <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
           </span>
           <span class="logo-lg">
-            <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" />
+            <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
           </span>
         </router-link>
         <router-link to="/" class="logo logo-light">
           <span class="logo-sm">
-            <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" />
+            <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
           </span>
           <span class="logo-lg">
-            <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" />
+            <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
           </span>
         </router-link>
         <v-btn text="" class="header-item btn-vertical-sm-hover">
@@ -96,18 +96,18 @@ watch(sideBarSize, () => {
       <div class="navbar-brand-box">
         <router-link to="/" class="logo logo-dark">
           <span class="logo-sm">
-            <img src="@/assets/images/logo-sm.png" alt="" height="22" />
+            <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
           </span>
           <span class="logo-lg">
-            <img src="@/assets/images/logo-dark.png" alt="" height="22" />
+            <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
           </span>
         </router-link>
         <router-link to="/" class="logo logo-light">
           <span class="logo-sm">
-            <img src="@/assets/images/logo-sm.png" alt="" height="22" />
+            <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
           </span>
           <span class="logo-lg">
-            <img src="@/assets/images/logo-light.png" alt="" height="22" />
+            <img src="@/assets/images/logo-sm.png" alt="" height="50" width="150" style="opacity: 0.8;" />
           </span>
         </router-link>
         <v-btn text="" class="header-item btn-vertical-sm-hover">
@@ -116,8 +116,8 @@ watch(sideBarSize, () => {
       </div>
 
       <div data-simplebar id="scrollbar" :style="$vuetify.display.smAndUp
-          ? (!isScrollableLayout && 'height: calc(100vh - 80px);') || ''
-          : 'height: 100vh'
+        ? (!isScrollableLayout && 'height: calc(100vh - 80px);') || ''
+        : 'height: 100vh'
         " ref="scrollbar" class="mobile-navigation-drawer">
         <MenuComponents />
       </div>
