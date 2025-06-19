@@ -1,10 +1,10 @@
 import HttpService from "@/app/http/httpService";
 import type {
-  LanguagesInsert,
-  LanguagesUpdate,
-  LanguagesListing,
-  LanguagesResponse
-} from "@/components/baseTables/languages/types";
+  TaxRateTypeInsert,
+  TaxRateTypeListing,
+  TaxRateTypeUpdate,
+  TaxRateTypeResponse
+} from "@/components/baseTables/TaxRate/types";
 import type { ApiErrorResponse } from "@/app/common/types/errorType";
 
 interface ApiResponse<T> {
@@ -18,16 +18,16 @@ interface ServiceResponse<T> {
   error?: ApiErrorResponse;
 }
 
-export default class LanguagesService extends HttpService {
+export default class TaxRateTypeTypeService extends HttpService {
 
-  async getLanguages(
+  async getTaxRates(
     page: number = 0,
     size: number = 10,
     sortColumn: string = 'name',
     direction: string = 'asc',
     query_value?: string,
     query_props?: string
-  ): Promise<{ content: LanguagesListing[]; meta: any }> {
+  ): Promise<{ content: TaxRateTypeListing[]; meta: any }> {
     try {
       const queryParams = [
         `page=${page}`,
@@ -42,24 +42,25 @@ export default class LanguagesService extends HttpService {
       }
 
       const queryString = queryParams.join('&');
-      const url = `/administration/languages?${queryString}`;
+      const url = `/administration/setup/tax-rates?${queryString}`;
 
-      const response = await this.get<ApiResponse<LanguagesListing[]>>(url);
+      const response = await this.get<ApiResponse<TaxRateTypeListing[]>>(url);
+
       return {
         content: response.data || [],
         meta: response.meta || {}
       };
 
     } catch (error) {
-      console.error("❌ Erro ao buscar languages:", error);
+      console.error("❌ Erro ao buscar tax-rates:", error);
       throw this.handleError(error);
     }
   }
 
-  async createLanguages(data: LanguagesInsert): Promise<ServiceResponse<LanguagesResponse>> {
+  async createTaxRate(data: TaxRateTypeInsert): Promise<ServiceResponse<TaxRateTypeResponse>> {
     try {
-      const response = await this.post<ApiResponse<LanguagesResponse>>(
-        "/administration/languages",
+      const response = await this.post<ApiResponse<TaxRateTypeResponse>>(
+        "/administration/setup/tax-rates",
         data
       );
       return {
@@ -67,35 +68,35 @@ export default class LanguagesService extends HttpService {
         data: response.data
       };
     } catch (error: any) {
-      console.error("❌ Erro ao criar language:", error);
+      console.error("❌ Erro ao criar tax-rates:", error);
       throw this.handleError(error);
-      
     }
   }
 
-  async updateLanguages(id: string, data: LanguagesUpdate): Promise<LanguagesResponse> {
+  async updateTaxRate(id: string, data: TaxRateTypeUpdate): Promise<TaxRateTypeResponse> {
     try {
       const payload = {
-        code: data.code,
         name: data.name,
-        localizedName: data.localizedName,
-        region: data.region,
-        rtl: data.rtl
+        rate: data.rate,
+        description: data.description
       };
 
-      const response = await this.put<LanguagesResponse>(`/administration/languages/${id}`, payload);
+      const response = await this.put<TaxRateTypeResponse>(
+        `/administration/setup/tax-rates/${id}`,
+        payload
+      );
       return response;
     } catch (error) {
-      console.error("❌ Erro ao actualizar language:", error);
+      console.error("❌ Erro ao actualizar tax-rates:", error);
       throw this.handleError(error);
     }
   }
 
-  async deleteLanguages(id: string): Promise<void> {
+  async deleteTaxRate(id: string): Promise<void> {
     try {
-      await this.delete(`/administration/languages/${id}`);
+      await this.delete(`/administration/setup/tax-rates/${id}`);
     } catch (error) {
-      console.error("❌ Erro ao deletar language:", error);
+      console.error("❌ Erro ao deletar tax-rates:", error);
       throw this.handleError(error);
     }
   }
@@ -115,7 +116,7 @@ export default class LanguagesService extends HttpService {
     };
   }
 
-  private createNetworkErrorResponseLanguages(): ApiErrorResponse {
+  private createNetworkErrorResponseTaxRates(): ApiErrorResponse {
     return {
       status: 'error',
       message: 'Network error',
@@ -124,7 +125,7 @@ export default class LanguagesService extends HttpService {
         title: 'Network Error',
         status: 503,
         detail: 'Could not connect to server',
-        instance: '/administration/languages'
+        instance: '/administration/setup/tax-rates'
       },
       meta: {
         timestamp: new Date().toISOString()

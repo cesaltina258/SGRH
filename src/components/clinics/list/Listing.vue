@@ -101,6 +101,12 @@ const toggleSelection = (item: ClinicListingType) => {
   }
 };
 
+const truncate = (text: string, maxLength = 30) => {
+  if (!text) return ''
+  return text.length > maxLength ? text.slice(0, maxLength) + '...' : text
+}
+
+
 
 </script>
 
@@ -131,13 +137,12 @@ const toggleSelection = (item: ClinicListingType) => {
                 @update:model-value="toggleSelection(item)" hide-details density="compact" />
             </td>
             <td class="text-primary cursor-pointer" @click="onView(item.id)">
-              {{ item.name }}
+              {{ truncate(item.name) }}
             </td>
-            <td>{{ item.description }}</td>
-            <td>{{ item.address }}</td>
-            <td>{{ item.phone }}</td>
-            <td>{{ item.email }}</td>
-            <td>{{ item.website }}</td>
+            <td>{{ truncate(item.address) }}</td>
+            <td>{{ truncate(item.phone) }}</td>
+            <td>{{ truncate(item.email) }}</td>
+            <td>{{ truncate(item.website) }}</td>
             <td>
               <TableAction @on-view="() => router.push(`/clinics/view/${item.id}`)"
                 @onEdit="() => router.push(`/clinics/edit/${item.id}`)" @onDelete="() => openDeleteDialog(item.id)" />
