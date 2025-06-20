@@ -118,7 +118,7 @@ export type InvoiceItemInsertType = {
     description: string;
     companyAllowedHospitalProcedure: string | undefined;
     invoice: string | undefined;
-    totalAmount?: number;
+    totalAmount: number;
 }
 
 export type InvoiceItemListingType = {

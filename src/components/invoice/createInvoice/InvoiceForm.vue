@@ -42,12 +42,10 @@ const props = defineProps({
 });
 
 // Emits
-// Em InvoiceForm.vue, modifique a seção defineEmits para:
 const emit = defineEmits<{
   (e: 'save', invoiceData: InvoiceInsertType): void;
-  (e: 'save-with-items', payload: { invoiceData: InvoiceInsertType, items: InvoiceItemInsertType[] }): void;
   (e: 'update:modelValue', value: InvoiceInsertType): void;
-  (e: 'items-ready', items: InvoiceItemInsertType[]): void; // Adicione esta linha
+  (e: 'items-ready', items: InvoiceItemInsertType[]): void;
 }>();
 
 // Stores
@@ -59,8 +57,9 @@ const dependentStore = useDependentEmployeeStore();
 
 // Refs
 const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
+const productCardRef = ref<{ emitItemsReady: () => boolean }>();
 const errorMsg = ref("");
-let alertTimeout: ReturnType<typeof setTimeout> | null = null;
+const alertTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
 
 // Computed
 const invoiceData = computed({
@@ -78,7 +77,8 @@ const invoiceItemData = reactive<InvoiceItemInsertType>({
   taxRate: '',
   description: '',
   companyAllowedHospitalProcedure: '',
-  invoice: invoiceStore.currentInvoiceId
+  invoice: invoiceStore.currentInvoiceId,
+  totalAmount: 0
 });
 
 const institutions = computed(() => {
@@ -129,6 +129,69 @@ const requiredRules = {
   authorizedBy: [(v: string) => !!v || t('t-authorized-by-required')]
 };
 
+// Methods
+const handleLoadError = (resource: string, error: any) => {
+  console.error(`Failed to load ${resource}:`, error);
+  errorMsg.value = t(`t-failed-to-load-${resource}`);
+
+  if (alertTimeout.value) clearTimeout(alertTimeout.value);
+  alertTimeout.value = setTimeout(() => {
+    errorMsg.value = "";
+    alertTimeout.value = null;
+  }, 5000);
+};
+
+const submitInvoice = async () => {
+  if (!form.value) return;
+
+  const { valid } = await form.value.validate();
+
+  if (!valid) {
+    toast.error(t('t-validation-error'));
+    errorMsg.value = t('t-please-correct-errors');
+    return;
+  }
+
+  try {
+    if (invoiceData.value.isEmployeeInvoice) {
+      invoiceData.value.dependent = undefined;
+    } else if (!invoiceData.value.dependent) {
+      toast.error(t('t-dependent-required'));
+      return;
+    }
+
+    // Primeiro emite os dados básicos
+    emit('save', { ...invoiceData.value });
+    
+    // Depois emite os itens, se existirem
+    if (productCardRef.value) {
+      const itemsValid = productCardRef.value.emitItemsReady();
+      if (!itemsValid) return;
+    }
+  } catch (error) {
+    console.error("Error submitting invoice:", error);
+    toast.error(t('t-message-save-error'));
+  }
+};
+
+const handleItemsReady = (items: InvoiceItemInsertType[]) => {
+  // Se for edição, mantém o totalAmount original do backend
+  if (props.isEditMode && props.modelValue.totalAmount) {
+    emit('items-ready', items);
+    return;
+  }
+  
+  // Caso contrário, calcula o novo total
+  const totalAmount = items.reduce((sum, item) => sum + (item.totalAmount || 0), 0);
+  invoiceData.value.totalAmount = totalAmount;
+  emit('items-ready', items);
+};
+
+const onBack = () => {
+  institutionStore.clearDraft();
+  router.push('/invoices/list');
+};
+
 // Watchers
 watch(() => invoiceData.value.company, async (newInstitutionId) => {
   if (newInstitutionId) {
@@ -174,72 +237,7 @@ watch(() => invoiceData.value.employee, async (newEmployeeId) => {
   }
 });
 
-// Methods
-const handleLoadError = (resource: string, error: any) => {
-  console.error(`Failed to load ${resource}:`, error);
-  errorMsg.value = t(`t-failed-to-load-${resource}`);
-
-  if (alertTimeout) clearTimeout(alertTimeout);
-  alertTimeout = setTimeout(() => {
-    errorMsg.value = "";
-    alertTimeout = null;
-  }, 5000);
-};
-
-// No InvoiceForm.vue, modifique a função submitInvoice
-const productCardRef = ref<{ emitItemsReady: () => boolean }>();
-
-const submitInvoice = async () => {
-  if (!form.value) return;
-
-  const { valid } = await form.value.validate();
-
-  if (!valid) {
-    toast.error(t('t-validation-error'));
-    errorMsg.value = t('t-please-correct-errors');
-    return;
-  }
-
-  try {
-    if (invoiceData.value.isEmployeeInvoice) {
-      invoiceData.value.dependent = undefined;
-    } else if (!invoiceData.value.dependent) {
-      toast.error(t('t-dependent-required'));
-      return;
-    }
-
-    // Emite apenas os dados básicos primeiro
-    emit('save', { ...invoiceData.value });
-    
-    // Se houver itens, emite-os separadamente
-    if (productCardRef.value) {
-      productCardRef.value.emitItemsReady();
-    }
-
-  } catch (error) {
-    console.error("Erro ao submeter fatura:", error);
-    toast.error(t('t-message-save-error'));
-  }
-};
-
-// Modifique para apenas preparar os itens sem emitir salvamento
-const handleItemsReady = (items: InvoiceItemInsertType[]) => {
-  // Calcula o totalAmount baseado nos valores do backend quando em edição
-  if (props.isEditMode) {
-    const totalAmount = props.initialItems.reduce((sum, item) => sum + (item.totalAmount || 0), 0);
-    invoiceData.value.totalAmount = totalAmount;
-  }
-  
-  emit('items-ready', items);
-};
-
-
-const onBack = () => {
-  institutionStore.clearDraft();
-  router.push('/invoices/list');
-};
-
-// Lifecycle hooks
+// Lifecycle
 onMounted(async () => {
   try {
     await Promise.all([
@@ -251,9 +249,6 @@ onMounted(async () => {
     handleLoadError("institutions", error);
   }
 });
-
-
-
 </script>
 
 <template>
@@ -338,8 +333,14 @@ onMounted(async () => {
         </v-row>
 
         <div class="mb-12">
-          <ProductCard ref="productCardRef" v-model="invoiceItemData" :institution-id="invoiceData.company || ''"
-            :initial-items="initialItems" @items-ready="handleItemsReady" />
+          <ProductCard 
+  ref="productCardRef" 
+  v-model="invoiceItemData" 
+  :institution-id="invoiceData.company || ''"
+  :initial-items="initialItems"
+  :is-edit-mode="isEditMode"
+  @items-ready="handleItemsReady" 
+/>
         </div>
       </v-card-text>
 
@@ -347,7 +348,7 @@ onMounted(async () => {
         <v-btn color="secondary" variant="outlined" class="me-4" @click="onBack">
           {{ $t('t-back-to-list') }} <i class="ph-arrow-left ms-2" />
         </v-btn>
-        <v-btn color="success" variant="elevated" @click="submitInvoice">
+        <v-btn color="success" variant="elevated" @click="submitInvoice" :loading="loading">
           <i class="ph-printer me-1" /> {{ $t('t-save') }}
         </v-btn>
       </v-card-actions>

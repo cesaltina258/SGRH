@@ -66,6 +66,13 @@ const requiredRules = {
 };
 
 // Computed
+const companyAllowedHospitalProcedures = computed(() => {
+  return hospitalProcedureStore.hospital_procedure_for_dropdown.map((item) => ({
+    value: item.id,
+    label: item.hospitalProcedureType.name,
+  }));
+});
+
 const taxRates = computed(() => {
   return taxRateStore.tax_rates_for_dropdown.map((item) => ({
     value: item.id,
@@ -74,43 +81,40 @@ const taxRates = computed(() => {
   }));
 });
 
-const companyAllowedHospitalProcedures = computed(() => {
-  return hospitalProcedureStore.hospital_procedure_for_dropdown.map((item) => ({
-    value: item.id,
-    label: item.hospitalProcedureType.name,
-  }));
-});
+
+const getLineTotal = (item: InvoiceItemInsertType) => {
+  const taxRate = taxRates.value.find(t => t.value === item.taxRate);
+  const rate = taxRate?.rate || 0;
+  const subtotal = item.unitPrice * item.quantity;
+  const taxAmount = subtotal * rate;
+  const total = subtotal + taxAmount;
+  return { subtotal, taxAmount, total };
+};
 
 
+// No ProductCard.vue
 const lineTotals = computed(() => {
-  return invoiceItems.value.map(item => {
-    const taxRate = taxRates.value.find(t => t.value === item.taxRate);
-    const rate = taxRate?.rate || 0;
-    const subtotal = item.quantity * item.unitPrice;
-    const taxAmount = subtotal * rate;
-    const total = subtotal + taxAmount;
-    
-    return {
-      subtotal,
-      taxAmount,
-      total
-    };
-  });
+  return invoiceItems.value.map(item => getLineTotal(item));
 });
 
 // Atualize os cálculos gerais para usar lineTotals
 const subTotal = computed(() => {
-  return lineTotals.value.reduce((sum, item) => sum + item.subtotal, 0).toFixed(2);
+  return invoiceItems.value.reduce((sum, item) => {
+    return sum + (item.unitPrice * item.quantity);
+  }, 0).toFixed(2);
 });
 
 const taxAmount = computed(() => {
-  return lineTotals.value.reduce((sum, item) => sum + item.taxAmount, 0).toFixed(2);
+  return invoiceItems.value.reduce((sum, item) => {
+    const taxRate = taxRates.value.find(t => t.value === item.taxRate);
+    const rate = taxRate?.rate || 0;
+    return sum + (item.unitPrice * item.quantity * rate);
+  }, 0).toFixed(2);
 });
 
 const finalTotal = computed(() => {
-  return lineTotals.value.reduce((sum, item) => sum + item.total, 0).toFixed(2);
+  return (parseFloat(subTotal.value) + parseFloat(taxAmount.value)).toFixed(2);
 });
-
 // Methods
 const loadProcedures = async () => {
   try {
@@ -144,10 +148,11 @@ const addItem = () => {
     id: Date.now().toString(),
     companyAllowedHospitalProcedure: "",
     description: "",
-    taxRate: '',
+    taxRate: "",
     quantity: 1,
     unitPrice: 0,
-    invoice: props.modelValue.invoice
+    invoice: props.modelValue.invoice,
+    totalAmount: 0
   });
 };
 
@@ -226,11 +231,17 @@ watch(() => props.initialItems, (newItems) => {
       originalId: item.id, // Adicione este campo para referência
       id: item.id || Date.now().toString(), // ID local para controle UI
       // Garanta que todos os campos obrigatórios estão presentes
-      taxRate: item.taxRate?.toString() || '',
+      taxRate: item.taxRate || '',
       companyAllowedHospitalProcedure: item.companyAllowedHospitalProcedure || ''
     }));
   }
 }, { immediate: true });
+
+watch(invoiceItems, () => {
+  // Isso força o Vue a reavaliar os computed totais
+}, { deep: true });
+
+
 </script>
 
 <template>
@@ -238,28 +249,28 @@ watch(() => props.initialItems, (newItems) => {
     <Table :headerItems="productHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))">
       <template #body>
         <tr v-for="(item, index) in invoiceItems" :key="'product-item-' + item.id">
-          <td class="font-weight-bold">{{ index + 1 }}</td>
+          <td class="font-weight-bold" >{{ index + 1 }}</td>
           <td class="pt-4" >
             <MenuSelect v-model="item.companyAllowedHospitalProcedure" :items="companyAllowedHospitalProcedures"
               :rules="requiredRules.companyAllowedHospitalProcedure" :placeholder="$t('t-select-procedure')"
               item-value="value" />
-            <TextArea v-model="item.description" :placeholder="$t('t-description')" class="" />
           </td>
-          <td>
+          <td class="pt-4">
             <TextField v-model.number="item.unitPrice" :rules="requiredRules.unitPrice"
               :placeholder="$t('t-unit-price')" type="number" min="0" step="0.01" />
           </td>
-          <td>
-            <TextField v-model.number="item.quantity" :placeholder="$t('t-quantity')" type="number" min="0"
+          <td class="pt-4">
+            <TextField v-model.number="item.quantity"  :placeholder="$t('t-quantity')" type="number" min="0"
               :rules="requiredRules.quantity" />
           </td>
-          <td>
+          <td class="pt-4">
             <MenuSelect v-model="item.taxRate" :items="taxRates" :rules="requiredRules.taxRate"
               :placeholder="$t('t-select-tax-rate')" item-value="value" />
           </td>
-          <td>
+          <td class="pt-4">
             <div class="d-flex align-center">
-              <TextField disabled :model-value="(item.quantity * item.unitPrice).toFixed(2)" class="me-2" />
+              <TextField disabled :model-value="getLineTotal(item).total.toFixed(2)" class="me-2" />
+
               <v-btn icon variant="text" color="error" size="small" @click="removeItem(item.id)">
                 <i class="ph-trash"></i>
               </v-btn>

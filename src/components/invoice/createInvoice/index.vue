@@ -75,6 +75,8 @@ const loadInvoiceData = async (id: string) => {
       invoiceItemService.getInvoiceItemByInvoice(id)
     ]);
 
+    console.log("itemsResponse: ", itemsResponse)
+
     // Atualiza os dados da fatura se existirem
     if (invoiceResponse?.data) {
       Object.assign(invoiceData, invoiceResponse.data);
@@ -90,7 +92,7 @@ const loadInvoiceData = async (id: string) => {
     if (itemsResponse?.content) {
       invoiceItems.value = itemsResponse.content.map(item => ({
         ...item,
-        taxRate: item.taxRate?.id?.toString() || '', // Garante string
+        taxRate: item.taxRate?.id || '', 
         companyAllowedHospitalProcedure: item.companyAllowedHospitalProcedure?.id || '',
         invoice: item.invoice?.id || ''
       }));
@@ -260,6 +262,7 @@ const saveInvoiceItems = async (invoiceId: string, items: InvoiceItemInsertType[
     // Em modo de edição, remove todos os itens existentes primeiro
     if (isEditMode.value) {
       const existingItems = await invoiceItemService.getInvoiceItemByInvoice(invoiceId);
+      console.log('existing items: ', existingItems)
       await Promise.all(
         existingItems.content.map(item =>
           invoiceItemService.deleteInvoiceItem(item.id)
