@@ -28,4 +28,6 @@ export const productHeader: TableHeaderType[] = [
   { title: "quantity" },
   { title: "tax-rate" },
   { title: "amount" },
+  { title: "description" },
+  { title: "action"}
 ];

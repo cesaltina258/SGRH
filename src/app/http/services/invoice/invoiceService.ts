@@ -38,7 +38,7 @@ export default class InvoiceService extends HttpService {
         queryParams.push(`query_value=${encodeURIComponent(query_value)}`);
       }
 
-      const includesToUse = 'employee,clinic,dependent';
+      const includesToUse = 'employee,clinic,dependent,currency';
       queryParams.push(`includes=${includesToUse}`);
 
       const queryString = queryParams.join('&');
@@ -174,6 +174,37 @@ export default class InvoiceService extends HttpService {
       details: null
     };
   }
+
+   async postInvoice(id: string): Promise<{ data: InvoiceResponseType }> {
+    try {
+      const response = await this.put<{ data: InvoiceResponseType; meta: any }>(
+        `/amm/invoices/${id}/post` 
+      );
+      console.log('Resposta ao post da factura:------------------------', response); 
+  
+      return {
+        data: response.data
+      };
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  async cancelInvoice(id: string): Promise<{ data: InvoiceResponseType }> {
+    try {
+      const response = await this.put<{ data: InvoiceResponseType; meta: any }>(
+        `/amm/invoices/${id}/cancel` 
+      );
+      console.log('Resposta ao cancel da factura:------------------------', response); 
+  
+      return {
+        data: response.data
+      };
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+  
 
   async deleteInvoice(id: string): Promise<void> {
     try {

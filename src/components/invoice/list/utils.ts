@@ -1,5 +1,6 @@
 import { BreadcrumbType } from "@/app/common/types/breadcrumb.type";
 import { TableHeaderType } from "@/app/common/types/table.types";
+import { OptionType } from "@/components/users/types";
 
 export const breadcrumb: BreadcrumbType[] = [
   {
@@ -48,13 +49,37 @@ export const invoiceOverview = [
 ];
 
 export const invoiceHeader: TableHeaderType[] = [
-  { title: "invoice-number" },
-  { title: "employee-name" },
-  { title: "clinic-name" },
-  { title: "total-amount" },
-  { title: "issue-date" },
-  { title: "due-date" },
+  { title: "invoice-number", key: "invoiceNumber", sortable: true },
+  { title: "employee-name",key: "employee.firstName", sortable: true },
+  { title: "clinic-name",key: "clinic.name", sortable: true },
+  { title: "total-amount",key: "totalAmount", sortable: true },
+  { title: "due-date",key: "dueDate", sortable: true },
+  { title: "status" ,key: "invoiceStatus", sortable: true},
   { title: "action" },
+];
+
+
+export const Options: OptionType[] = [
+  {
+    title: "view",
+    icon: "ph-eye",
+    value: "view",
+  },
+  {
+    title: "edit",
+    icon: "ph-pencil",
+    value: "edit",
+  },
+  {
+    title: "post",
+    icon: "ph-check-circle",
+    value: "post",
+  },
+  {
+    title: "cancel",
+    icon: "ph-prohibit",
+    value: "cancel",
+  }
 ];
 
 export const invoicesList = [

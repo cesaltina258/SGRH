@@ -17,6 +17,8 @@ interface InvoiceItem extends Omit<InvoiceItemInsertType, 'taxRate'> {
 }
 
 
+
+
 // Composables
 const { t } = useI18n();
 const toast = useToast();
@@ -164,7 +166,7 @@ const removeItem = (id: string | undefined) => {
 const prepareItemsForSubmission = (): InvoiceItemInsertType[] => {
   return invoiceItems.value.map((item, index) => {
     const lineTotal = lineTotals.value[index];
-    
+
     return {
       ...item,
       id: undefined,
@@ -217,7 +219,7 @@ onMounted(() => {
       ...item,
       id: item.id || Date.now().toString(),
     }));
- console.log('props.initialItems', invoiceItems)
+    console.log('props.initialItems', invoiceItems)
   } else {
     addItem(); // Só adiciona um item vazio se não houver itens iniciais
   }
@@ -242,43 +244,98 @@ watch(invoiceItems, () => {
 }, { deep: true });
 
 
+// Adicione estas funções utilitárias
+const flagColor = (flag: string) => {
+  switch (flag) {
+    case 'EXCEEDS_LIMIT': return 'warning';
+    case 'INSUFFICIENT_FUNDS': return 'error';
+    default: return 'info';
+  }
+};
+
+const flagText = (flag: string) => {
+  switch (flag) {
+    case 'EXCEEDS_LIMIT': return t('t-exceeds-limit');
+    case 'INSUFFICIENT_FUNDS': return t('t-insufficient-funds');
+    default: return '';
+  }
+};
+
+const flagIcon = (flag: string) => {
+  switch (flag) {
+    case 'EXCEEDS_LIMIT': return 'ph-warning';
+    case 'INSUFFICIENT_FUNDS': return 'ph-money';
+    default: return '';
+  }
+};
+
 </script>
 
 <template>
   <v-form ref="form">
-    <Table :headerItems="productHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))">
+    <Table :headerItems="productHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))" class="fixed-columns">
       <template #body>
-        <tr v-for="(item, index) in invoiceItems" :key="'product-item-' + item.id">
-          <td class="font-weight-bold" >{{ index + 1 }}</td>
-          <td class="pt-4" >
+        <tr v-for="(item, index) in invoiceItems" :key="'product-item-' + item.id"
+           :class="[`flag-border-${item.flag}`, {'has-flag': item.flag && item.flag !== 'UNFLAGGED'}]">
+          <!-- Número (3%) -->
+            <td style="width: 3%" class="font-weight-bold text-center">
+    <v-tooltip v-if="item.flag && item.flag !== 'UNFLAGGED'" :text="flagText(item.flag)" location="top">
+      <template v-slot:activator="{ props }">
+        <v-icon v-bind="props" :color="flagColor(item.flag)" size="small">
+          {{ flagIcon(item.flag) }}
+        </v-icon>
+      </template>
+    </v-tooltip>
+    {{ index + 1 }}
+  </td>
+
+          <!-- Procedimento (30%) -->
+          <td style="width: 30%" class="pt-4">
             <MenuSelect v-model="item.companyAllowedHospitalProcedure" :items="companyAllowedHospitalProcedures"
               :rules="requiredRules.companyAllowedHospitalProcedure" :placeholder="$t('t-select-procedure')"
-              item-value="value" />
+              item-value="value" class="w-100" />
           </td>
-          <td class="pt-4">
-            <TextField v-model.number="item.unitPrice" :rules="requiredRules.unitPrice"
-              :placeholder="$t('t-unit-price')" type="number" min="0" step="0.01" />
-          </td>
-          <td class="pt-4">
-            <TextField v-model.number="item.quantity"  :placeholder="$t('t-quantity')" type="number" min="0"
-              :rules="requiredRules.quantity" />
-          </td>
-          <td class="pt-4">
-            <MenuSelect v-model="item.taxRate" :items="taxRates" :rules="requiredRules.taxRate"
-              :placeholder="$t('t-select-tax-rate')" item-value="value" />
-          </td>
-          <td class="pt-4">
-            <div class="d-flex align-center">
-              <TextField disabled :model-value="getLineTotal(item).total.toFixed(2)" class="me-2" />
 
-              <v-btn icon variant="text" color="error" size="small" @click="removeItem(item.id)">
-                <i class="ph-trash"></i>
-              </v-btn>
-            </div>
+
+          <!-- Preço Unitário (10%) -->
+          <td style="width: 10%" class="pt-4 px-1">
+            <TextField v-model.number="item.unitPrice" :rules="requiredRules.unitPrice"
+              :placeholder="$t('t-unit-price')" type="number" min="0" step="0.01" class="compact-input" />
+          </td>
+
+          <!-- Quantidade (5%) -->
+          <td style="width: 5%" class="pt-4 px-1">
+            <TextField v-model.number="item.quantity" :placeholder="$t('t-quantity')" type="number" min="0"
+              :rules="requiredRules.quantity" class="compact-input" />
+          </td>
+
+          <!-- Taxa (12%) -->
+          <td style="width: 12%" class="pt-4 px-1">
+            <MenuSelect v-model="item.taxRate" :items="taxRates" :rules="requiredRules.taxRate"
+              :placeholder="$t('t-select-tax-rate')" item-value="value" class="w-100" />
+          </td>
+
+          <!-- Total (20%) -->
+          <td style="width: 20%" class="pt-4">
+            <TextField disabled :model-value="getLineTotal(item).total.toFixed(2)" class="total-input" />
+          </td>
+
+          <!-- Descrição (25%) -->
+          <td style="width: 25%" class="pt-4">
+            <TextArea v-model="item.description" :placeholder="$t('t-description')" class="description-field" rows="1"
+              auto-grow />
+          </td>
+
+          <!-- Ações (5%) -->
+          <td style="width: 5%" class="pt-4 px-1 text-center">
+            <v-btn icon variant="text" color="error" size="small" @click="removeItem(item.id)" class="ml-auto">
+              <i class="ph-trash"></i>
+            </v-btn>
           </td>
         </tr>
       </template>
     </Table>
+
 
     <v-btn color="light" @click="addItem" class="mt-2">
       <i class="ph-plus me-2"></i> {{ $t("t-add-invoice-item") }}
@@ -290,7 +347,7 @@ watch(invoiceItems, () => {
       <v-col cols="12" lg="4">
         <v-row class="d-flex align-center mb-2" no-gutters>
           <v-col cols="6">
-            <span class="font-weight-bold me-4">{{ $t('t-sub-total') }}</span>
+            <span class="font-weight-bold me-4">{{ $t('t-incidence-base') }}:</span>
           </v-col>
           <v-col cols="6">
             <TextField :model-value="subTotal" disabled />
@@ -299,7 +356,7 @@ watch(invoiceItems, () => {
 
         <v-row class="d-flex align-center mb-2" no-gutters>
           <v-col cols="6">
-            <span class="font-weight-bold me-4">{{ $t('t-tax-amount') }}</span>
+            <span class="font-weight-bold me-4">{{ $t('t-rate') }}:</span>
           </v-col>
           <v-col cols="6">
             <TextField :model-value="taxAmount" disabled />
@@ -310,7 +367,7 @@ watch(invoiceItems, () => {
 
         <v-row class="d-flex align-center mb-2" no-gutters>
           <v-col cols="6">
-            <span class="font-weight-bold me-4">{{ $t('t-total-amount') }}</span>
+            <span class="font-weight-bold me-4">{{ $t('t-total-amount') }}:</span>
           </v-col>
           <v-col cols="6">
             <TextField :model-value="finalTotal" disabled />
@@ -320,3 +377,71 @@ watch(invoiceItems, () => {
     </v-row>
   </v-form>
 </template>
+
+<style scoped>
+.fixed-columns {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.fixed-columns td {
+  vertical-align: middle;
+  overflow: hidden;
+}
+
+/* Campos compactos */
+.compact-input {
+  max-width: 100px;
+}
+
+/* Campo de total */
+.total-input {
+  width: 100%;
+  min-width: 120px;
+}
+
+/* Descrição com mais espaço */
+.description-field {
+  width: 100%;
+  min-height: 40px;
+}
+
+/* Ajuste para selects */
+.w-100 {
+  width: 100%;
+}
+
+/* Alinhamentos específicos */
+.fixed-columns td:nth-child(1),
+.fixed-columns td:nth-child(4),
+.fixed-columns td:nth-child(8) {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.fixed-columns td:nth-child(3),
+.fixed-columns td:nth-child(4),
+.fixed-columns td:nth-child(6) {
+  text-align: right;
+}
+
+/* Espaçamento interno para textarea */
+.description-field :deep(.v-input__control) {
+  padding: 0 4px;
+}
+
+/*FLAGS*/
+
+.flag-border-EXCEEDS_LIMIT {
+  border-left: 4px solid orange;
+}
+
+.flag-border-INSUFFICIENT_FUNDS {
+  border-left: 4px solid red;
+}
+
+.has-flag {
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.02); /* leve destaque */
+}
+</style>

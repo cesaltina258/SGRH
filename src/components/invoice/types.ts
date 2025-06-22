@@ -6,6 +6,7 @@ export type InvoiceListingType = {
     totalAmount: number;
     website: string;
     company?: string;
+    invoiceStatus: string;
     employee: {
         id: string;
         firstName: string;
@@ -26,7 +27,9 @@ export type InvoiceListingType = {
     };
     currency?: {
         id: number;
-        name: string
+        name: string;
+        symbol:string
+
     } | null;
     isEmployeeInvoice: boolean;
     dependent?: {
@@ -53,6 +56,7 @@ export type InvoiceResponseType = {
     totalAmount: number;
     website: string;
     company?: string;
+    invoiceStatus: string;
     employee: {
         id: string;
         firstName: string;
@@ -119,6 +123,7 @@ export type InvoiceItemInsertType = {
     companyAllowedHospitalProcedure: string | undefined;
     invoice: string | undefined;
     totalAmount: number;
+    flag?: string;
 }
 
 export type InvoiceItemListingType = {
@@ -142,6 +147,7 @@ export type InvoiceItemListingType = {
         totalAmount: number;
     };
     totalAmount: number;
+    flag?: string;
     createdAt: Date ;
     updatedAt: Date | null;
     deletedAt: Date | null;

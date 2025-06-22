@@ -10,12 +10,15 @@ import { useI18n } from "vue-i18n"
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue"
 import DataTableServer from "@/app/common/components/DataTableServer.vue"
 import TableAction from "@/app/common/components/TableAction.vue"
-import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue"
-import { invoiceHeader } from "@/components/invoice/list/utils"
+import PostInvoiceConfirmationDialog from "@/app/common/components/PostInvoiceConfirmationDialog.vue"
+import CancelInvoiceConfirmationDialog from "@/app/common/components/CancelInvoiceConfirmationDialog.vue"
+import { invoiceHeader, Options } from "@/components/invoice/list/utils"
 import Card from "@/app/common/components/Card.vue"
 import Status from "@/app/common/components/Status.vue";
 import { formateDate } from "@/app/common/dateFormate";
 import { InvoiceListingType } from "../types"
+import axios from "axios"
+
 
 const { t } = useI18n()
 const toast = useToast()
@@ -25,9 +28,12 @@ const invoiceStore = useInvoiceStore()
 // Estado do componente
 const searchQuery = ref("")
 const searchProps = "incomeTaxNumber,issueDate,dueDate,totalAmount,employee,clinic,currency" // Campos de pesquisa,
-const deleteDialog = ref(false)
-const deleteId = ref<string | null>(null)
-const deleteLoading = ref(false)
+const postDialog = ref(false)
+const postId = ref<string | null>(null)
+const postLoading = ref(false)
+const cancelDialog = ref(false)
+const cancelId = ref<string | null>(null)
+const cancelLoading = ref(false)
 const itemsPerPage = ref(10)
 const selectedInvoices = ref<any[]>([]) // Armazena os funcionários selecionados
 
@@ -64,7 +70,89 @@ const onView = (id: string) => {
   router.push(`/invoice/view/${id}`)
 }
 
+// Abre o diálogo de confirmação para do lançamento
+const openPostDialog = (id: string) => {
+  postId.value = id
+  postDialog.value = true
+}
+
+const postInvoice = async () => {
+  if (!postId.value) return;
+
+  postLoading.value = true;
+  try {
+    await invoiceService.postInvoice(postId.value);
+    toast.success(t('t-toast-message-post'));
+    await invoiceStore.fetchInvoices(0, itemsPerPage.value);
+  } catch (error: unknown) {
+    console.log('Erro completo:', error); // Para debugging
+    
+    if (typeof error === 'object' && error !== null) {
+      const apiError = error as {
+        message?: string;
+        details?: any;
+        status?: number;
+      };
+      
+      if (apiError.message) {
+        // Mostra a mensagem direta do erro
+        toast.error(apiError.message);
+      } else {
+        // Fallback para mensagem genérica
+        toast.error(t('t-toast-message-error'));
+      }
+    } else {
+      // Caso o erro não seja um objeto
+      toast.error(t('t-toast-message-error'));
+    }
+  } finally {
+    postLoading.value = false;
+    postDialog.value = false;
+  }
+};
+
+// Abre o diálogo de confirmação para do lançamento
+const openCancelDialog = (id: string) => {
+  cancelId.value = id
+  cancelDialog.value = true
+}
+
+const cancelInvoice = async () => {
+  if (!cancelId.value) return;
+
+  cancelLoading.value = true;
+  try {
+    await invoiceService.cancelInvoice(cancelId.value);
+    toast.success(t('t-toast-message-cancel'));
+    await invoiceStore.fetchInvoices(0, itemsPerPage.value);
+  } catch (error: unknown) {
+    console.log('Erro completo:', error); // Para debugging
+    
+    if (typeof error === 'object' && error !== null) {
+      const apiError = error as {
+        message?: string;
+        details?: any;
+        status?: number;
+      };
+      
+      if (apiError.message) {
+        // Mostra a mensagem direta do erro
+        toast.error(apiError.message);
+      } else {
+        // Fallback para mensagem genérica
+        toast.error(t('t-toast-message-error'));
+      }
+    } else {
+      // Caso o erro não seja um objeto
+      toast.error(t('t-toast-message-error'));
+    }
+  } finally {
+    cancelLoading.value = false;
+    cancelDialog.value = false;
+  }
+};
 // Abre o diálogo de confirmação para exclusão
+/*
 const openDeleteDialog = (id: string) => {
   deleteId.value = id
   deleteDialog.value = true
@@ -91,7 +179,7 @@ const deleteInvoice = async () => {
     deleteDialog.value = false;
   }
 };
-
+*/
 
 const toggleSelection = (item: InvoiceListingType) => {
   const index = selectedInvoices.value.findIndex(selected => selected.id === item.id);
@@ -102,10 +190,75 @@ const toggleSelection = (item: InvoiceListingType) => {
   }
 };
 
+const onCreateEditClick = (id: string) => {
+  router.push(`/invoices/edit/${id}`);
+}
 
+const onViewClick = (id: string) => {
+  router.push(`/invoices/view/${id}`);
+}
+
+/*
+const onDelete = (id: string) => {
+openDeleteDialog(id);
+}
+*/
+const onPost = (id: string) => {
+  openPostDialog(id);
+}
+
+const onCancel = (id: string) => {
+  openCancelDialog(id);
+}
+
+const getDynamicOptions = (invoice: InvoiceListingType) => {
+  // Opções base
+  let availableOptions = [...Options];
+  
+  // Filtrar opções com base no status
+  if (invoice.invoiceStatus === 'CANCELLED' || invoice.invoiceStatus === 'POSTED') {
+    availableOptions = availableOptions.filter(option => 
+      option.title === 'view'
+    );
+  }
+  
+  return availableOptions.map(option => ({
+    ...option,
+    title: t(`t-${option.title}`)
+  }));
+};
+
+
+const onSelect = (option: string, data: InvoiceListingType) => {
+  switch (option) {
+    case "view":
+      onViewClick(data.id);
+      break;
+    case "edit":
+      onCreateEditClick(data.id);
+      break;
+    case "post":
+      onPost(data.id); 
+      break;
+    case "cancel":
+      onCancel(data.id); 
+      break;
+  }
+};
+
+const formatAmount = (amount: number | string) => {
+  if (amount === null || amount === undefined || amount === 'N/A') return 'N/A';
+  
+  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+  
+  return new Intl.NumberFormat('pt-PT', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(num);
+};
 </script>
 <template>
-  <Card :title="$t('t-invoice-list')" class="mt-7">
+  <Card :title="$t('t-invoice-list')" class="mt-7"> 
     <template #title-action>
       <v-row justify="end" align="center" no-gutters>
         <v-col cols="12" sm="6" md="4">
@@ -136,12 +289,11 @@ const toggleSelection = (item: InvoiceListingType) => {
             </td>
             <td>{{ item.employee?.firstName || 'N/A' }} {{ item.employee?.lastName || 'N/A' }} </td>
             <td>{{ item.clinic?.name || 'N/A' }}</td>
-            <td>{{ item.totalAmount || 'N/A' }}</td>
-            <td>{{ formateDate(item.issueDate) || 'N/A' }}</td>
+            <td>{{ formatAmount(item.totalAmount) || 'N/A' }} {{ item.currency?.symbol }}</td>
             <td>{{ formateDate(item.dueDate) || 'N/A' }}</td>
+            <td><Status :status="item.invoiceStatus" /></td>
             <td>
-              <TableAction @onEdit="() => router.push(`/invoices/edit/${item.id}`)" 
-                @onDelete="() => openDeleteDialog(item.id)" />
+              <ListMenuWithIcon  :menuItems="getDynamicOptions(item)" @onSelect="onSelect($event, item)" />
             </td>
           </tr>
         </template>
@@ -163,5 +315,6 @@ const toggleSelection = (item: InvoiceListingType) => {
     </v-card-text>
   </Card>
 
-  <RemoveItemConfirmationDialog v-model="deleteDialog" @onConfirm="deleteInvoice" :loading="deleteLoading" />
+  <PostInvoiceConfirmationDialog v-model="postDialog" @onConfirm="postInvoice" :loading="postLoading" />
+  <CancelInvoiceConfirmationDialog v-model="cancelDialog" @onConfirm="cancelInvoice" :loading="cancelLoading" />
 </template>
