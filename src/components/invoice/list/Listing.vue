@@ -27,7 +27,7 @@ const invoiceStore = useInvoiceStore()
 
 // Estado do componente
 const searchQuery = ref("")
-const searchProps = "incomeTaxNumber,issueDate,dueDate,totalAmount,employee,clinic,currency" // Campos de pesquisa,
+const searchProps = "invoiceNumber,issueDate,dueDate,totalAmount,employee.firstName,clinic.name,invoiceReferenceNumber,invoiceStatus" // Campos de pesquisa,
 const postDialog = ref(false)
 const postId = ref<string | null>(null)
 const postLoading = ref(false)

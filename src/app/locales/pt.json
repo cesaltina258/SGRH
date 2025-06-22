@@ -825,6 +825,7 @@
   "t-post": "Lançar",
   "t-posted": "Postada",
   "t-cancelled": "Cancelada",
-  "t-pending": "Pendente"
+  "t-pending": "Pendente",
+  "t-draft": "Draft"
 
 }

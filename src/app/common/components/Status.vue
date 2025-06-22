@@ -46,6 +46,8 @@ const dangerChips: { text: string; value: string }[] = [
 const primaryChips: { text: string; value: string }[] = [
   { value: "shipping", text: "Shipping" },
   { value: "new", text: "New" },
+  { value: "DRAFT", text: "draft" },
+
 ];
 </script>
 <template>
