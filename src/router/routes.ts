@@ -471,6 +471,12 @@ const invoicesRoutes = [
     component: () => import("@/views/invoices/Edit.vue"),
     meta: { title: "Edit Invoice", authRequired: true },
   },
+    {
+    path: `${invoicePrefix}/view/:id`,
+    name: "ViewInvoice",
+    component: () => import("@/views/invoices/View.vue"),
+    meta: { title: "View Invoice", authRequired: true },
+  },
 ].map((data) => {
   return {
     ...data,

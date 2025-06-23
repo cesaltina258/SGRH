@@ -834,5 +834,6 @@
   "t-insufficient-funds": "Fundos insuficientes!",
   "t-invoice-updated-success": "Factura actualizada com sucesso!",
   "t-invoice-created-success": "Factura criada com sucesso!",
-  "t-fill-all-item-fields": "Preencha os campos de pelo menos uma linha!"
+  "t-fill-all-item-fields": "Preencha os campos de pelo menos uma linha!",
+  "t-view-invoice": "Consultar Factura"
 }
