@@ -1,3 +1,5 @@
+ProductCard
+
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch } from "vue";
 import { productHeader } from "@/components/invoice/createInvoice/utils";
@@ -234,7 +236,7 @@ onMounted(() => {
     }));
     //console.log('props.initialItems', invoiceItems)
   } else {
-    addItem(); // Só adiciona um item vazio se não houver itens iniciais
+    addItem(); 
   }
 });
 </script>
@@ -261,25 +263,25 @@ onMounted(() => {
           <td style="width: 30%" class="pt-4">
             <MenuSelect v-model="item.companyAllowedHospitalProcedure" :items="companyAllowedHospitalProcedures"
               :rules="requiredRules.companyAllowedHospitalProcedure" :placeholder="$t('t-select-procedure')"
-              item-value="value" class="w-100" />
+              item-value="value" class="w-100" disabled/>
           </td>
 
           <!-- Preço Unitário (10%) -->
           <td style="width: 10%" class="pt-4 px-1">
             <TextField v-model.number="item.unitPrice" :rules="requiredRules.unitPrice"
-              :placeholder="$t('t-unit-price')" type="number" min="0" step="0.01" class="compact-input" />
+              :placeholder="$t('t-unit-price')" type="number" min="0" step="0.01" class="compact-input" disabled/>
           </td>
 
           <!-- Quantidade (5%) -->
           <td style="width: 5%" class="pt-4 px-1">
             <TextField v-model.number="item.quantity" :placeholder="$t('t-quantity')" type="number" min="0"
-              :rules="requiredRules.quantity" class="compact-input" />
+              :rules="requiredRules.quantity" class="compact-input" disabled/>
           </td>
 
           <!-- Taxa (12%) -->
           <td style="width: 12%" class="pt-4 px-1">
             <MenuSelect v-model="item.taxRate" :items="taxRates" :rules="requiredRules.taxRate"
-              :placeholder="$t('t-select-tax-rate')" item-value="value" class="w-100" />
+              :placeholder="$t('t-select-tax-rate')" item-value="value" class="w-100" disabled />
           </td>
 
           <!-- Total (20%) -->
@@ -290,12 +292,12 @@ onMounted(() => {
           <!-- Descrição (25%) -->
           <td style="width: 25%" class="pt-4">
             <TextArea v-model="item.description" :placeholder="$t('t-description')" class="description-field" rows="1"
-              auto-grow />
+              auto-grow disabled/>
           </td>
 
           <!-- Ações (5%) -->
           <td style="width: 5%" class="pt-4 px-1 text-center">
-            <v-btn icon variant="text" color="error" size="small" @click="removeItem(item.id)" class="ml-auto">
+            <v-btn icon variant="text" color="error" size="small" @click="removeItem(item.id)" class="ml-auto" disabled>
               <i class="ph-trash"></i>
             </v-btn>
           </td>
@@ -303,9 +305,9 @@ onMounted(() => {
       </template>
     </Table>
 
-    <v-btn color="light" @click="addItem" class="mt-2">
+    <!--<v-btn color="light" @click="addItem" class="mt-2">
       <i class="ph-plus me-2"></i> {{ $t("t-add-invoice-item") }}
-    </v-btn>
+    </v-btn>-->
 
     <v-divider class="my-4" />
 

@@ -4,6 +4,7 @@ export type SubMenuItemType = {
   id?: string;
   prefix?: string;
   subMenu?: SubMenuItemType[];
+  action?: string;
 };
 
 export type MenuItemType = {
@@ -14,6 +15,7 @@ export type MenuItemType = {
   id: string;
   prefix?: string;
   subMenu?: SubMenuItemType[];
+  action?: string
 };
 
 export type BrandsListType = {

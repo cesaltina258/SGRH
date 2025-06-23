@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { computed, onMounted } from 'vue'
-import { useEmployeeStore } from '@/store/employeeStore'
+import { useEmployeeStore } from '@/store/employee/employeeStore'
 
 const employeeStore = useEmployeeStore()
 

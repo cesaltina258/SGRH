@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue'
-import { useEmployeeStore } from '@/store/employeeStore'
+import { useEmployeeStore } from '@/store/employee/employeeStore'
 const employeeStore = useEmployeeStore()
 
 // Carrega os dados da API

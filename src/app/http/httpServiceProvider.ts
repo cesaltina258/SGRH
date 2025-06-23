@@ -1,7 +1,7 @@
 
 import AuthService from "@/app/http/services/authService";
 import UserService from "@/app/http/services/userService";
-import EmployeeService from "@/app/http/services/employeeService";
+import EmployeeService from "@/app/http/services/employee/employeeService";
 import InstitutionService from "@/app/http/services/institution/institutionService";
 import DepartmentService from "@/app/http/services/institution/departmentService";
 import PositionService from "@/app/http/services/institution/positionService";
@@ -9,7 +9,9 @@ import ClinicInstitutionService from "@/app/http/services/institution/clinicServ
 import ClinicService from "@/app/http/services/clinicService";
 import ContactPersonService from "@/app/http/services/institution/contactPersonService";
 import HospitalProcedureService from "@/app/http/services/institution/hospitalProcedureService";
-
+import InvoiceService from "@/app/http/services/invoice/invoiceService";
+import DependentEmployeeService from "@/app/http/services/employee/dependentService";
+import InvoiceItemService from "@/app/http/services/invoice/invoiceItemService";
 
 //BASETABLES
 import CountryService from "@/app/http/services/baseTables/country/countryService";
@@ -33,6 +35,9 @@ const clinicService = new ClinicService();
 const contactPersonService = new ContactPersonService();
 const hospitalProcedureService = new HospitalProcedureService();
 const clinicInstitutionService = new ClinicInstitutionService();
+const invoiceService = new InvoiceService();
+const dependentEmployeeService = new DependentEmployeeService();
+const invoiceItemService = new InvoiceItemService();
 
 //BASETABLES
 const countryService = new CountryService();
@@ -64,5 +69,8 @@ export {
     contactPersonService,
     clinicInstitutionService,
     hospitalProcedureService,
-    taxRateTypeService
+    invoiceService,
+    dependentEmployeeService,
+    taxRateTypeService,
+    invoiceItemService
 };

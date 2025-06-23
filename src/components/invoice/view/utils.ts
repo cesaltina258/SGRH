@@ -8,7 +8,7 @@ export const breadcrumb: BreadcrumbType[] = [
     disabled: false,
   },
   {
-    title: "create-invoice",
+    title: "view-invoice",
     disabled: true,
   },
 ];

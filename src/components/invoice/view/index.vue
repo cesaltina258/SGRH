@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import InvoiceForm from "@/components/invoice/createInvoice/InvoiceForm.vue";
+import InvoiceForm from "@/components/invoice/view/InvoiceForm.vue";
 import { ref, reactive, computed, watch, onMounted } from "vue";
 import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
@@ -125,7 +125,7 @@ const handleSaveSuccess = (response: any) => {
   }
 
   // Redireciona para a lista
-  //router.push('/invoices/list');
+  router.push('/invoices/list');
 };
 
 /**

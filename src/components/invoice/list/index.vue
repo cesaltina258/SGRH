@@ -4,6 +4,6 @@ import Listing from '@/components/invoice/list/Listing.vue'
 
 </script>
 <template>
-  <Overview />
+  <!--<Overview />-->
   <Listing class="mt-5" />
 </template>

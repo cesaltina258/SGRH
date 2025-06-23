@@ -1,36 +1,33 @@
 <script lang="ts" setup>
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { menuItems } from "@/components/layouts/utils";
 import { useLayoutStore } from "@/store/app";
 import { SIDEBAR_SIZE } from "@/app/const";
 import { useRoute, useRouter } from "vue-router";
+import BaseTableSearchModal from "@/components/layouts/leftSideBar/verticalLayout/BaseTableSearchModal.vue";
 
 const state = useLayoutStore();
 const route = useRoute();
 const router = useRouter();
 
 const path = computed(() => route.path);
+const isCompactSideBar = computed(() => state.sideBarSize === SIDEBAR_SIZE.COMPACT);
+const showBaseTableSearchModal = ref(false);
 
-const isCompactSideBar = computed(() => {
-  return state.sideBarSize === SIDEBAR_SIZE.COMPACT;
-});
+const onClick = (path: string, isSingleLevel?: boolean, action?: string) => {
+  if (action === 'openBaseTableSearchModal') {
+    showBaseTableSearchModal.value = true;
+    return;
+  }
 
-const onClick = (path: string, isSingleLevel?: boolean) => {
   if (isSingleLevel) {
     const openListEle = document.querySelector(".v-list-group--open");
     if (openListEle) {
-      const titleEle = document.querySelector(
-        ".v-list-group--open .v-list-item--active"
-      );
+      const titleEle = document.querySelector(".v-list-group--open .v-list-item--active");
       if (titleEle) {
-        const listItemsEle: any = document.querySelector(
-          ".v-list-group--open .v-list-group__items"
-        );
+        const listItemsEle: any = document.querySelector(".v-list-group--open .v-list-group__items");
         if (listItemsEle) {
-          const appendIcon = document.querySelector(
-            ".v-list-group--open .v-list-item--active .v-list-item__append .ph-caret-up"
-          );
-
+          const appendIcon = document.querySelector(".v-list-group--open .v-list-item--active .v-list-item__append .ph-caret-up");
           if (appendIcon) {
             appendIcon.classList.remove("ph-caret-up");
             appendIcon.classList.add("ph-caret-down");
@@ -42,15 +39,18 @@ const onClick = (path: string, isSingleLevel?: boolean) => {
       }
     }
   }
-  router.push(path);
+
+  if (path) router.push(path);
 };
 </script>
+
 <template>
   <v-container fluid class="py-0 px-3">
     <v-list class="navbar-nav h-100 vertical-menu-component pt-0" id="navbar-nav" open-strategy="single">
       <v-list-group v-for="(menuItem, index) in menuItems" :key="`${menuItem.label}-${index}`"
         :class="menuItem.isHeader ? 'menu-title' : 'nav-item'">
         <template #activator="{ props }">
+          <!-- Header -->
           <v-list-item v-if="menuItem.isHeader" :data-key="`t-${menuItem.label}`" prepend-icon="" class="px-2"
             variant="text" append-icon="">
             <template #title>
@@ -59,9 +59,10 @@ const onClick = (path: string, isSingleLevel?: boolean) => {
               </div>
             </template>
           </v-list-item>
-          <v-list-item v-if="
-            !(menuItem.subMenu && menuItem.subMenu.length) && menuItem.link
-          " :data-key="`t-${menuItem.label}`" append-icon="" class="py-0 ps-5" :value="menuItem.link"
+
+          <!-- Item simples com link -->
+          <v-list-item v-else-if="!(menuItem.subMenu && menuItem.subMenu.length) && menuItem.link"
+            :data-key="`t-${menuItem.label}`" append-icon="" class="py-0 ps-5" :value="menuItem.link"
             :active="menuItem.link === path" :to="menuItem.link" height="45" min-height="45"
             @click.prevent="menuItem.link && onClick(menuItem.link, true)">
             <template #title>
@@ -73,6 +74,20 @@ const onClick = (path: string, isSingleLevel?: boolean) => {
               </router-link>
             </template>
           </v-list-item>
+
+          <!-- Item principal com action -->
+          <v-list-item v-else-if="!(menuItem.subMenu && menuItem.subMenu.length) && menuItem.action"
+            :data-key="`t-${menuItem.label}`" append-icon="" class="py-0 ps-5" height="45" min-height="45"
+            @click.prevent="onClick('', true, menuItem.action)">
+            <template #title>
+              <div class="nav-link menu-link" :class="isCompactSideBar ? 'pa-2' : 'd-flex align-center'">
+                <i :class="menuItem.icon" class="ph-lg" />
+                <div>{{ $t(`t-${menuItem.label}`) }}</div>
+              </div>
+            </template>
+          </v-list-item>
+
+          <!-- Item com submenus -->
           <v-list-item v-if="menuItem.subMenu && menuItem.subMenu.length" :data-key="`t-${menuItem.label}`"
             v-bind="props" class="py-0 nav-link ps-5 menu-header-title" height="45" min-height="45">
             <template #title>
@@ -86,12 +101,14 @@ const onClick = (path: string, isSingleLevel?: boolean) => {
             </template>
           </v-list-item>
         </template>
+
+        <!-- Submenu -->
         <v-list-group v-for="(subMenu, index) in menuItem.subMenu" :key="`submenu-${subMenu.label}-${index}`"
           :value="subMenu.link" :active="subMenu.link === path" :to="subMenu.link">
           <template #activator="{ props }">
             <v-list-item class="py-0 nav nav-sm nav-link sub-menu-list-item" density="compact" v-bind="props"
               :value="subMenu.link" :active="subMenu.link === path" :to="subMenu.link" height="38" min-height="38"
-              @click.prevent="subMenu.link && onClick(subMenu.link)">
+              @click.prevent="onClick(subMenu.link ?? '', true, subMenu.action ?? '' )">
               <template #title>
                 <span class="nav-link menu-link py-0">
                   {{ $t(`t-${subMenu.label}`) }}
@@ -104,6 +121,7 @@ const onClick = (path: string, isSingleLevel?: boolean) => {
             </v-list-item>
           </template>
 
+          <!-- Sub-submenu -->
           <v-list-item v-for="(nestedItem, index) in subMenu.subMenu" :key="index"
             class="py-0 nav nav-sm rail-navigation-list" density="compact" :to="nestedItem.link" height="38"
             min-height="38">
@@ -122,4 +140,7 @@ const onClick = (path: string, isSingleLevel?: boolean) => {
       </v-list-group>
     </v-list>
   </v-container>
+
+  <!-- Modal -->
+  <BaseTableSearchModal v-model="showBaseTableSearchModal" />
 </template>

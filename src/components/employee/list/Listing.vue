@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, computed, watch } from "vue"
 import { useRouter } from "vue-router"
-import { useEmployeeStore } from "@/store/employeeStore"
+import { useEmployeeStore } from "@/store/employee/employeeStore"
 import { employeeService } from "@/app/http/httpServiceProvider"
 import { useToast } from 'vue-toastification'
 import { useI18n } from "vue-i18n"
