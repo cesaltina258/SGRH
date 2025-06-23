@@ -67,7 +67,7 @@ const fetchInvoices = async ({ page, itemsPerPage, sortBy, search }: FetchParams
 
 // Navega para a página de visualização
 const onView = (id: string) => {
-  router.push(`/invoice/view/${id}`)
+  router.push(`/invoices/view/${id}`)
 }
 
 // Abre o diálogo de confirmação para do lançamento

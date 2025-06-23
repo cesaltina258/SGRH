@@ -162,7 +162,7 @@ const onSubmit = () => {
             <div class="font-weight-bold text-caption mb-1">
               {{ $t('t-rate') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="rate" :placeholder="$t('t-enter-rate')" hide-details />
+            <TextField type="number" v-model="rate" :placeholder="$t('t-enter-rate')" hide-details />
           </v-col>
           <v-col cols="12" lg="12">
             <div class="font-weight-bold text-caption mb-1">

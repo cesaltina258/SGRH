@@ -125,7 +125,7 @@ const handleSaveSuccess = (response: any) => {
   }
 
   // Redireciona para a lista
-  //router.push('/invoices/list');
+  router.push('/invoices/edit/'+response.data.id);
 };
 
 /**
