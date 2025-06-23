@@ -92,7 +92,7 @@ const loadInvoiceData = async (id: string) => {
     if (itemsResponse?.content) {
       invoiceItems.value = itemsResponse.content.map(item => ({
         ...item,
-        taxRate: item.taxRate?.id || '', 
+        taxRate: item.taxRate?.id || '',
         companyAllowedHospitalProcedure: item.companyAllowedHospitalProcedure?.id || '',
         invoice: item.invoice?.id || ''
       }));
@@ -191,49 +191,43 @@ const currentInvoiceId = computed(() => {
  * Salva a fatura (dados básicos e/ou itens)
  * @param param - Pode ser os dados da fatura ou seus itens
  */
+// Modifique o saveInvoice
+// Modifique o saveInvoice para lidar com ambos os casos de forma mais inteligente
 const saveInvoice = async (param: InvoiceInsertType | InvoiceItemInsertType[]): Promise<void> => {
   try {
     loading.value = true;
     errorMsg.value = "";
 
-    console.log('Operation mode:', isEditMode.value ? 'EDIT' : 'CREATE');
-    console.log('Current invoice ID:', currentInvoiceId.value);
-
-    // Se for um array, estamos salvando os itens
+    // Caso 1: Recebeu os itens primeiro
     if (Array.isArray(param)) {
       const items = param;
 
-      // 1. Salva os dados básicos da fatura
-      const response = isEditMode.value
-        ? await invoiceService.updateInvoice(currentInvoiceId.value!, invoiceData)
-        : await invoiceService.createInvoice(invoiceData);
+      // Calcula o total baseado nos itens
+      const totalAmount = items.reduce((sum, item) => sum + (item.totalAmount || 0), 0);
+      invoiceData.totalAmount = totalAmount;
 
-      // 2. Se for criação, armazena o novo ID
-      if (!isEditMode.value && response.data?.id) {
-        console.log('New invoice created with ID:', response.data.id);
-        invoiceStore.setCurrentInvoiceId(response.data.id);
+      // Se já estiver em modo de edição, atualiza a invoice com os itens
+      if (isEditMode.value) {
+        await invoiceService.updateInvoice(currentInvoiceId.value!, { ...invoiceData, totalAmount });
+        await saveInvoiceItems(currentInvoiceId.value!, items);
+        handleSaveSuccess({ data: { id: currentInvoiceId.value! } });
       }
+      // Se for criação, primeiro cria a invoice básica e depois os itens
+      else {
+        const invoiceResponse = await invoiceService.createInvoice({ ...invoiceData, totalAmount });
+        const targetInvoiceId = invoiceResponse.data?.id;
 
-      // 3. Salva os itens se houver
-      if (items.length > 0) {
-        const targetInvoiceId = isEditMode.value
-          ? currentInvoiceId.value!
-          : response.data?.id;
+        if (!targetInvoiceId) throw new Error('Invoice ID not available');
 
-        if (!targetInvoiceId) {
-          throw new Error('Failed to determine invoice ID for items');
-        }
-
-        console.log('Saving items for invoice ID:', targetInvoiceId);
         await saveInvoiceItems(targetInvoiceId, items);
+        handleSaveSuccess(invoiceResponse);
       }
-
-      handleSaveSuccess(response);
-    } else {
-      // Se não for array, salva apenas os dados básicos
+    }
+    // Caso 2: Recebeu apenas os dados básicos (sem itens)
+    else {
       const response = isEditMode.value
-        ? await invoiceService.updateInvoice(currentInvoiceId.value!, param)
-        : await invoiceService.createInvoice(param);
+        ? await invoiceService.updateInvoice(currentInvoiceId.value!, { ...param, totalAmount: invoiceData.totalAmount })
+        : await invoiceService.createInvoice({ ...param, totalAmount: invoiceData.totalAmount });
 
       handleSaveSuccess(response);
     }
@@ -253,32 +247,33 @@ const saveInvoiceItems = async (invoiceId: string, items: InvoiceItemInsertType[
   try {
     loading.value = true;
 
-    // Verifica se há itens para salvar
     if (!items || items.length === 0) {
       console.warn('No items to save');
       return;
     }
 
-    // Em modo de edição, remove todos os itens existentes primeiro
+    // Em modo edição, primeiro limpamos os itens existentes
     if (isEditMode.value) {
       const existingItems = await invoiceItemService.getInvoiceItemByInvoice(invoiceId);
-      console.log('existing items: ', existingItems)
       await Promise.all(
         existingItems.content.map(item =>
           invoiceItemService.deleteInvoiceItem(item.id)
-        ));
+        )
+      );
     }
 
-    // Cria todos os novos itens (sem IDs para evitar duplicação)
+    // Prepara os itens com o invoiceId correto
+    const itemsToSave = items.map(item => ({
+      ...item,
+      invoice: invoiceId,
+      id: undefined // Força criação de novo registro
+    }));
+
+    // Persiste todos os itens
     const results = await Promise.all(
-      items.map(item => {
-        const itemToSave = {
-          ...item,
-          invoice: invoiceId,
-          id: undefined // Força criação de novo registro
-        };
-        return invoiceItemService.createInvoiceItem(itemToSave);
-      })
+      itemsToSave.map(item =>
+        invoiceItemService.createInvoiceItem(item)
+      )
     );
 
     console.log('Items saved successfully:', results);

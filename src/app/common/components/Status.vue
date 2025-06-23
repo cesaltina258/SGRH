@@ -30,6 +30,7 @@ const successChips: { text: string; value: string }[] = [
   { value: "low", text: "Low" },
   { value: "Successful", text: "Successful" },
   { value: "unblock", text: "unblock" },
+  { value: "POSTED", text: "posted" },
 ];
 const dangerChips: { text: string; value: string }[] = [
   { value: "ood", text: "Out of Delivery" },

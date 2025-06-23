@@ -5,45 +5,30 @@ import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
 import Table from "@/app/common/components/Table.vue";
 import { InvoiceItemInsertType } from "@/components/invoice/types";
 import { useI18n } from "vue-i18n";
-import { TaxRateTypeListing } from "@/components/baseTables/TaxRate/types";
 import { useTaxRateStore } from "@/store/baseTables/taxRateServiceStore";
 import { useHospitalProcedureStore } from "@/store/institution/hospitalProcedureStore";
 import { useToast } from 'vue-toastification';
-import type { HospitalProcedureListingType } from '@/components/institution/types';
 
 interface InvoiceItem extends Omit<InvoiceItemInsertType, 'taxRate'> {
   id: string;
   taxRate: string;
+  originalId?: string; // Para manter referência em modo de edição
 }
-
-
-
 
 // Composables
 const { t } = useI18n();
 const toast = useToast();
 
-// Props
+// Props - Definição mais limpa com tipagem forte
 const props = defineProps({
-  modelValue: {
-    type: Object as () => InvoiceItemInsertType,
-    required: true
-  },
-  loading: {
-    type: Boolean,
-    default: false
-  },
-  institutionId: {
-    type: String,
-    required: true
-  },
-  initialItems: {
-    type: Array as () => InvoiceItemInsertType[],
-    default: () => []
-  }
+  modelValue: { type: Object as () => InvoiceItemInsertType, required: true },
+  loading: { type: Boolean, default: false },
+  institutionId: { type: String, required: true },
+  initialItems: { type: Array as () => InvoiceItemInsertType[], default: () => [] },
+  isEditMode: { type: Boolean, default: false } // Adicionado para melhor controle
 });
 
-// Emits
+// Emits - Tipagem explícita
 const emit = defineEmits<{
   (e: 'update:modelValue', value: InvoiceItemInsertType): void;
   (e: 'items-ready', items: InvoiceItemInsertType[]): void;
@@ -53,75 +38,73 @@ const emit = defineEmits<{
 const taxRateStore = useTaxRateStore();
 const hospitalProcedureStore = useHospitalProcedureStore();
 
-// State
+// Estado reativo
 const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 const errorMsg = ref("");
-const alertTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
-const invoiceItems = ref<InvoiceItemInsertType[]>([]);
+const invoiceItems = ref<InvoiceItem[]>([]);
 
-// Validation rules
-const requiredRules = {
-  unitPrice: [(v: number) => v > 0 || t('t-unit-price-required')],
-  quantity: [(v: number) => v > 0 || t('t-quantity-required')],
-  taxRate: [(v: number) => !!v || t('t-tax-rate-required')],
-  companyAllowedHospitalProcedure: [(v: string) => !!v || t('t-procedure-required')]
-};
-
-// Computed
+// Dados derivados (computados)
 const companyAllowedHospitalProcedures = computed(() => {
-  return hospitalProcedureStore.hospital_procedure_for_dropdown.map((item) => ({
+  return hospitalProcedureStore.hospital_procedure_for_dropdown.map(item => ({
     value: item.id,
     label: item.hospitalProcedureType.name,
   }));
 });
 
+
 const taxRates = computed(() => {
-  return taxRateStore.tax_rates_for_dropdown.map((item) => ({
+  return taxRateStore.tax_rates_for_dropdown.map(item => ({
     value: item.id,
-    label: item.rate + '%',
-    rate: item.rate ? item.rate / 100 : 0
+    label: `${item.rate}%`,
+    rate: item.rate ? item.rate / 100 : 0 // Converte para decimal (23% → 0.23)
   }));
 });
 
+// Cálculos principais (otimizados)
+const lineTotals = computed(() =>
+  invoiceItems.value.map(item => calculateLineTotal(item))
+);
 
-const getLineTotal = (item: InvoiceItemInsertType) => {
+const calculateLineTotal = (item: InvoiceItem) => {
   const taxRate = taxRates.value.find(t => t.value === item.taxRate);
   const rate = taxRate?.rate || 0;
   const subtotal = item.unitPrice * item.quantity;
   const taxAmount = subtotal * rate;
-  const total = subtotal + taxAmount;
-  return { subtotal, taxAmount, total };
+  return {
+    subtotal,
+    taxAmount,
+    total: subtotal + taxAmount
+  };
 };
 
+// Totais consolidados (evitando recálculos desnecessários)
+const invoiceTotals = computed(() => {
+  const totals = lineTotals.value.reduce((acc, curr) => ({
+    subTotal: acc.subTotal + curr.subtotal,
+    taxAmount: acc.taxAmount + curr.taxAmount,
+    total: acc.total + curr.total
+  }), { subTotal: 0, taxAmount: 0, total: 0 });
 
-// No ProductCard.vue
-const lineTotals = computed(() => {
-  return invoiceItems.value.map(item => getLineTotal(item));
+  return {
+    subTotal: totals.subTotal.toFixed(2),
+    taxAmount: totals.taxAmount.toFixed(2),
+    finalTotal: totals.total.toFixed(2)
+  };
 });
 
-// Atualize os cálculos gerais para usar lineTotals
-const subTotal = computed(() => {
-  return invoiceItems.value.reduce((sum, item) => {
-    return sum + (item.unitPrice * item.quantity);
-  }, 0).toFixed(2);
-});
+// Validação
+const requiredRules = {
+  unitPrice: [(v: number) => v > 0 || t('t-unit-price-required')],
+  quantity: [(v: number) => v > 0 || t('t-quantity-required')],
+  taxRate: [(v: string) => !!v || t('t-tax-rate-required')],
+  companyAllowedHospitalProcedure: [(v: string) => !!v || t('t-procedure-required')]
+};
 
-const taxAmount = computed(() => {
-  return invoiceItems.value.reduce((sum, item) => {
-    const taxRate = taxRates.value.find(t => t.value === item.taxRate);
-    const rate = taxRate?.rate || 0;
-    return sum + (item.unitPrice * item.quantity * rate);
-  }, 0).toFixed(2);
-});
-
-const finalTotal = computed(() => {
-  return (parseFloat(subTotal.value) + parseFloat(taxAmount.value)).toFixed(2);
-});
-// Methods
+// Métodos principais
 const loadProcedures = async () => {
   try {
-    if (!props.institutionId || props.institutionId === '') {
-      console.warn('Institution ID not available yet');
+    if (!props.institutionId) {
+      console.warn('Institution ID not available');
       return;
     }
 
@@ -134,15 +117,10 @@ const loadProcedures = async () => {
   }
 };
 
-const handleError = (messageKey: string, error: any) => {
+const handleError = (messageKey: string, error: unknown) => {
   console.error(messageKey, error);
   errorMsg.value = t(messageKey);
-
-  if (alertTimeout.value) clearTimeout(alertTimeout.value);
-  alertTimeout.value = setTimeout(() => {
-    errorMsg.value = "";
-    alertTimeout.value = null;
-  }, 5000);
+  setTimeout(() => errorMsg.value = "", 5000);
 };
 
 const addItem = () => {
@@ -158,57 +136,92 @@ const addItem = () => {
   });
 };
 
-const removeItem = (id: string | undefined) => {
-  invoiceItems.value = invoiceItems.value.filter(item => item.id !== id);
+const removeItem = (id: string) => {
+  const index = invoiceItems.value.findIndex(item => item.id === id);
+  if (index !== -1) {
+    invoiceItems.value.splice(index, 1);
+  }
 };
 
-
 const prepareItemsForSubmission = (): InvoiceItemInsertType[] => {
-  return invoiceItems.value.map((item, index) => {
-    const lineTotal = lineTotals.value[index];
+  return invoiceItems.value.map(item => {
+    const total = calculateLineTotal(item).total;
 
     return {
       ...item,
-      id: undefined,
-      originalId: undefined,
+      id: props.isEditMode ? item.originalId : undefined,
       taxRate: item.taxRate || '',
       companyAllowedHospitalProcedure: item.companyAllowedHospitalProcedure || '',
       description: item.description || '',
       unitPrice: item.unitPrice || 0,
       quantity: item.quantity || 0,
       invoice: item.invoice || '',
-      totalAmount: lineTotal.total // Inclui o valor com taxa
+      totalAmount: total
     };
   });
 };
 
-
+// Modifique o emitItemsReady para forçar atualização
 const emitItemsReady = (): boolean => {
-  // Valida os itens antes de emitir
-  for (const item of invoiceItems.value) {
-    if (!item.companyAllowedHospitalProcedure || item.quantity <= 0 || item.unitPrice <= 0) {
-      toast.error(t('t-fill-all-item-fields'));
-      return false;
-    }
-  }
+  // Atualiza todos os totais antes de emitir
+  invoiceItems.value = invoiceItems.value.map(item => ({
+    ...item,
+    totalAmount: calculateLineTotal(item).total
+  }));
 
   const items = prepareItemsForSubmission();
+
+  // Validação mais robusta
+  const hasInvalidItems = items.some(item =>
+    !item.companyAllowedHospitalProcedure ||
+    item.quantity <= 0 ||
+    item.unitPrice <= 0
+  );
+
+  if (hasInvalidItems) {
+    toast.error(t('t-fill-all-item-fields'));
+    return false;
+  }
+
   emit('items-ready', items);
   return true;
 };
 
-// Exponha o método via defineExpose
-defineExpose({
-  emitItemsReady
-});
+// Exposição de métodos para o componente pai
+defineExpose({ emitItemsReady });
 
-// Watchers
+// Watchers otimizados
+watch(() => props.institutionId, loadProcedures, { immediate: true });
 
-watch(() => props.institutionId, (newId) => {
-  if (newId) {
-    loadProcedures();
+watch(() => props.initialItems, (newItems) => {
+  if (newItems?.length) {
+    invoiceItems.value = newItems.map(item => ({
+      ...item,
+      originalId: item.id,
+      id: item.id || Date.now().toString(),
+      taxRate: item.taxRate || '',
+      companyAllowedHospitalProcedure: item.companyAllowedHospitalProcedure || ''
+    }));
   }
 }, { immediate: true });
+
+// Watcher principal para atualizações
+watch(invoiceItems, (newItems) => {
+  newItems.forEach(item => {
+    item.totalAmount = calculateLineTotal(item).total;
+  });
+}, { deep: true });
+
+// Utilitários para flags (se necessário)
+const flagConfig = {
+  EXCEEDS_LIMIT: { color: 'warning', icon: 'ph-warning', text: t('t-exceeds-limit') },
+  INSUFFICIENT_FUNDS: { color: 'error', icon: 'ph-money', text: t('t-insufficient-funds') },
+  default: { color: 'info', icon: '', text: '' }
+};
+
+const getFlagConfig = (flag?: string) =>
+  flag && flag !== 'UNFLAGGED' ? flagConfig[flag as keyof typeof flagConfig] || flagConfig.default : null;
+
 
 // Lifecycle
 onMounted(() => {
@@ -219,83 +232,37 @@ onMounted(() => {
       ...item,
       id: item.id || Date.now().toString(),
     }));
-    console.log('props.initialItems', invoiceItems)
+    //console.log('props.initialItems', invoiceItems)
   } else {
     addItem(); // Só adiciona um item vazio se não houver itens iniciais
   }
 });
-
-watch(() => props.initialItems, (newItems) => {
-  if (newItems && newItems.length > 0) {
-    invoiceItems.value = newItems.map(item => ({
-      ...item,
-      // Mantenha o ID original apenas para referência, mas não para envio
-      originalId: item.id, // Adicione este campo para referência
-      id: item.id || Date.now().toString(), // ID local para controle UI
-      // Garanta que todos os campos obrigatórios estão presentes
-      taxRate: item.taxRate || '',
-      companyAllowedHospitalProcedure: item.companyAllowedHospitalProcedure || ''
-    }));
-  }
-}, { immediate: true });
-
-watch(invoiceItems, () => {
-  // Isso força o Vue a reavaliar os computed totais
-}, { deep: true });
-
-
-// Adicione estas funções utilitárias
-const flagColor = (flag: string) => {
-  switch (flag) {
-    case 'EXCEEDS_LIMIT': return 'warning';
-    case 'INSUFFICIENT_FUNDS': return 'error';
-    default: return 'info';
-  }
-};
-
-const flagText = (flag: string) => {
-  switch (flag) {
-    case 'EXCEEDS_LIMIT': return t('t-exceeds-limit');
-    case 'INSUFFICIENT_FUNDS': return t('t-insufficient-funds');
-    default: return '';
-  }
-};
-
-const flagIcon = (flag: string) => {
-  switch (flag) {
-    case 'EXCEEDS_LIMIT': return 'ph-warning';
-    case 'INSUFFICIENT_FUNDS': return 'ph-money';
-    default: return '';
-  }
-};
-
 </script>
 
 <template>
   <v-form ref="form">
     <Table :headerItems="productHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))" class="fixed-columns">
       <template #body>
-        <tr v-for="(item, index) in invoiceItems" :key="'product-item-' + item.id"
-           :class="[`flag-border-${item.flag}`, {'has-flag': item.flag && item.flag !== 'UNFLAGGED'}]">
-          <!-- Número (3%) -->
-            <td style="width: 3%" class="font-weight-bold text-center">
-    <v-tooltip v-if="item.flag && item.flag !== 'UNFLAGGED'" :text="flagText(item.flag)" location="top">
-      <template v-slot:activator="{ props }">
-        <v-icon v-bind="props" :color="flagColor(item.flag)" size="small">
-          {{ flagIcon(item.flag) }}
-        </v-icon>
-      </template>
-    </v-tooltip>
-    {{ index + 1 }}
-  </td>
+        <tr v-for="(item, index) in invoiceItems" :key="`product-item-${item.id}`"
+          :class="[`flag-border-${item.flag}`, { 'has-flag': item.flag && item.flag !== 'UNFLAGGED' }]">
+          <!-- Coluna Número -->
+          <td class="font-weight-bold text-center" style="width: 3%">
+            <v-tooltip v-if="getFlagConfig(item.flag)" :text="getFlagConfig(item.flag)?.text" location="top">
+              <template v-slot:activator="{ props: tooltipProps }">
+                <v-icon v-bind="tooltipProps" :color="getFlagConfig(item.flag)?.color" size="small">
+                  {{ getFlagConfig(item.flag)?.icon }}
+                </v-icon>
+              </template>
+            </v-tooltip>
+            {{ index + 1 }}
+          </td>
 
-          <!-- Procedimento (30%) -->
+          <!-- Demais colunas (mantidas conforme original) -->
           <td style="width: 30%" class="pt-4">
             <MenuSelect v-model="item.companyAllowedHospitalProcedure" :items="companyAllowedHospitalProcedures"
               :rules="requiredRules.companyAllowedHospitalProcedure" :placeholder="$t('t-select-procedure')"
               item-value="value" class="w-100" />
           </td>
-
 
           <!-- Preço Unitário (10%) -->
           <td style="width: 10%" class="pt-4 px-1">
@@ -317,7 +284,7 @@ const flagIcon = (flag: string) => {
 
           <!-- Total (20%) -->
           <td style="width: 20%" class="pt-4">
-            <TextField disabled :model-value="getLineTotal(item).total.toFixed(2)" class="total-input" />
+            <TextField disabled :model-value="calculateLineTotal(item).total.toFixed(2)" class="total-input" />
           </td>
 
           <!-- Descrição (25%) -->
@@ -336,7 +303,6 @@ const flagIcon = (flag: string) => {
       </template>
     </Table>
 
-
     <v-btn color="light" @click="addItem" class="mt-2">
       <i class="ph-plus me-2"></i> {{ $t("t-add-invoice-item") }}
     </v-btn>
@@ -350,7 +316,7 @@ const flagIcon = (flag: string) => {
             <span class="font-weight-bold me-4">{{ $t('t-incidence-base') }}:</span>
           </v-col>
           <v-col cols="6">
-            <TextField :model-value="subTotal" disabled />
+            <TextField :model-value="invoiceTotals.subTotal" disabled />
           </v-col>
         </v-row>
 
@@ -359,7 +325,7 @@ const flagIcon = (flag: string) => {
             <span class="font-weight-bold me-4">{{ $t('t-rate') }}:</span>
           </v-col>
           <v-col cols="6">
-            <TextField :model-value="taxAmount" disabled />
+            <TextField :model-value="invoiceTotals.taxAmount" disabled />
           </v-col>
         </v-row>
 
@@ -370,7 +336,7 @@ const flagIcon = (flag: string) => {
             <span class="font-weight-bold me-4">{{ $t('t-total-amount') }}:</span>
           </v-col>
           <v-col cols="6">
-            <TextField :model-value="finalTotal" disabled />
+            <TextField :model-value="invoiceTotals.finalTotal" disabled />
           </v-col>
         </v-row>
       </v-col>
@@ -379,58 +345,56 @@ const flagIcon = (flag: string) => {
 </template>
 
 <style scoped>
+/* Estilos otimizados */
 .fixed-columns {
   table-layout: fixed;
   width: 100%;
+
+  td {
+    vertical-align: middle;
+    overflow: hidden;
+
+    /* Padronização de padding */
+    &:nth-child(1),
+    &:nth-child(4),
+    &:nth-child(8) {
+      padding: 0 4px;
+    }
+
+    /* Alinhamento de valores numéricos */
+    &:nth-child(3),
+    &:nth-child(4),
+    &:nth-child(6) {
+      text-align: right;
+
+    }
+  }
 }
 
-.fixed-columns td {
-  vertical-align: middle;
-  overflow: hidden;
-}
-
-/* Campos compactos */
+/* Classes utilitárias */
 .compact-input {
   max-width: 100px;
 }
 
-/* Campo de total */
 .total-input {
   width: 100%;
   min-width: 120px;
 }
 
-/* Descrição com mais espaço */
 .description-field {
   width: 100%;
   min-height: 40px;
 }
 
-/* Ajuste para selects */
 .w-100 {
   width: 100%;
 }
 
-/* Alinhamentos específicos */
-.fixed-columns td:nth-child(1),
-.fixed-columns td:nth-child(4),
-.fixed-columns td:nth-child(8) {
-  padding-left: 4px;
-  padding-right: 4px;
+/* Flags */
+.has-flag {
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.02);
 }
-
-.fixed-columns td:nth-child(3),
-.fixed-columns td:nth-child(4),
-.fixed-columns td:nth-child(6) {
-  text-align: right;
-}
-
-/* Espaçamento interno para textarea */
-.description-field :deep(.v-input__control) {
-  padding: 0 4px;
-}
-
-/*FLAGS*/
 
 .flag-border-EXCEEDS_LIMIT {
   border-left: 4px solid orange;
@@ -438,10 +402,5 @@ const flagIcon = (flag: string) => {
 
 .flag-border-INSUFFICIENT_FUNDS {
   border-left: 4px solid red;
-}
-
-.has-flag {
-  position: relative;
-  background-color: rgba(0, 0, 0, 0.02); /* leve destaque */
 }
 </style>

@@ -145,28 +145,20 @@ const submitInvoice = async () => {
   if (!form.value) return;
 
   const { valid } = await form.value.validate();
-
   if (!valid) {
     toast.error(t('t-validation-error'));
-    errorMsg.value = t('t-please-correct-errors');
     return;
   }
 
   try {
-    if (invoiceData.value.isEmployeeInvoice) {
-      invoiceData.value.dependent = undefined;
-    } else if (!invoiceData.value.dependent) {
-      toast.error(t('t-dependent-required'));
-      return;
-    }
-
-    // Primeiro emite os dados básicos
-    emit('save', { ...invoiceData.value });
-    
-    // Depois emite os itens, se existirem
+    // Se houver itens, emite apenas eles (que já vão disparar o salvamento completo)
     if (productCardRef.value) {
       const itemsValid = productCardRef.value.emitItemsReady();
       if (!itemsValid) return;
+    } 
+    // Se não houver itens, emite os dados básicos
+    else {
+      emit('save', { ...invoiceData.value });
     }
   } catch (error) {
     console.error("Error submitting invoice:", error);
@@ -175,15 +167,11 @@ const submitInvoice = async () => {
 };
 
 const handleItemsReady = (items: InvoiceItemInsertType[]) => {
-  // Se for edição, mantém o totalAmount original do backend
-  if (props.isEditMode && props.modelValue.totalAmount) {
-    emit('items-ready', items);
-    return;
-  }
-  
-  // Caso contrário, calcula o novo total
+  // SEMPRE atualiza o total, mesmo em modo edição
   const totalAmount = items.reduce((sum, item) => sum + (item.totalAmount || 0), 0);
   invoiceData.value.totalAmount = totalAmount;
+
+  // Emite os itens com o total atualizado
   emit('items-ready', items);
 };
 
@@ -333,14 +321,8 @@ onMounted(async () => {
         </v-row>
 
         <div class="mb-12">
-          <ProductCard 
-  ref="productCardRef" 
-  v-model="invoiceItemData" 
-  :institution-id="invoiceData.company || ''"
-  :initial-items="initialItems"
-  :is-edit-mode="isEditMode"
-  @items-ready="handleItemsReady" 
-/>
+          <ProductCard ref="productCardRef" v-model="invoiceItemData" :institution-id="invoiceData.company || ''"
+            :initial-items="initialItems" :is-edit-mode="isEditMode" @items-ready="handleItemsReady" />
         </div>
       </v-card-text>
 

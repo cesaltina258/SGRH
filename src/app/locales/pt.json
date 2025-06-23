@@ -361,7 +361,7 @@
   "t-toast-message-cancel-erros": "Erro ao cancelar registo!",
   "t-dialog-title-confirm-post": "Confirmar lançamento",
   "t-dialog-text-confirm-post": "Tem certeza que deseja lançar este registo permanentemente?",
-   "t-dialog-title-confirm-cancel": "Confirmar cancelamento",
+  "t-dialog-title-confirm-cancel": "Confirmar cancelamento",
   "t-dialog-text-confirm-cancel": "Tem certeza que deseja cancelar este registo permanentemente?",
   "t-invalid-email": "E-mail inválido!",
   "t-please-enter-same-password-and-password-confirm": "A senha e confirmaçãoo da senha não são iguais!",
@@ -814,7 +814,7 @@
   "t-tax-rates": "Taxas",
   "t-tax-rate-list": "Lista de Taxas de Imposto",
   "t-rate": "Taxa(%)",
-  "t-enter-tax-rate":"Insira a taxa de imposto",
+  "t-enter-tax-rate": "Insira a taxa de imposto",
   "t-enter-rate": "Insira a taxa (%)",
   "t-view-tax-rate-list": "Vista em Lista",
   "t-please-enter-valid-rate": "Por favor, insira uma taxa válida!",
@@ -826,6 +826,13 @@
   "t-posted": "Postada",
   "t-cancelled": "Cancelada",
   "t-pending": "Pendente",
-  "t-draft": "Draft"
-
+  "t-draft": "Draft",
+  "t-exceeds-limit": "Limite do procedimento excedido!",
+  "t-procedure-required": "Procedimento hospitalar é obrigatório!",
+  "t-unit-price-required": "Preço unitário é obrigatório!",
+  "t-quantity-required": "A quantidade é obrigatória!",
+  "t-insufficient-funds": "Fundos insuficientes!",
+  "t-invoice-updated-success": "Factura actualizada com sucesso!",
+  "t-invoice-created-success": "Factura criada com sucesso!",
+  "t-fill-all-item-fields": "Preencha os campos de pelo menos uma linha!"
 }
