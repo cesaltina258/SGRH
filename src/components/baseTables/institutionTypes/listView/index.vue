@@ -232,7 +232,7 @@ const onConfirmDelete = async () => {
       </v-row>
     </v-card-title>
     <v-card-text class="mt-2">
-      <DataTableServer :headers="listViewHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
+      <DataTableServer v-model="selectedInstitutionTypes" :headers="listViewHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
         :items="institutionTypeStore.institution_types" :items-per-page="itemsPerPage" :total-items="totalItems"
         :loading="loadingList" :search-query="searchQuery" :search-props="searchProps" item-value="id"
         @load-items="fetchInstitutionTypes">
