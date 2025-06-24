@@ -136,7 +136,7 @@ export default class InvoiceItemService extends HttpService {
       }
 
 
-      async updateInvoiceItem(id: string, invoiceData: InvoiceItemInsertType): Promise<InvoiceItemListingType> {
+      async updateInvoiceItem(id: string | undefined, invoiceData: InvoiceItemInsertType): Promise<InvoiceItemListingType> {
             try {
         
               // Corpo da requisição conforme especificado
@@ -154,7 +154,7 @@ export default class InvoiceItemService extends HttpService {
               return response;
         
             } catch (error) {
-              console.error("❌ Erro ao actualizar instituicao:", error);
+              console.error("❌ Erro ao actualizar invoice:", error);
               throw error;
             }
           }

@@ -1,51 +1,52 @@
 <script lang="ts" setup>
-import InvoiceForm from "@/components/invoice/createInvoice/InvoiceForm.vue";
+// =============================================
+// IMPORTS
+// =============================================
+// Vue e Vue Utilities
 import { ref, reactive, computed, watch, onMounted } from "vue";
 import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
 import { useI18n } from 'vue-i18n';
+
+// Services e Stores
 import { invoiceService, invoiceItemService } from "@/app/http/httpServiceProvider";
 import { useInvoiceStore } from "@/store/invoice/invoiceStore";
+
+// Tipos e Componentes
 import { InvoiceInsertType, InvoiceItemInsertType } from "../types";
+import InvoiceForm from "@/components/invoice/createInvoice/InvoiceForm.vue";
 
-/**
- * Composables - Instâncias de utilitários globais
- */
-const { t } = useI18n(); // Internacionalização
-const route = useRoute(); // Rota atual
-const router = useRouter(); // Controle de navegação
-const toast = useToast(); // Notificações
-const invoiceStore = useInvoiceStore(); // Store de faturas
+// =============================================
+// COMPOSABLES & UTILITIES
+// =============================================
+const { t } = useI18n();
+const route = useRoute();
+const router = useRouter();
+const toast = useToast();
+const invoiceStore = useInvoiceStore();
 
-/**
- * Emits - Eventos que este componente emite
- */
+// =============================================
+// COMPONENT EMITS
+// =============================================
 const emit = defineEmits<{
-  (e: 'invoice-created', id: string): void; // Quando uma nova fatura é criada
+  (e: 'invoice-created', id: string): void;
 }>();
 
-/**
- * Estado do componente
- */
-const loading = ref(false); // Estado de carregamento global
-const errorMsg = ref(""); // Mensagem de erro
-const basicDataValidated = ref(false); // Validação básica
-const invoiceItems = ref<InvoiceItemInsertType[]>([]); // Itens da fatura
+// =============================================
+// REACTIVE STATE
+// =============================================
+const loading = ref(false);
+const errorMsg = ref("");
+const basicDataValidated = ref(false);
+const invoiceItems = ref<InvoiceItemInsertType[]>([]);
 
-// Obtém o ID da fatura da rota (se estiver em modo de edição)
+// Parse do ID da fatura da rota
 const invoiceId = ref<string | null>(
   typeof route.params.id === 'string' ? route.params.id :
-    Array.isArray(route.params.id) ? route.params.id[0] : null
+  Array.isArray(route.params.id) ? route.params.id[0] : null
 );
 
-/**
- * Computed - Valores reativos derivados
- */
-const isEditMode = computed(() => !!invoiceId.value); // Determina se está em modo de edição
-
-/**
- * Dados reativos da fatura
- */
+// Dados principais da fatura
 const invoiceData = reactive<InvoiceInsertType>({
   invoiceNumber: '',
   clinic: undefined,
@@ -61,34 +62,47 @@ const invoiceData = reactive<InvoiceInsertType>({
   invoiceReferenceNumber: ''
 });
 
+// =============================================
+// COMPUTED PROPERTIES
+// =============================================
+const isEditMode = computed(() => !!invoiceId.value);
+
+const currentInvoiceId = computed(() => {
+  if (!isEditMode.value) return null;
+  
+  const id = typeof route.params.id === 'string' ? route.params.id :
+    Array.isArray(route.params.id) ? route.params.id[0] : null;
+  
+  return id || invoiceStore.currentInvoiceId;
+});
+
+// =============================================
+// CORE METHODS
+// =============================================
 /**
- * Carrega os dados de uma fatura existente
- * @param id - ID da fatura a ser carregada
+ * Carrega dados de uma fatura existente
  */
 const loadInvoiceData = async (id: string) => {
   try {
     loading.value = true;
+    errorMsg.value = "";
 
-    // Carrega em paralelo os dados da fatura e seus itens
     const [invoiceResponse, itemsResponse] = await Promise.all([
       invoiceService.getInvoiceById(id),
       invoiceItemService.getInvoiceItemByInvoice(id)
     ]);
 
-    console.log("itemsResponse: ", itemsResponse)
-
-    // Atualiza os dados da fatura se existirem
     if (invoiceResponse?.data) {
-      Object.assign(invoiceData, invoiceResponse.data);
-      // Mapeia os relacionamentos
-      invoiceData.company = invoiceResponse.data.employee?.companyId || undefined;
-      invoiceData.clinic = invoiceResponse.data.clinic?.id || undefined;
-      invoiceData.employee = invoiceResponse.data.employee?.id || undefined;
-      invoiceData.currency = invoiceResponse.data.currency?.id || undefined;
-      invoiceData.dependent = invoiceResponse.data.dependent?.id || undefined;
+      Object.assign(invoiceData, {
+        ...invoiceResponse.data,
+        company: invoiceResponse.data.employee?.companyId,
+        clinic: invoiceResponse.data.clinic?.id,
+        employee: invoiceResponse.data.employee?.id,
+        currency: invoiceResponse.data.currency?.id,
+        dependent: invoiceResponse.data.dependent?.id
+      });
     }
 
-    // Processa os itens da fatura
     if (itemsResponse?.content) {
       invoiceItems.value = itemsResponse.content.map(item => ({
         ...item,
@@ -98,137 +112,116 @@ const loadInvoiceData = async (id: string) => {
       }));
     }
   } catch (error) {
-    toast.error(t('t-error-loading-invoice'));
     console.error('Error loading invoice:', error);
+    toast.error(t('t-error-loading-invoice'));
   } finally {
     loading.value = false;
   }
 };
 
 /**
- * Trata o sucesso na operação de salvar
- * @param response - Resposta da API
+ * Handler para sucesso na operação
  */
-const handleSaveSuccess = (response: any) => {
-  // Atualiza o store e busca as faturas mais recentes
+const handleSaveSuccess  = (response: any) => {
   invoiceStore.setDraftInvoice(invoiceData);
   invoiceStore.fetchInvoices();
 
-  // Feedback visual
   toast.success(isEditMode.value
     ? t('t-invoice-updated-success')
     : t('t-invoice-created-success'));
 
-  // Emite evento se for uma nova fatura
   if (!isEditMode.value && response?.data?.id) {
     emit('invoice-created', response.data.id);
   }
 
-  // Redireciona para a lista
-  router.push('/invoices/edit/'+response.data.id);
+  router.push(`/invoices/edit/${response.data.id}`);
 };
 
 /**
- * Trata erros da API
- * @param error - Erro ocorrido
+ * Handler para erros da API
  */
-const handleApiError = (error: any) => {
-  const message = error?.response?.data?.message || error.message || t('t-error-saving-employee');
-  toast.error(message);
+const handleApiError = (error: unknown) => {
+  const message = error instanceof Error 
+    ? error.message 
+    : t('t-error-saving-employee');
+  
   errorMsg.value = message;
+  toast.error(message);
+  
   setTimeout(() => errorMsg.value = "", 5000);
 };
 
+// =============================================
+// SAVE OPERATIONS
+// =============================================
 /**
- * Watchers - Reação a mudanças
+ * Processa operações CRUD para itens da fatura
  */
-
-// Observa mudanças no ID da rota para carregar os dados corretos
-watch(() => route.params.id, async (newId) => {
-  const newInvoiceId = typeof newId === 'string' ? newId :
-    Array.isArray(newId) ? newId[0] : null;
-
-  if (newInvoiceId) {
-    console.log('Loading data for invoice:', newInvoiceId);
-    await loadInvoiceData(newInvoiceId);
-    invoiceStore.setCurrentInvoiceId(newInvoiceId);
-  }
-}, { immediate: true });
-
-/**
- * Lifecycle hooks
- */
-onMounted(() => {
-  // Limpa o ID se estiver em modo de criação
-  if (!route.params.id) {
-    invoiceStore.setCurrentInvoiceId('');
+const processInvoiceItems = async (invoiceId: string, items: InvoiceItemInsertType[]) => {
+  if (!items?.length) {
+    console.warn('No items to process');
+    return [];
   }
 
-  // Carrega dados do storage local
-  invoiceStore.loadFromStorage();
+  try {
+    const existingItemsResponse = await invoiceItemService.getInvoiceItemByInvoice(invoiceId);
+    const existingItems = existingItemsResponse.content || [];
+    const existingIds = existingItems.map(item => item.id);
+    const newIds = items.filter(item => item.id).map(item => item.id);
 
-  // Se houver ID no store, usa ele
-  if (invoiceStore.currentInvoiceId) {
-    invoiceId.value = invoiceStore.currentInvoiceId;
-    basicDataValidated.value = true;
+    // Classificação dos itens
+    const itemsToCreate = items.filter(item => !item.id || !existingIds.includes(item.id));
+    const itemsToUpdate = items.filter(item => item.id && existingIds.includes(item.id));
+    const itemsToDelete = existingItems.filter(item => !newIds.includes(item.id));
+
+    // Execução em paralelo
+    return await Promise.all([
+      ...itemsToCreate.map(item => 
+        invoiceItemService.createInvoiceItem({ ...item, invoice: invoiceId })
+      ),
+      ...itemsToUpdate.map(item => 
+        invoiceItemService.updateInvoiceItem(item.id!, { ...item, invoice: invoiceId })
+      ),
+      ...itemsToDelete.map(item => 
+        invoiceItemService.deleteInvoiceItem(item.id)
+      )
+    ]);
+  } catch (error) {
+    console.error("Error processing invoice items:", error);
+    throw error;
   }
-});
-
-/**
- * Computed - ID atual da fatura (considera rota e store)
- */
-const currentInvoiceId = computed(() => {
-  // Em modo de criação, retorna null
-  if (!isEditMode.value) return null;
-
-  // Obtém ID da rota ou do store
-  const id = typeof route.params.id === 'string' ? route.params.id :
-    Array.isArray(route.params.id) ? route.params.id[0] : null;
-  return id || invoiceStore.currentInvoiceId;
-});
+};
 
 /**
  * Salva a fatura (dados básicos e/ou itens)
- * @param param - Pode ser os dados da fatura ou seus itens
  */
-// Modifique o saveInvoice
-// Modifique o saveInvoice para lidar com ambos os casos de forma mais inteligente
 const saveInvoice = async (param: InvoiceInsertType | InvoiceItemInsertType[]): Promise<void> => {
   try {
     loading.value = true;
     errorMsg.value = "";
 
-    // Caso 1: Recebeu os itens primeiro
     if (Array.isArray(param)) {
-      const items = param;
-
-      // Calcula o total baseado nos itens
-      const totalAmount = items.reduce((sum, item) => sum + (item.totalAmount || 0), 0);
+      const totalAmount = param.reduce((sum, item) => sum + (item.totalAmount || 0), 0);
       invoiceData.totalAmount = totalAmount;
 
-      // Se já estiver em modo de edição, atualiza a invoice com os itens
       if (isEditMode.value) {
-        await invoiceService.updateInvoice(currentInvoiceId.value!, { ...invoiceData, totalAmount });
-        await saveInvoiceItems(currentInvoiceId.value!, items);
+        await invoiceService.updateInvoice(currentInvoiceId.value!, invoiceData);
+        await processInvoiceItems(currentInvoiceId.value!, param);
         handleSaveSuccess({ data: { id: currentInvoiceId.value! } });
-      }
-      // Se for criação, primeiro cria a invoice básica e depois os itens
-      else {
-        const invoiceResponse = await invoiceService.createInvoice({ ...invoiceData, totalAmount });
-        const targetInvoiceId = invoiceResponse.data?.id;
-
-        if (!targetInvoiceId) throw new Error('Invoice ID not available');
-
-        await saveInvoiceItems(targetInvoiceId, items);
+      } else {
+        const invoiceResponse = await invoiceService.createInvoice(invoiceData);
+        const newInvoiceId = invoiceResponse.data?.id;
+        
+        if (!newInvoiceId) throw new Error('Invoice ID not available');
+        
+        await processInvoiceItems(newInvoiceId, param);
         handleSaveSuccess(invoiceResponse);
       }
-    }
-    // Caso 2: Recebeu apenas os dados básicos (sem itens)
-    else {
+    } else {
       const response = isEditMode.value
-        ? await invoiceService.updateInvoice(currentInvoiceId.value!, { ...param, totalAmount: invoiceData.totalAmount })
-        : await invoiceService.createInvoice({ ...param, totalAmount: invoiceData.totalAmount });
-
+        ? await invoiceService.updateInvoice(currentInvoiceId.value!, param)
+        : await invoiceService.createInvoice(param);
+      
       handleSaveSuccess(response);
     }
   } catch (error) {
@@ -238,61 +231,45 @@ const saveInvoice = async (param: InvoiceInsertType | InvoiceItemInsertType[]): 
   }
 };
 
-/**
- * Salva os itens da fatura
- * @param invoiceId - ID da fatura
- * @param items - Itens a serem salvos
- */
-const saveInvoiceItems = async (invoiceId: string, items: InvoiceItemInsertType[]) => {
-  try {
-    loading.value = true;
+// =============================================
+// LIFECYCLE & WATCHERS
+// =============================================
+watch(() => route.params.id, async (newId) => { 
+  const parsedId = typeof newId === 'string' ? newId :
+    Array.isArray(newId) ? newId[0] : null;
 
-    if (!items || items.length === 0) {
-      console.warn('No items to save');
-      return;
-    }
-
-    // Em modo edição, primeiro limpamos os itens existentes
-    if (isEditMode.value) {
-      const existingItems = await invoiceItemService.getInvoiceItemByInvoice(invoiceId);
-      await Promise.all(
-        existingItems.content.map(item =>
-          invoiceItemService.deleteInvoiceItem(item.id)
-        )
-      );
-    }
-
-    // Prepara os itens com o invoiceId correto
-    const itemsToSave = items.map(item => ({
-      ...item,
-      invoice: invoiceId,
-      id: undefined // Força criação de novo registro
-    }));
-
-    // Persiste todos os itens
-    const results = await Promise.all(
-      itemsToSave.map(item =>
-        invoiceItemService.createInvoiceItem(item)
-      )
-    );
-
-    console.log('Items saved successfully:', results);
-    return results;
-  } catch (error) {
-    console.error("Error saving invoice items:", error);
-    throw error;
-  } finally {
-    loading.value = false;
+  if (parsedId) {
+    await loadInvoiceData(parsedId);
+    invoiceStore.setCurrentInvoiceId(parsedId); 
   }
-};
+}, { immediate: true });
+
+onMounted(() => {
+  if (!route.params.id) {
+    invoiceStore.setCurrentInvoiceId('');
+  }
+
+  invoiceStore.loadFromStorage();
+
+  if (invoiceStore.currentInvoiceId) {
+    invoiceId.value = invoiceStore.currentInvoiceId;
+    basicDataValidated.value = true;
+  }
+});
 </script>
 
 <template>
   <v-container>
     <v-row justify="center">
       <v-col cols="12" xl="9">
-        <InvoiceForm v-model="invoiceData" :is-edit-mode="isEditMode" :loading="loading" :initial-items="invoiceItems"
-          @save="saveInvoice" @items-ready="(items: InvoiceItemInsertType[]) => saveInvoice(items)" />
+        <InvoiceForm 
+          v-model="invoiceData" 
+          :is-edit-mode="isEditMode" 
+          :loading="loading" 
+          :initial-items="invoiceItems"
+          @save="saveInvoice" 
+          @items-ready="(items: InvoiceItemInsertType[]) => saveInvoice(items)" 
+        />
       </v-col>
     </v-row>
   </v-container>

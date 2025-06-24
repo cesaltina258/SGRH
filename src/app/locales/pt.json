@@ -837,5 +837,8 @@
   "t-fill-all-item-fields": "Preencha os campos de pelo menos uma linha!",
   "t-view-invoice": "Consultar Factura",
   "t-search-for-menu": "Pesquisar por menu",
-  "t-please-enter-relationship": "Por favor, selecione o relacionamento!"
+  "t-please-enter-relationship": "Por favor, selecione o relacionamento!",
+  "t-settings": "Configurações",
+  "t-period": "Período",
+  "t-periods": "Períodos"
 }

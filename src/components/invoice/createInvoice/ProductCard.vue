@@ -1,83 +1,111 @@
 <script lang="ts" setup>
+// =============================================
+// IMPORTS
+// =============================================
+// Vue e Vue Utilities
 import { ref, computed, onMounted, watch } from "vue";
-import { productHeader } from "@/components/invoice/createInvoice/utils";
-import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
-import Table from "@/app/common/components/Table.vue";
-import { InvoiceItemInsertType } from "@/components/invoice/types";
 import { useI18n } from "vue-i18n";
-import { useTaxRateStore } from "@/store/baseTables/taxRateServiceStore";
-import { useHospitalProcedureStore } from "@/store/institution/hospitalProcedureStore";
 import { useToast } from 'vue-toastification';
 
+// Components
+import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
+import Table from "@/app/common/components/Table.vue";
+
+// Stores
+import { useTaxRateStore } from "@/store/baseTables/taxRateServiceStore";
+import { useHospitalProcedureStore } from "@/store/institution/hospitalProcedureStore";
+
+// Types e Utils
+import { InvoiceItemInsertType } from "@/components/invoice/types";
+import { productHeader } from "@/components/invoice/createInvoice/utils";
+
+// =============================================
+// INTERFACES E TIPOS
+// =============================================
 interface InvoiceItem extends Omit<InvoiceItemInsertType, 'taxRate'> {
   id: string;
   taxRate: string;
-  originalId?: string; // Para manter referência em modo de edição
+  originalId?: string;
 }
 
-// Composables
+interface FlagConfig {
+  color: string;
+  icon: string;
+  text: string;
+}
+
+// =============================================
+// COMPOSABLES
+// =============================================
 const { t } = useI18n();
 const toast = useToast();
 
-// Props - Definição mais limpa com tipagem forte
+// =============================================
+// PROPS & EMITS
+// =============================================
 const props = defineProps({
-  modelValue: { type: Object as () => InvoiceItemInsertType, required: true },
-  loading: { type: Boolean, default: false },
-  institutionId: { type: String, required: true },
-  initialItems: { type: Array as () => InvoiceItemInsertType[], default: () => [] },
-  isEditMode: { type: Boolean, default: false } // Adicionado para melhor controle
+  modelValue: { 
+    type: Object as () => InvoiceItemInsertType, 
+    required: true 
+  },
+  loading: { 
+    type: Boolean, 
+    default: false 
+  },
+  institutionId: { 
+    type: String, 
+    required: true 
+  },
+  initialItems: { 
+    type: Array as () => InvoiceItemInsertType[], 
+    default: () => [] 
+  },
+  isEditMode: { 
+    type: Boolean, 
+    default: false 
+  }
 });
 
-// Emits - Tipagem explícita
 const emit = defineEmits<{
   (e: 'update:modelValue', value: InvoiceItemInsertType): void;
   (e: 'items-ready', items: InvoiceItemInsertType[]): void;
 }>();
 
-// Stores
+// =============================================
+// STORES
+// =============================================
 const taxRateStore = useTaxRateStore();
 const hospitalProcedureStore = useHospitalProcedureStore();
 
-// Estado reativo
+// =============================================
+// REACTIVE STATE
+// =============================================
 const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 const errorMsg = ref("");
 const invoiceItems = ref<InvoiceItem[]>([]);
 
-// Dados derivados (computados)
-const companyAllowedHospitalProcedures = computed(() => {
-  return hospitalProcedureStore.hospital_procedure_for_dropdown.map(item => ({
+// =============================================
+// COMPUTED PROPERTIES
+// =============================================
+const companyAllowedHospitalProcedures = computed(() => 
+  hospitalProcedureStore.hospital_procedure_for_dropdown.map(item => ({
     value: item.id,
     label: item.hospitalProcedureType.name,
-  }));
-});
-
-
-const taxRates = computed(() => {
-  return taxRateStore.tax_rates_for_dropdown.map(item => ({
-    value: item.id,
-    label: `${item.rate}%`,
-    rate: item.rate ? item.rate / 100 : 0 // Converte para decimal (23% → 0.23)
-  }));
-});
-
-// Cálculos principais (otimizados)
-const lineTotals = computed(() =>
-  invoiceItems.value.map(item => calculateLineTotal(item))
+  }))
 );
 
-const calculateLineTotal = (item: InvoiceItem) => {
-  const taxRate = taxRates.value.find(t => t.value === item.taxRate);
-  const rate = taxRate?.rate || 0;
-  const subtotal = item.unitPrice * item.quantity;
-  const taxAmount = subtotal * rate;
-  return {
-    subtotal,
-    taxAmount,
-    total: subtotal + taxAmount
-  };
-};
+const taxRates = computed(() => 
+  taxRateStore.tax_rates_for_dropdown.map(item => ({
+    value: item.id,
+    label: `${item.rate}%`,
+    rate: item.rate ? item.rate / 100 : 0
+  }))
+);
 
-// Totais consolidados (evitando recálculos desnecessários)
+const lineTotals = computed(() => 
+  invoiceItems.value.map(calculateLineTotal)
+);
+
 const invoiceTotals = computed(() => {
   const totals = lineTotals.value.reduce((acc, curr) => ({
     subTotal: acc.subTotal + curr.subtotal,
@@ -92,7 +120,9 @@ const invoiceTotals = computed(() => {
   };
 });
 
-// Validação
+// =============================================
+// VALIDATION RULES
+// =============================================
 const requiredRules = {
   unitPrice: [(v: number) => v > 0 || t('t-unit-price-required')],
   quantity: [(v: number) => v > 0 || t('t-quantity-required')],
@@ -100,7 +130,48 @@ const requiredRules = {
   companyAllowedHospitalProcedure: [(v: string) => !!v || t('t-procedure-required')]
 };
 
-// Métodos principais
+// =============================================
+// FLAG CONFIGURATION
+// =============================================
+const flagConfig: Record<string, FlagConfig> = {
+  EXCEEDS_LIMIT: { 
+    color: 'warning', 
+    icon: 'ph-warning', 
+    text: t('t-exceeds-limit') 
+  },
+  INSUFFICIENT_FUNDS: { 
+    color: 'error', 
+    icon: 'ph-money', 
+    text: t('t-insufficient-funds') 
+  },
+  default: { 
+    color: 'info', 
+    icon: '', 
+    text: '' 
+  }
+};
+
+const getFlagConfig = (flag?: string): FlagConfig | null => 
+  flag && flag !== 'UNFLAGGED' 
+    ? flagConfig[flag as keyof typeof flagConfig] || flagConfig.default 
+    : null;
+
+// =============================================
+// CORE METHODS
+// =============================================
+const calculateLineTotal = (item: InvoiceItem) => {
+  const taxRate = taxRates.value.find(t => t.value === item.taxRate);
+  const rate = taxRate?.rate || 0;
+  const subtotal = item.unitPrice * item.quantity;
+  const taxAmount = subtotal * rate;
+  
+  return {
+    subtotal,
+    taxAmount,
+    total: subtotal + taxAmount
+  };
+};
+
 const loadProcedures = async () => {
   try {
     if (!props.institutionId) {
@@ -123,6 +194,9 @@ const handleError = (messageKey: string, error: unknown) => {
   setTimeout(() => errorMsg.value = "", 5000);
 };
 
+// =============================================
+// ITEM MANAGEMENT
+// =============================================
 const addItem = () => {
   invoiceItems.value.push({
     id: Date.now().toString(),
@@ -144,41 +218,34 @@ const removeItem = (id: string) => {
 };
 
 const prepareItemsForSubmission = (): InvoiceItemInsertType[] => {
-  return invoiceItems.value.map(item => {
-    const total = calculateLineTotal(item).total;
-
-    return {
-      ...item,
-      id: props.isEditMode ? item.originalId : undefined,
-      taxRate: item.taxRate || '',
-      companyAllowedHospitalProcedure: item.companyAllowedHospitalProcedure || '',
-      description: item.description || '',
-      unitPrice: item.unitPrice || 0,
-      quantity: item.quantity || 0,
-      invoice: item.invoice || '',
-      totalAmount: total
-    };
-  });
-};
-
-// Modifique o emitItemsReady para forçar atualização
-const emitItemsReady = (): boolean => {
-  // Atualiza todos os totais antes de emitir
-  invoiceItems.value = invoiceItems.value.map(item => ({
+  return invoiceItems.value.map(item => ({
     ...item,
+    id: props.isEditMode ? item.originalId : undefined,
+    taxRate: item.taxRate || '',
+    companyAllowedHospitalProcedure: item.companyAllowedHospitalProcedure || '',
+    description: item.description || '',
+    unitPrice: item.unitPrice || 0,
+    quantity: item.quantity || 0,
+    invoice: item.invoice || '',
     totalAmount: calculateLineTotal(item).total
   }));
+};
 
-  const items = prepareItemsForSubmission();
-
-  // Validação mais robusta
-  const hasInvalidItems = items.some(item =>
+// =============================================
+// ITEM VALIDATION & SUBMISSION
+// =============================================
+const validateItems = (items: InvoiceItemInsertType[]): boolean => {
+  return !items.some(item =>
     !item.companyAllowedHospitalProcedure ||
     item.quantity <= 0 ||
     item.unitPrice <= 0
   );
+};
 
-  if (hasInvalidItems) {
+const emitItemsReady = (): boolean => {
+  const items = prepareItemsForSubmission();
+
+  if (!validateItems(items)) {
     toast.error(t('t-fill-all-item-fields'));
     return false;
   }
@@ -187,10 +254,14 @@ const emitItemsReady = (): boolean => {
   return true;
 };
 
-// Exposição de métodos para o componente pai
+// =============================================
+// EXPOSED METHODS
+// =============================================
 defineExpose({ emitItemsReady });
 
-// Watchers otimizados
+// =============================================
+// WATCHERS
+// =============================================
 watch(() => props.institutionId, loadProcedures, { immediate: true });
 
 watch(() => props.initialItems, (newItems) => {
@@ -205,51 +276,55 @@ watch(() => props.initialItems, (newItems) => {
   }
 }, { immediate: true });
 
-// Watcher principal para atualizações
 watch(invoiceItems, (newItems) => {
   newItems.forEach(item => {
     item.totalAmount = calculateLineTotal(item).total;
   });
 }, { deep: true });
 
-// Utilitários para flags (se necessário)
-const flagConfig = {
-  EXCEEDS_LIMIT: { color: 'warning', icon: 'ph-warning', text: t('t-exceeds-limit') },
-  INSUFFICIENT_FUNDS: { color: 'error', icon: 'ph-money', text: t('t-insufficient-funds') },
-  default: { color: 'info', icon: '', text: '' }
-};
-
-const getFlagConfig = (flag?: string) =>
-  flag && flag !== 'UNFLAGGED' ? flagConfig[flag as keyof typeof flagConfig] || flagConfig.default : null;
-
-
-// Lifecycle
+// =============================================
+// LIFECYCLE HOOKS
+// =============================================
 onMounted(() => {
   loadProcedures();
 
-  if (props.initialItems && props.initialItems.length > 0) {
+  if (props.initialItems?.length) {
     invoiceItems.value = props.initialItems.map(item => ({
       ...item,
       id: item.id || Date.now().toString(),
     }));
-    //console.log('props.initialItems', invoiceItems)
   } else {
-    addItem(); // Só adiciona um item vazio se não houver itens iniciais
+    addItem();
   }
 });
 </script>
 
 <template>
   <v-form ref="form">
-    <Table :headerItems="productHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))" class="fixed-columns">
+    <!-- Tabela de Itens -->
+    <Table 
+      :headerItems="productHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))" 
+      class="fixed-columns"
+    >
       <template #body>
-        <tr v-for="(item, index) in invoiceItems" :key="`product-item-${item.id}`"
-          :class="[`flag-border-${item.flag}`, { 'has-flag': item.flag && item.flag !== 'UNFLAGGED' }]">
-          <!-- Coluna Número -->
+        <tr 
+          v-for="(item, index) in invoiceItems" 
+          :key="`product-item-${item.id}`"
+          :class="[`flag-border-${item.flag}`, { 'has-flag': item.flag && item.flag !== 'UNFLAGGED' }]"
+        >
+          <!-- Número do Item -->
           <td class="font-weight-bold text-center" style="width: 3%">
-            <v-tooltip v-if="getFlagConfig(item.flag)" :text="getFlagConfig(item.flag)?.text" location="top">
+            <v-tooltip 
+              v-if="getFlagConfig(item.flag)" 
+              :text="getFlagConfig(item.flag)?.text" 
+              location="top"
+            >
               <template v-slot:activator="{ props: tooltipProps }">
-                <v-icon v-bind="tooltipProps" :color="getFlagConfig(item.flag)?.color" size="small">
+                <v-icon 
+                  v-bind="tooltipProps" 
+                  :color="getFlagConfig(item.flag)?.color" 
+                  size="small"
+                >
                   {{ getFlagConfig(item.flag)?.icon }}
                 </v-icon>
               </template>
@@ -257,45 +332,85 @@ onMounted(() => {
             {{ index + 1 }}
           </td>
 
-          <!-- Demais colunas (mantidas conforme original) -->
+          <!-- Procedimento -->
           <td style="width: 30%" class="pt-4">
-            <MenuSelect v-model="item.companyAllowedHospitalProcedure" :items="companyAllowedHospitalProcedures"
-              :rules="requiredRules.companyAllowedHospitalProcedure" :placeholder="$t('t-select-procedure')"
-              item-value="value" class="w-100" />
+            <MenuSelect 
+              v-model="item.companyAllowedHospitalProcedure" 
+              :items="companyAllowedHospitalProcedures"
+              :rules="requiredRules.companyAllowedHospitalProcedure" 
+              :placeholder="$t('t-select-procedure')"
+              item-value="value" 
+              class="w-100" 
+            />
           </td>
 
-          <!-- Preço Unitário (10%) -->
+          <!-- Preço Unitário -->
           <td style="width: 10%" class="pt-4 px-1">
-            <TextField v-model.number="item.unitPrice" :rules="requiredRules.unitPrice"
-              :placeholder="$t('t-unit-price')" type="number" min="0" step="0.01" class="compact-input" />
+            <TextField 
+              v-model.number="item.unitPrice" 
+              :rules="requiredRules.unitPrice"
+              :placeholder="$t('t-unit-price')" 
+              type="number" 
+              min="0" 
+              step="0.01" 
+              class="compact-input" 
+            />
           </td>
 
-          <!-- Quantidade (5%) -->
+          <!-- Quantidade -->
           <td style="width: 5%" class="pt-4 px-1">
-            <TextField v-model.number="item.quantity" :placeholder="$t('t-quantity')" type="number" min="0"
-              :rules="requiredRules.quantity" class="compact-input" />
+            <TextField 
+              v-model.number="item.quantity" 
+              :placeholder="$t('t-quantity')" 
+              type="number" 
+              min="0"
+              :rules="requiredRules.quantity" 
+              class="compact-input" 
+            />
           </td>
 
-          <!-- Taxa (12%) -->
+          <!-- Taxa -->
           <td style="width: 12%" class="pt-4 px-1">
-            <MenuSelect v-model="item.taxRate" :items="taxRates" :rules="requiredRules.taxRate"
-              :placeholder="$t('t-select-tax-rate')" item-value="value" class="w-100" />
+            <MenuSelect 
+              v-model="item.taxRate" 
+              :items="taxRates" 
+              :rules="requiredRules.taxRate"
+              :placeholder="$t('t-select-tax-rate')" 
+              item-value="value" 
+              class="w-100" 
+            />
           </td>
 
-          <!-- Total (20%) -->
+          <!-- Total -->
           <td style="width: 20%" class="pt-4">
-            <TextField disabled :model-value="calculateLineTotal(item).total.toFixed(2)" class="total-input" />
+            <TextField 
+              disabled 
+              :model-value="calculateLineTotal(item).total.toFixed(2)" 
+              class="total-input" 
+            />
           </td>
 
-          <!-- Descrição (25%) -->
+          <!-- Descrição -->
           <td style="width: 25%" class="pt-4">
-            <TextArea v-model="item.description" :placeholder="$t('t-description')" class="description-field" rows="1"
-              auto-grow />
+            <TextArea 
+              v-model="item.description" 
+              :placeholder="$t('t-description')" 
+              class="description-field" 
+              rows="1"
+              auto-grow 
+            />
           </td>
 
-          <!-- Ações (5%) -->
+          <!-- Ações -->
           <td style="width: 5%" class="pt-4 px-1 text-center">
-            <v-btn icon variant="text" color="error" size="small" @click="removeItem(item.id)" class="ml-auto">
+            <v-btn 
+              icon 
+              variant="text" 
+              color="error" 
+              size="small" 
+              @click="removeItem(item.id)" 
+              class="ml-auto"
+            >
               <i class="ph-trash"></i>
             </v-btn>
           </td>
@@ -303,12 +418,14 @@ onMounted(() => {
       </template>
     </Table>
 
+    <!-- Botão para Adicionar Item -->
     <v-btn color="light" @click="addItem" class="mt-2">
       <i class="ph-plus me-2"></i> {{ $t("t-add-invoice-item") }}
     </v-btn>
 
     <v-divider class="my-4" />
 
+    <!-- Resumo dos Totais -->
     <v-row justify="end" class="mt-4">
       <v-col cols="12" lg="4">
         <v-row class="d-flex align-center mb-2" no-gutters>
@@ -345,7 +462,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Estilos otimizados */
 .fixed-columns {
   table-layout: fixed;
   width: 100%;
@@ -354,24 +470,20 @@ onMounted(() => {
     vertical-align: middle;
     overflow: hidden;
 
-    /* Padronização de padding */
     &:nth-child(1),
     &:nth-child(4),
     &:nth-child(8) {
       padding: 0 4px;
     }
 
-    /* Alinhamento de valores numéricos */
     &:nth-child(3),
     &:nth-child(4),
     &:nth-child(6) {
       text-align: right;
-
     }
   }
 }
 
-/* Classes utilitárias */
 .compact-input {
   max-width: 100px;
 }
@@ -390,7 +502,6 @@ onMounted(() => {
   width: 100%;
 }
 
-/* Flags */
 .has-flag {
   position: relative;
   background-color: rgba(0, 0, 0, 0.02);
