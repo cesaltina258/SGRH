@@ -1,3 +1,5 @@
+import { StringMappingType } from "typescript";
+
 export type EmployeeCountResponse = {
   data: number;
   meta: {
@@ -196,3 +198,38 @@ export type EmployeeUpdateType = {
   enabled?: boolean;
   position?: string | null;
 };
+
+export type DependentInsertType = {
+  id: string | undefined;
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  gender: string;
+  birthDate: Date | undefined;
+  relationship: string;
+  employee: string;
+  idCardNumber: string;
+  idCardIssuer: string;
+  idCardExpiryDate: Date | undefined;
+  idCardIssuanceDate: Date | undefined;
+}
+
+export type DependentListingType = {
+  id: string;
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  gender: string;
+  birthDate: Date | undefined;
+  relationship: string;
+  employee: {
+    id: string;
+    employeeNumber: string;
+    firstName: string;
+    lastName: string;
+  };
+  idCardNumber: string;
+  idCardIssuer: string;
+  idCardExpiryDate: Date | undefined;
+  idCardIssuanceDate: Date | undefined;
+}

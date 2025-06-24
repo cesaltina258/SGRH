@@ -6,6 +6,7 @@ import type { TaxRateTypeUpdate, TaxRateTypeListing, TaxRateTypeInsert } from "@
 export const useTaxRateStore = defineStore('tax_rates', {
   state: () => ({
     tax_rates: [] as TaxRateTypeListing[],
+    tax_rates_for_dropdown: [] as TaxRateTypeListing[],
     pagination: {
       totalElements: 0,
       currentPage: 0,
@@ -56,6 +57,50 @@ export const useTaxRateStore = defineStore('tax_rates', {
       } catch (err: any) {
         this.error = err.message || 'Erro ao buscar tax rates';
         this.tax_rates = [];
+        this.pagination.totalElements = 0;
+        console.error("❌ Erro ao buscar tax_rates:", err);
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async fetchTaxRatesForDropdown(
+      page?: number,
+      size?: number,
+      sortColumn: string = 'name',
+      direction: string = 'asc',
+      query_value?: string,
+      query_props?: string
+    ) {
+      this.loading = true;
+      this.error = null;
+
+      const actualPage = page ?? this.pagination.currentPage;
+      const actualSize = size ?? this.pagination.itemsPerPage;
+
+      try {
+        const { content, meta } = await taxRateTypeService.getTaxRatesForDropdown(
+          actualPage,
+          actualSize,
+          sortColumn,
+          direction,
+          query_value,
+          query_props
+        );
+
+        this.tax_rates_for_dropdown = content;
+        this.pagination = {
+          totalElements: meta.totalElements,
+          currentPage: meta.page,
+          itemsPerPage: meta.size,
+          totalPages: meta.totalPages || Math.ceil(meta.totalElements / meta.size)
+        };
+
+        console.log('🏛️ Tax Rates:', this.tax_rates_for_dropdown);
+        console.log('📄 Meta:', this.pagination);
+      } catch (err: any) {
+        this.error = err.message || 'Erro ao buscar tax rates';
+        this.tax_rates_for_dropdown = [];
         this.pagination.totalElements = 0;
         console.error("❌ Erro ao buscar tax_rates:", err);
       } finally {

@@ -22,8 +22,7 @@ export const menuItems: MenuItemType[] = [
     id: "index",
     prefix: "/",
     link: "/"
-  },
-  
+  }, 
   {
     label: "personnel-managment",
     isHeader: true,
@@ -188,6 +187,15 @@ export const menuItems: MenuItemType[] = [
     label: "administration",
     isHeader: true,
     id: "HeaderMenu",
+  },
+  {
+    label: "settings",
+    icon: "ph-gear",
+    id: "sidebarSettings",
+    subMenu: [
+      //{ label: "period", link: "/users/users/list" },
+     // { label: "functions", link: "/auth/signup" },
+    ],
   },
   {
     label: "users",

@@ -21,6 +21,7 @@ import Step2 from "@/components/institution/create/TabHealthPlan.vue";
 import Step3 from "@/components/institution/create/TabOrganizationalStructure.vue";
 import Step5 from "@/components/institution/create/TabClinics.vue";
 import Step6 from "@/components/institution/create/TabHospitalProcedures.vue";
+import Step7 from "@/components/institution/create/TabPeriods.vue";
 
 
 
@@ -46,7 +47,7 @@ const toast = useToast();
 // Refs
 const step = ref(1); // Controla a aba atual (1 ou 2) 
 const institutionId = ref<string | null>(
-  typeof route.params.id === 'string' ? route.params.id : Array.isArray(route.params.id) ? route.params.id[0] : null
+  typeof route.params.id === 'string' ? route.params.id : Array.isArray(route.params.id) ? route.params.id[0] : null 
 );
 const isCreated = ref(!institutionId.value); 
 const loading = ref(false); // Estado de loading global
@@ -295,6 +296,7 @@ onBeforeUnmount(() => {
 
       <Step1 v-if="step === 1" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)"
         :loading="loading" />
+      <Step7 v-if="step === 7" @onStepChange="onStepChange" :institution-id="institutionId"/>
       <Step2 v-if="step === 2" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)"
         :loading="loading"  />
       <Step3 v-if="step === 3" @onStepChange="onStepChange" :institution-id="institutionId"/>

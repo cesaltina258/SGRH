@@ -42,14 +42,19 @@ const isTabDisabled = (tabNumber: number) => {
 <template>
   <div class="d-flex justify-space-between align-center">
     <v-row no-gutters>
-      <v-col cols="6">
+      <v-col cols="4">
         <v-btn rounded="0" color="primary" block :variant="step === 1 ? 'elevated' : 'tonal'" @click="step = 1" :disabled="isTabDisabled(1)">
           {{ $t('t-general-information') }}
         </v-btn>
       </v-col>
-      <v-col cols="6">
+      <v-col cols="4">
         <v-btn rounded="0" color="primary" block :variant="step === 2 ? 'elevated' : 'tonal'" @click="step = 2" :disabled="isTabDisabled(2)">
           {{ $t('t-institution-and-classification') }}
+        </v-btn>
+      </v-col>
+      <v-col cols="4">
+        <v-btn rounded="0" color="primary" block :variant="step === 3 ? 'elevated' : 'tonal'" @click="step = 3" :disabled="isTabDisabled(2)">
+          {{ $t('t-dependents') }}
         </v-btn>
       </v-col>
     </v-row>

@@ -95,5 +95,25 @@ export const nationalityOptions: MenuSelectItemType[] = [
   }
 ];
 
+export const relationshipOptions: MenuSelectItemType[] = [
+  { value: "", label: "Selecione o Relacionamento" },
+  {
+    label: "Esposo(a)",
+    value: "SPOUSE"
+  },
+  {
+    label: "Filho(a)",
+    value: "CHILD"
+  },
+   {
+    label: "Pai/Mãe",
+    value: "PARENT"
+  },
+   {
+    label: "Outro",
+    value: "OTHER"
+  }
+];
+
 
 
