@@ -1,5 +1,5 @@
 export type InstitutionListingType = {
-    id: string  ;
+    id: string;
     name: string;
     address: string;
     phone: string;
@@ -20,7 +20,7 @@ export type InstitutionListingType = {
     salaryComponent: string | null;
     companyContributionPercentage: number | null;
 
-    createdAt: Date ;
+    createdAt: Date;
     updatedAt: Date | null;
     deletedAt: Date | null;
     createdBy: string;
@@ -28,8 +28,8 @@ export type InstitutionListingType = {
     deletedBy: string;
 };
 
-export type InstitutionResponseType = { 
-    id: string  ;
+export type InstitutionResponseType = {
+    id: string;
     name: string;
     address: string;
     phone: string;
@@ -40,7 +40,7 @@ export type InstitutionResponseType = {
     institutionType: {
         id: string;
         name: string
-    } | undefined ;
+    } | undefined;
     enable: boolean;
 
     maxNumberOfDependents: number | null;
@@ -50,7 +50,7 @@ export type InstitutionResponseType = {
     salaryComponent: string | null;
     companyContributionPercentage: number | null;
 
-    createdAt: Date ;
+    createdAt: Date;
     updatedAt: Date | null;
     deletedAt: Date | null;
     createdBy: string;
@@ -87,7 +87,7 @@ export type DepartmentListingForListType = {
     id: string;
     name: string;
     description: string | null;
-    company:  { id: string; [key: string]: any } ;
+    company: { id: string;[key: string]: any };
     createdAt: Date | null;
     updatedAt: Date | null;
     deletedAt: Date | null;
@@ -167,7 +167,7 @@ export type ContactPersonListingType = {
     fullname: string;
     email: string;
     phone: string;
-    company: string ;
+    company: string;
     createdAt: Date | null;
     updatedAt: Date | null;
     deletedAt: Date | null;
@@ -177,11 +177,11 @@ export type ContactPersonListingType = {
 };
 
 export type ContactPersonInsertType = {
-    id?: string | null; 
-    fullname: string;   
+    id?: string | null;
+    fullname: string;
     email: string;
     phone: string;
-    company: string; 
+    company: string;
 };
 
 export type ClinicListingType = {
@@ -207,9 +207,9 @@ export type ClinicListingType = {
 };
 
 export type ClinicInsertType = {
-    id?: string | null; 
-    clinic: string; 
-    company: string; 
+    id?: string | null;
+    clinic: string;
+    company: string;
 };
 
 export type HospitalProcedureListingType = {
@@ -221,7 +221,7 @@ export type HospitalProcedureListingType = {
         id: string;
         name: string;
     };
-    company: string ;
+    company: string;
     createdAt: Date | null;
     updatedAt: Date | null;
     deletedAt: Date | null;
@@ -231,10 +231,49 @@ export type HospitalProcedureListingType = {
 };
 
 export type HospitalProcedureInsertType = {
-    id?: string | null; 
+    id?: string | null;
     fixedAmount: number | null;
     percentage: number | null;
     limitTypeDefinition: string;
     hospitalProcedureType: string;
-    company: string; 
+    company: string;
+};
+
+
+export type CoveragePeriodListingType = {
+    id: string;
+    name: string;
+    startDate: string;
+    endDate: string;
+    company: string;
+    status: string;
+}
+
+export type CoveragePeriodInsertType = {
+    id?: string | null;
+    name: string;
+    startDate: string;
+    endDate: string;
+    company: string;
+}
+
+export type CoveragePeriodUpdateType = {
+    name?: string;
+    startDate?: string;
+    endDate?: string;
+    company?: string;
+}
+
+export type CoveragePeriodResponseType = {
+    id: string;
+    name: string;
+    startDate: string;
+    endDate: string;
+    company: string;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    deletedAt: Date | null;
+    createdBy: string;
+    updatedBy: string;
+    deletedBy: string;
 };

@@ -50,6 +50,10 @@ const props = defineProps({
 // Stores
 const institutionStore = useInstitutionStore();
 
+console.log("institutionStore-draftInstitution", institutionStore.draftInstitution);
+
+
+
 // Referências do formulário
 const form1 = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 
@@ -62,6 +66,8 @@ let institutionData = computed({
     emit('update:modelValue', value);
   }
 });
+
+console.log("institutionData", institutionData.value);
 
 
 // Estado da UI
@@ -79,6 +85,17 @@ const healthPlanLimit = computed({
     });
   }
 });
+
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    institutionData.value = { ...newVal };
+  },
+  { immediate: true, deep: true }
+);
+
+console.log("modelValue recebido:", props.modelValue);
+
 
 // Watch para revalidar quando healthPlanLimit muda
 watch(healthPlanLimit, () => {

@@ -12,6 +12,8 @@ import HospitalProcedureService from "@/app/http/services/institution/hospitalPr
 import InvoiceService from "@/app/http/services/invoice/invoiceService";
 import DependentEmployeeService from "@/app/http/services/employee/dependentService";
 import InvoiceItemService from "@/app/http/services/invoice/invoiceItemService";
+import CoveragePeriodService from "@/app/http/services/institution/CoveragePeriodService"; // Adjust the path if necessary
+
 
 //BASETABLES
 import CountryService from "@/app/http/services/baseTables/country/countryService";
@@ -38,6 +40,8 @@ const clinicInstitutionService = new ClinicInstitutionService();
 const invoiceService = new InvoiceService();
 const dependentEmployeeService = new DependentEmployeeService();
 const invoiceItemService = new InvoiceItemService();
+const coveragePeriodService = new CoveragePeriodService(); 
+
 
 //BASETABLES
 const countryService = new CountryService();
@@ -72,5 +76,6 @@ export {
     invoiceService,
     dependentEmployeeService,
     taxRateTypeService,
-    invoiceItemService
+    invoiceItemService,
+    coveragePeriodService
 };

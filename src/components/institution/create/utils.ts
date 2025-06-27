@@ -166,3 +166,38 @@ export const hospitalProcedureHeader: TableHeaderType[] = [
   { title: "action" },
 ];
 
+export const coveragePeriodHeader: DataTableHeaderType[] = [
+  { title: "name", key: "name", sortable: true},
+  { title: "start-date", key: "startDate" , sortable: true },
+  { title: "end-date", key: "endDate" , sortable: true },
+  // { title: "status", key: "status" , sortable: true },
+  { title: "action",  sortable: false,  align: "right"}
+];
+
+export const Options: OptionType[] = [
+  {
+    title: "view",
+    icon: "ph-eye",
+    value: "view",
+  },
+  {
+    title: "edit",
+    icon: "ph-pencil",
+    value: "edit",
+  },
+  {
+    title: "start",
+    icon: "ph-clock",
+    value: "start",
+  },
+  {
+    title: "closed",
+    icon: "ph-lock",
+    value: "closed",
+  },
+  {
+    title: "delete",
+    icon: "ph-trash",
+    value: "delete",
+  }
+];

@@ -8,7 +8,7 @@ import frenchFlag from "@/assets/images/flags/french.svg";
 import aeFlag from "@/assets/images/flags/ae.svg";
 
 import ac from "@/assets/images/flags/ac.svg";
-import ad from "@/assets/images/flags/ad.svg";
+// import ad from "@/assets/images/flags/ad.svg";
 import ae from "@/assets/images/flags/ae.svg";
 import af from "@/assets/images/flags/af.svg";
 import ag from "@/assets/images/flags/ag.svg";
@@ -102,7 +102,7 @@ import gd from "@/assets/images/flags/gd.svg";
 import ge from "@/assets/images/flags/ge.svg";
 import germany from "@/assets/images/flags/germany.svg";
 import gf from "@/assets/images/flags/gf.svg";
-import gg from "@/assets/images/flags/gg.svg";
+// import gg from "@/assets/images/flags/gg.svg";
 import gh from "@/assets/images/flags/gh.svg";
 import gi from "@/assets/images/flags/gi.svg";
 import gl from "@/assets/images/flags/gl.svg";
@@ -289,7 +289,7 @@ export {
   frenchFlag,
   aeFlag,
   ac,
-  ad,
+  // ad,
   ae,
   af,
   ag,
@@ -382,7 +382,7 @@ export {
   ge,
   germany,
   gf,
-  gg,
+  // gg,
   gh,
   gi,
   gl,

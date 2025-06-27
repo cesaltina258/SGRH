@@ -20,29 +20,31 @@ import DataTableServer from "@/app/common/components/DataTableServer.vue";
 import Status from "@/app/common/components/Status.vue";
 import ListMenuWithIcon from "@/app/common/components/ListMenuWithIcon.vue";
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
-import CreateEditContactDialog from "@/components/institution/create/CreateEditContactDialog.vue";
-import ViewContactDialog from "@/components/institution/create/ViewContactDialog.vue";
+import CreateEditCoveragePeriod from "@/components/institution/create/CreateEditCoveragePeriod.vue";
+import ViewCoveragePeriod from "@/components/institution/create/ViewCoveragePeriod.vue";
 import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue";
+import PeriodStartConfirmationDialog from "@/app/common/components/PeriodStartConfirmationDialog.vue";
+import PeriodClosedConfirmationDialog from "@/app/common/components/PeriodClosedConfirmationDialog.vue";
 import TableAction from "@/app/common/components/TableAction.vue";
 // Stores e Services
-import { useContactPersonStore } from "@/store/institution/contactPersonStore";
-import { contactPersonService } from "@/app/http/httpServiceProvider";
+import { useCoveragePeriodStore } from "@/store/institution/coveragePeriodStore";
+import { coveragePeriodService } from "@/app/http/httpServiceProvider";
 
 // Types
 import type {
-  ContactPersonListingType,
-  ContactPersonInsertType
+  CoveragePeriodListingType,
+  CoveragePeriodInsertType
 } from "@/components/institution/types";
 
 // Utils
-import { contactPersonHeader } from "@/components/institution/create/utils";
-import { contactOptions as Options } from "@/components/institution/create/utils";
+import { coveragePeriodHeader } from "@/components/institution/create/utils";
+import { Options } from "@/components/institution/create/utils";
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
-const contactPersonStore = useContactPersonStore();
+const coveragePeriodStore = useCoveragePeriodStore();
 
 // props
 const props = defineProps({
@@ -60,20 +62,23 @@ const dialog = ref(false);
 const viewDialog = ref(false);
 const deleteDialog = ref(false);
 const deleteLoading = ref(false);
-const contactPersonData = ref<ContactPersonInsertType | null>(null);
+const startDialog = ref(false);
+const closeDialog = ref(false);
+const selectedPeriod = ref<CoveragePeriodListingType | null>(null);
+const coveragePeriodData = ref<CoveragePeriodInsertType | null>(null);
 const deleteId = ref<string | null>(null);
 const errorMsg = ref("");
 const searchQuery = ref("");
-const searchProps = "fullname,email,phone"; // Propriedades de busca
+const searchProps = "name"; // Propriedades de busca
 const itemsPerPage = ref(10);
-const selectedContactPersons = ref<ContactPersonListingType[]>([]);
+const selectedContactPersons = ref<CoveragePeriodListingType[]>([]);
 const customerDetail = ref<any>(null); // Adicionado para resolver o erro
 
 let alertTimeout: ReturnType<typeof setTimeout> | null = null;
 
 // Computed properties
-const loadingList = computed(() => contactPersonStore.loading);
-const totalItems = computed(() => contactPersonStore.pagination.totalElements);
+const loadingList = computed(() => coveragePeriodStore.loading);
+const totalItems = computed(() => coveragePeriodStore.pagination.totalElements);
 
 interface FetchParams {
   page: number;
@@ -85,10 +90,10 @@ interface FetchParams {
 /**
  * Busca pessoas de contato com paginação e filtros
  */
-const fetchContactPersons = async ({ page, itemsPerPage, sortBy, search }: FetchParams) => {
+const fetchCoveragePeriods = async ({ page, itemsPerPage, sortBy, search }: FetchParams) => {
   if (!institutionId.value) return;
 
-  await contactPersonStore.fetchContactPersons(
+  await coveragePeriodStore.fetchCoveragePeriods(
     institutionId.value,
     page - 1, // Ajuste para API que começa em 0
     itemsPerPage,
@@ -102,7 +107,7 @@ const fetchContactPersons = async ({ page, itemsPerPage, sortBy, search }: Fetch
 /**
  * Alterna seleção de pessoas de contato
  */
-const toggleSelection = (item: ContactPersonListingType) => {
+const toggleSelection = (item: CoveragePeriodListingType) => {
   const index = selectedContactPersons.value.findIndex(selected => selected.id === item.id);
   if (index === -1) {
     selectedContactPersons.value = [...selectedContactPersons.value, item];
@@ -116,22 +121,22 @@ const toggleSelection = (item: ContactPersonListingType) => {
  */
 watch(dialog, (newVal: boolean) => {
   if (!newVal) {
-    contactPersonData.value = null;
+    coveragePeriodData.value = null;
   }
 });
-const onCreateEditClick = (data: ContactPersonInsertType | null) => {
+const onCreateEditClick = (data: CoveragePeriodInsertType | null) => {
   const company = institutionId.value || "";
 
-  contactPersonData.value = data
+  coveragePeriodData.value = data
     ? {
       ...data,
       company: company // sobrescreve com o institutionId atual
     }
     : {
       id: undefined,
-      fullname: "",
-      phone: "",
-      email: "",
+      name: "",
+      startDate: "",
+      endDate: "",
       company: company
     };
 
@@ -143,7 +148,7 @@ const onCreateEditClick = (data: ContactPersonInsertType | null) => {
  * Submete dados do formulário
  */
 const onSubmit = async (
-  data: ContactPersonInsertType,
+  data: CoveragePeriodInsertType,
   callbacks?: {
     onSuccess?: () => void,
     onFinally?: () => void
@@ -151,14 +156,14 @@ const onSubmit = async (
 ) => {
   try {
     if (!data.id) {
-      await contactPersonService.createContactPerson(data);
+      await coveragePeriodService.createCoveragePeriod(data);
       toast.success(t('t-toast-message-created'));
     } else {
-      await contactPersonService.updateContactPerson(data.id, data);
+      await coveragePeriodService.updateCoveragePeriod(data.id, data);
       toast.success(t('t-toast-message-update'));
     }
 
-    await contactPersonStore.fetchContactPersons(
+    await coveragePeriodStore.fetchCoveragePeriods(
       institutionId.value,
       0,
       itemsPerPage.value
@@ -177,11 +182,11 @@ const onSubmit = async (
  */
 watch(viewDialog, (newVal: boolean) => {
   if (!newVal) {
-    contactPersonData.value = null;
+    coveragePeriodData.value = null;
   }
 });
-const onViewClick = (data: ContactPersonInsertType) => {
-  contactPersonData.value = { ...data };
+const onViewClick = (data: CoveragePeriodInsertType) => {
+  coveragePeriodData.value = { ...data };
   viewDialog.value = true;
 };
 
@@ -201,11 +206,11 @@ const onConfirmDelete = async () => {
 
   deleteLoading.value = true;
   try {
-    await contactPersonService.deleteContactPerson(deleteId.value);
+    await coveragePeriodService.deleteCoveragePeriod(deleteId.value);
     selectedContactPersons.value = selectedContactPersons.value.filter(
       user => user.id !== deleteId.value
     );
-    await contactPersonStore.fetchContactPersons(
+    await coveragePeriodStore.fetchCoveragePeriods(
       institutionId.value,
       0,
       itemsPerPage.value
@@ -220,6 +225,91 @@ const onConfirmDelete = async () => {
     deleteId.value = null;
   }
 };
+
+const getDynamicOptions = (item: CoveragePeriodListingType) => {
+  let availableOptions = [...Options];
+
+  // Se estiver CLOSED, mostrar apenas "view"
+  if (item.status === 'CLOSED') {
+    availableOptions = availableOptions.filter(option => option.value === 'view');
+  }
+  // Se estiver INACTIVE, mostrar "start", "edit", "view", "delete"
+  else if (item.status === 'INACTIVE') {
+    availableOptions = availableOptions.filter(option =>
+      ['start', 'edit', 'view', 'delete'].includes(option.value)
+    );
+  }
+  // Se estiver RUNNING, ocultar "start"
+  else if (item.status === 'RUNNING') {
+    availableOptions = availableOptions.filter(option => option.value !== 'start');
+  }
+
+  return availableOptions.map(option => ({
+    ...option,
+    title: t(`t-${option.title}`)
+  }));
+};
+
+
+
+
+
+const onSelect = (option: string, data: CoveragePeriodListingType) => {
+  switch (option) {
+    case "view":
+      onViewClick(data);
+      break;
+    case "edit":
+      onCreateEditClick(data);
+      break;
+    case "delete":
+      onDelete(data.id);
+      break;
+    case "start":
+      selectedPeriod.value = data;
+      startDialog.value = true;
+      break;
+    case "closed":
+      selectedPeriod.value = data;
+      closeDialog.value = true;
+      break;
+  }
+};
+
+const onConfirmStart = async () => {
+  if (!selectedPeriod.value) return;
+
+  try {
+    await coveragePeriodService.startCoveragePeriod(selectedPeriod.value.id);
+    toast.success(t('t-period-started'));
+    await coveragePeriodStore.fetchCoveragePeriods(institutionId.value, 0, itemsPerPage.value);
+  } catch (err) {
+    toast.error(t('t-error-starting-period'));
+    console.error(err);
+  } finally {
+    startDialog.value = false;
+    selectedPeriod.value = null;
+  }
+};
+
+const onConfirmClose = async () => {
+  if (!selectedPeriod.value) return;
+
+  try {
+    await coveragePeriodService.closeCoveragePeriod(selectedPeriod.value.id);
+    toast.success(t('t-period-closed'));
+    await coveragePeriodStore.fetchCoveragePeriods(institutionId.value, 0, itemsPerPage.value);
+  } catch (err) {
+    toast.error(t('t-error-closing-period'));
+    console.error(err);
+  } finally {
+    closeDialog.value = false;
+    selectedPeriod.value = null;
+  }
+};
+
+
+
 // Limpeza ao desmontar
 onBeforeUnmount(() => {
   if (alertTimeout) {
@@ -230,11 +320,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <Card :title="$t('t-contact-person-list')" title-class="py-5">
+  <Card :title="$t('t-period-list')" title-class="py-5">
     <template #title-action>
       <div>
         <v-btn color="primary" class="mx-1" @click="onCreateEditClick(null)">
-          <i class="ph-plus-circle me-1" /> {{ $t('t-add-contact-person') }}
+          <i class="ph-plus-circle me-1" /> {{ $t('t-add-period') }}
         </v-btn>
         <v-btn color="secondary" class="mx-1">
           <i class="ph-download-simple me-1" /> {{ $t('t-import') }}
@@ -251,34 +341,33 @@ onBeforeUnmount(() => {
       <v-card-text>
         <v-row>
           <v-col cols="12" lg="12">
-            <QuerySearch v-model="searchQuery" :placeholder="$t('t-search-for-contact')" />
+            <QuerySearch v-model="searchQuery" :placeholder="$t('t-search-for-period')" />
           </v-col>
         </v-row>
       </v-card-text>
       <DataTableServer v-model="selectedContactPersons"
-        :headers="contactPersonHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
-        :items="contactPersonStore.contact_persons" :items-per-page="itemsPerPage" :total-items="totalItems"
-        :loading="loadingList" :search-query="searchQuery" :search-props="searchProps" @load-items="fetchContactPersons"
-        item-value="id" show-select>
+        :headers="coveragePeriodHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
+        :items="coveragePeriodStore.coverage_periods" :items-per-page="itemsPerPage" :total-items="totalItems"
+        :loading="loadingList" :search-query="searchQuery" :search-props="searchProps"
+        @load-items="fetchCoveragePeriods" item-value="id" show-select>
         <template #body="{ items }">
-          <tr v-for="item in items as ContactPersonListingType[]" :key="item.id" height="50">
+          <tr v-for="item in items as CoveragePeriodListingType[]" :key="item.id" height="50">
             <td>
               <v-checkbox :model-value="selectedContactPersons.some(selected => selected.id === item.id)"
                 @update:model-value="toggleSelection(item)" hide-details density="compact" />
             </td>
-            <td>{{ item.fullname }}</td>
-            <td>{{ item.email }}</td>
-            <td>{{ item.phone }}</td>
+            <td>{{ item.name }}</td>
+            <td>{{ item.startDate }}</td>
+            <td>{{ item.endDate }}</td>
             <td>
-              <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)"
-                @onDelete="onDelete(item.id)" />
+              <ListMenuWithIcon :menuItems="getDynamicOptions(item)" @onSelect="onSelect($event, item)" />
             </td>
           </tr>
         </template>
 
-        <template v-if="contactPersonStore.contact_persons.length === 0" #body>
+        <template v-if="!coveragePeriodStore.coverage_periods.length" #body>
           <tr>
-            <td :colspan="contactPersonHeader.length" class="text-center py-10">
+            <td :colspan="coveragePeriodHeader.length + 2" class="text-center py-10">
               <v-avatar size="80" color="primary" variant="tonal">
                 <i class="ph-magnifying-glass" style="font-size: 30px" />
               </v-avatar>
@@ -293,17 +382,19 @@ onBeforeUnmount(() => {
   </v-row>
 
   <!-- Dialogs -->
-  <CreateEditContactDialog v-model="dialog" :data="contactPersonData" @onSubmit="onSubmit" />
-  <ViewContactDialog v-model="viewDialog" :data="contactPersonData" />
+  <CreateEditCoveragePeriod v-model="dialog" :data="coveragePeriodData" @onSubmit="onSubmit" />
+  <ViewCoveragePeriod v-model="viewDialog" :data="coveragePeriodData" />
   <RemoveItemConfirmationDialog v-model="deleteDialog" :loading="deleteLoading" @onConfirm="onConfirmDelete" />
+  <PeriodStartConfirmationDialog v-model="startDialog" @onConfirm="onConfirmStart" />
+  <PeriodClosedConfirmationDialog v-model="closeDialog" @onConfirm="onConfirmClose" />
 
   <v-card-actions class="d-flex justify-space-between mt-5">
-    <v-btn color="secondary" variant="outlined" class="me-2" @click="$emit('onStepChange', 3)">
-      {{ $t('t-back-to-organizational-struture') }} <i class="ph-arrow-left ms-2" />
+    <v-btn color="secondary" variant="outlined" class="me-2" @click="$emit('onStepChange', 1)">
+      {{ $t('t-back-to-general-info') }} <i class="ph-arrow-left ms-2" />
     </v-btn>
-    <v-btn color="success" variant="elevated" @click="$emit('onStepChange', 5)">
-    {{ $t('t-proceed') }} <i class="ph-arrow-right ms-2" />
-  </v-btn>
-    
+    <v-btn color="success" variant="elevated" @click="$emit('onStepChange', 3)">
+      {{ $t('t-proceed') }} <i class="ph-arrow-right ms-2" />
+    </v-btn>
+
   </v-card-actions>
 </template>
