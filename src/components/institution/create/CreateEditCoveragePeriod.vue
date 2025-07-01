@@ -3,6 +3,8 @@ import { PropType, computed, ref, watch } from "vue";
 import type { CoveragePeriodInsertType } from "@/components/institution/types";
 import { useI18n } from "vue-i18n";
 import { useToast } from 'vue-toastification';
+import ValidatedDatePicker from "@/app/common/components/ValidatedDatePicker.vue";
+
 
 const { t } = useI18n();
 const emit = defineEmits(["update:modelValue", "onSubmit"]);
@@ -11,6 +13,10 @@ const props = defineProps({
   modelValue: {
     type: Boolean,
     default: false,
+  },
+  error: {
+    type: String,
+    default: "",
   },
   // No CreateEditContactDialog.vue
   data: {
@@ -28,6 +34,7 @@ const props = defineProps({
 
 const localLoading = ref(false);
 const errorMsg = ref("");
+const errorMessage = computed(() => props.error);
 
 // Form fields
 const id = ref("");
@@ -40,8 +47,8 @@ watch(() => props.data, (newData) => {
   if (!newData) return;
   id.value = newData.id || "";
   name.value = newData.name || "";
-  startDate.value = newData.startDate || "";
-  endDate.value = newData.endDate || "";
+  startDate.value = newData.startDate || new Date().toISOString();
+  endDate.value = newData.endDate || new Date().toISOString();
 }, { immediate: true });
 
 
@@ -61,8 +68,8 @@ const dialogValue = computed({
  */
 const requiredRules = {
   name: [(v: string) => !!v || t("t-please-enter-period-name")],
-  startDate: [(v: string) => !!v || t("t-please-enter-start-date")],
-  endDate: [(v: string) => !!v || t("t-please-enter-end-date")],
+  startDate: [(v: Date) => !!v || t("t-please-enter-start-date")],
+  endDate: [(v: Date) => !!v || t("t-please-enter-end-date")],
 };
 
 const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
@@ -91,6 +98,7 @@ const onSubmit = async () => {
     name: name.value,
     startDate: startDate.value,
     endDate: endDate.value,
+    status: props.data?.status ?? "active", // Default status if not provided
     company: props.data?.company ?? ""
   };
 
@@ -101,7 +109,7 @@ const onSubmit = async () => {
 };
 </script>
 <template>
-  <v-dialog v-model="dialogValue" width="500" scrollable>
+  <v-dialog v-model="dialogValue" width="515" scrollable>
     <v-form ref="form" @submit.prevent="onSubmit">
       <Card :title="isCreate ? $t('t-add-period') : $t('t-edit-period')" title-class="py-0" style="overflow: hidden">
         <template #title-action>
@@ -111,7 +119,11 @@ const onSubmit = async () => {
         <v-divider />
 
         <v-card-text class="overflow-y-auto" :style="{ 'max-height': isCreate ? '70vh' : '45vh' }">
-          <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mb-4" density="compact" />
+          <v-alert v-if="errorMessage" :text="errorMessage" variant="tonal" color="danger" class="mb-4"
+            density="compact" type="error" />
+          <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mb-4" density="compact"
+            type="warning" />
+
           <v-row>
             <v-col cols="12">
               <div class="font-weight-bold text-caption mb-1">
@@ -126,13 +138,16 @@ const onSubmit = async () => {
               <div class="font-weight-bold text-caption mb-1">
                 {{ $t("t-start-date") }} <i class="ph-asterisk ph-xs text-danger" />
               </div>
-              <TextField v-model="startDate" type="date" :rules="requiredRules.startDate" />
+              <ValidatedDatePicker v-model="startDate" :teleport="true" :enable-time-picker="true"
+                :rules="requiredRules.startDate" :placeholder="$t('t-select-start-date')" />
             </v-col>
+
             <v-col cols="12" lg="6">
               <div class="font-weight-bold text-caption mb-1">
                 {{ $t("t-end-date") }} <i class="ph-asterisk ph-xs text-danger" />
               </div>
-              <TextField v-model="endDate" type="date" :rules="requiredRules.endDate" />
+              <ValidatedDatePicker v-model="endDate" :teleport="true" :enable-time-picker="true"
+                :rules="requiredRules.endDate" :placeholder="$t('t-select-end-date')" />
             </v-col>
           </v-row>
         </v-card-text>

@@ -12,7 +12,7 @@ import HospitalProcedureService from "@/app/http/services/institution/hospitalPr
 import InvoiceService from "@/app/http/services/invoice/invoiceService";
 import DependentEmployeeService from "@/app/http/services/employee/dependentService";
 import InvoiceItemService from "@/app/http/services/invoice/invoiceItemService";
-import CoveragePeriodService from "@/app/http/services/institution/CoveragePeriodService"; // Adjust the path if necessary
+import CoveragePeriodService from "@/app/http/services/institution/coveragePeriodService"; // Adjust the path if necessary
 
 
 //BASETABLES

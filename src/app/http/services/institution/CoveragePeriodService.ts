@@ -82,16 +82,7 @@ export default class CoveragePeriodService extends HttpService {
                 data: response.data
             };
         } catch (error: any) {
-            if (error.response) {
-                return {
-                    status: 'error',
-                    error: error.response.data as ApiErrorResponse
-                };
-            }
-            return {
-                status: 'error',
-                error: this.NetworkErrorResponse()
-            };
+            throw error;
         }
     }
 
@@ -122,21 +113,15 @@ export default class CoveragePeriodService extends HttpService {
         try {
             // Assuming the 'start' endpoint might return the updated coverage period
             const response = await this.put<ApiResponse<CoveragePeriodListingType>>(`/administration/company/coverage-periods/${id}/start`, {}); // Empty body if no data is needed
+
+            console.log('Resposta startCoveragePeriod:------------------------', response);
+
             return {
                 status: 'success',
                 data: response.data
             };
-        } catch (error: any) {
-            if (error.response) {
-                return {
-                    status: 'error',
-                    error: error.response.data as ApiErrorResponse
-                };
-            }
-            return {
-                status: 'error',
-                error: this.NetworkErrorResponse()
-            };
+        } catch (error) {
+            throw this.handleError(error);
         }
     }
 

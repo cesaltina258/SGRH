@@ -170,7 +170,7 @@ export const coveragePeriodHeader: DataTableHeaderType[] = [
   { title: "name", key: "name", sortable: true},
   { title: "start-date", key: "startDate" , sortable: true },
   { title: "end-date", key: "endDate" , sortable: true },
-  // { title: "status", key: "status" , sortable: true },
+  { title: "status", key: "status" , sortable: true },
   { title: "action",  sortable: false,  align: "right"}
 ];
 

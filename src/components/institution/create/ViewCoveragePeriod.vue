@@ -1,18 +1,16 @@
 <script lang="ts" setup>
-import { PropType, computed, ref, watch } from "vue";
+import { PropType, computed } from "vue";
 import type { CoveragePeriodInsertType } from "@/components/institution/types";
 import { useI18n } from "vue-i18n";
-import { useToast } from 'vue-toastification';
 
 const { t } = useI18n();
-const emit = defineEmits(["update:modelValue", "onSubmit"]);
+const emit = defineEmits(["update:modelValue"]);
 
 const props = defineProps({
   modelValue: {
     type: Boolean,
     default: false,
   },
-  // No CreateEditContactDialog.vue
   data: {
     type: Object as PropType<CoveragePeriodInsertType | null>,
     required: false,
@@ -26,27 +24,6 @@ const props = defineProps({
   },
 });
 
-const localLoading = ref(false);
-const errorMsg = ref("");
-
-// Form fields
-const id = ref("");
-const name = ref("");
-const startDate = ref("");
-const endDate = ref("");
-
-// Watch for data changes
-watch(() => props.data, (newData) => {
-  if (!newData) return;
-  id.value = newData.id || "";
-  name.value = newData.name || "";
-  startDate.value = newData.startDate || "";
-  endDate.value = newData.endDate || "";
-}, { immediate: true });
-
-
-const isCreate = computed(() => !id.value);
-
 const dialogValue = computed({
   get() {
     return props.modelValue;
@@ -57,96 +34,54 @@ const dialogValue = computed({
 });
 
 /**
- * Regras de validação para os campos do formulário
+ * Função para formatar a data como dd/mm/aa
  */
-const requiredRules = {
-  name: [(v: string) => !!v || t("t-please-enter-name")],
-  startDate: [(v: string) => !!v || t("t-please-enter-start-date")],
-  endDate: [(v: string) => !!v || t("t-please-enter-end-date")],
-};
-
-const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
-let alertTimeout: ReturnType<typeof setTimeout> | null = null;
-const toast = useToast();
-
-const onSubmit = async () => {
-  if (!form.value) return;
-
-  const { valid } = await form.value.validate();
-
-  if (!valid) {
-    toast.error(t('t-validation-error'));
-    errorMsg.value = t('t-please-correct-errors');
-    alertTimeout = setTimeout(() => {
-      errorMsg.value = "";
-      alertTimeout = null;
-    }, 5000);
-    return;
-  }
-
-  localLoading.value = true;
-
-  const payload: CoveragePeriodInsertType = {
-    id: props.data?.id,
-    name: name.value,
-    startDate: startDate.value,
-    endDate: endDate.value,
-    company: props.data?.company ?? ""
-  };
-
-  emit("onSubmit", payload, {
-    onSuccess: () => dialogValue.value = false,
-    onFinally: () => localLoading.value = false
-  });
-};
+function formatDate(value?: string): string {
+  if (!value) return "-";
+  const date = new Date(value);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = String(date.getFullYear()).slice(-2);
+  return `${day}/${month}/${year}`;
+}
 </script>
+
 <template>
   <v-dialog v-model="dialogValue" width="500" scrollable>
-    <v-form ref="form" @submit.prevent="onSubmit">
-      <Card :title=" $t('t-view-period')" title-class="py-0" style="overflow: hidden">
-        <template #title-action>
-          <v-btn icon="ph-x" variant="plain" @click="dialogValue = false" />
-        </template>
+    <Card :title="$t('t-view-period')" title-class="py-0" style="overflow: hidden">
+      <template #title-action>
+        <v-btn icon="ph-x" variant="plain" @click="dialogValue = false" />
+      </template>
 
-        <v-divider />
+      <v-divider />
 
-        <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mx-5 mt-3" density="compact" />
-        <v-card-text class="overflow-y-auto" :style="{ 'max-height': isCreate ? '70vh' : '45vh' }">
-          <v-row>
-            <v-col cols="12">
-              <div class="font-weight-bold text-caption mb-1">
-                {{ $t("t-name") }} <i class="ph-asterisk ph-xs text-danger" />
-              </div>
-              <TextField v-model="name" :placeholder="$t('t-enter-name')" :rules="requiredRules.name" disabled/>
-            </v-col>
-          </v-row>
+      <v-card-text class="overflow-y-auto" style="max-height: 50vh">
+        <v-row>
+          <v-col cols="12">
+            <div class="font-weight-bold text-caption mb-1">{{ $t('t-name') }}</div>
+            <div>{{ props.data?.name || '-' }}</div>
+          </v-col>
+        </v-row>
 
-          <v-row class="mt-n6">
-            <v-col cols="12" lg="6">
-              <div class="font-weight-bold text-caption mb-1">
-                {{ $t("t-start-date") }} <i class="ph-asterisk ph-xs text-danger" />
-              </div>
-              <TextField v-model="startDate" type="date" :rules="requiredRules.startDate" disabled/>
-            </v-col>
-            <v-col cols="12" lg="6">
-              <div class="font-weight-bold text-caption mb-1">
-                {{ $t("t-end-date") }} <i class="ph-asterisk ph-xs text-danger" />
-              </div>
-              <TextField v-model="endDate" type="date" :rules="requiredRules.endDate" disabled/>
-            </v-col>
-          </v-row>
-        </v-card-text>
+        <v-row class="mt-3">
+          <v-col cols="12" lg="6">
+            <div class="font-weight-bold text-caption mb-1">{{ $t('t-start-date') }}</div>
+            <div>{{ formatDate(props.data?.startDate) }}</div>
+          </v-col>
+          <v-col cols="12" lg="6">
+            <div class="font-weight-bold text-caption mb-1">{{ $t('t-end-date') }}</div>
+            <div>{{ formatDate(props.data?.endDate) }}</div>
+          </v-col>
+        </v-row>
+      </v-card-text>
 
-        <v-divider />
+      <v-divider />
 
-        <v-card-actions class="d-flex justify-end">
-          <div>
-            <v-btn color="danger" class="me-1" @click="dialogValue = false">
-              <i class="ph-x me-1" /> {{ $t("t-close") }}
-            </v-btn>
-          </div>
-        </v-card-actions>
-      </Card>
-    </v-form>
+      <v-card-actions class="d-flex justify-end">
+        <v-btn color="danger" class="me-1" @click="dialogValue = false">
+          <i class="ph-x me-1" /> {{ $t('t-close') }}
+        </v-btn>
+      </v-card-actions>
+    </Card>
   </v-dialog>
 </template>

@@ -25,7 +25,10 @@ import ViewCoveragePeriod from "@/components/institution/create/ViewCoveragePeri
 import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue";
 import PeriodStartConfirmationDialog from "@/app/common/components/PeriodStartConfirmationDialog.vue";
 import PeriodClosedConfirmationDialog from "@/app/common/components/PeriodClosedConfirmationDialog.vue";
+import ValidatedDatePicker from "@/app/common/components/ValidatedDatePicker.vue";
 import TableAction from "@/app/common/components/TableAction.vue";
+import StatusPeriod from "@/app/common/components/StatusPeriod.vue";
+import { formateDate } from "@/app/common/dateFormate";
 // Stores e Services
 import { useCoveragePeriodStore } from "@/store/institution/coveragePeriodStore";
 import { coveragePeriodService } from "@/app/http/httpServiceProvider";
@@ -54,6 +57,20 @@ const props = defineProps({
   }
 });
 
+const mapStatus = (status: string) => {
+  switch (status) {
+    case "INACTIVE":
+      return "inactive";
+    case "RUNNING":
+      return "running";
+    case "CLOSED":
+      return "close";
+    default:
+      return "unknown";
+  }
+};
+
+
 // Modifique a lógica para usar o prop institutionId
 const institutionId = ref(props.institutionId);
 
@@ -73,6 +90,7 @@ const searchProps = "name"; // Propriedades de busca
 const itemsPerPage = ref(10);
 const selectedContactPersons = ref<CoveragePeriodListingType[]>([]);
 const customerDetail = ref<any>(null); // Adicionado para resolver o erro
+const formErrorMsg = ref("");
 
 let alertTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -137,10 +155,37 @@ const onCreateEditClick = (data: CoveragePeriodInsertType | null) => {
       name: "",
       startDate: "",
       endDate: "",
+      status: "",
       company: company
     };
 
   dialog.value = true;
+};
+
+const handleApiError = (error: any) => {
+  console.error("🔥 ERRO COMPLETO:", JSON.stringify(error, null, 2));
+  console.error("🔥 RESPONSE:", error?.response);
+
+  if (alertTimeout) {
+    clearTimeout(alertTimeout);
+    alertTimeout = null;
+  }
+
+  const message =
+    error?.response?.data?.error?.errors?.startDate?.[0] ||
+    error?.response?.data?.error?.errors?.endDate?.[0] ||
+    error?.response?.data?.error?.detail ||
+    error?.message ||
+    t("t-message-save-error");
+
+  formErrorMsg.value = message;
+
+  console.log("formErrorMsg.value ==>", formErrorMsg.value);
+
+  alertTimeout = setTimeout(() => {
+    formErrorMsg.value = "";
+    alertTimeout = null;
+  }, 5000);
 };
 
 
@@ -154,6 +199,8 @@ const onSubmit = async (
     onFinally?: () => void
   }
 ) => {
+  formErrorMsg.value = "";
+
   try {
     if (!data.id) {
       await coveragePeriodService.createCoveragePeriod(data);
@@ -169,12 +216,23 @@ const onSubmit = async (
       itemsPerPage.value
     );
     callbacks?.onSuccess?.();
-  } catch (error) {
-    console.error("Erro ao gravar pessoa de contacto:", error);
+  } catch (error: any) {
+    handleApiError(error);
     toast.error(t('t-message-save-error'));
   } finally {
     callbacks?.onFinally?.();
   }
+};
+
+
+const extractApiErrorMessage = (error: any): string => {
+  return (
+    error?.response?.data?.error?.errors?.startDate?.[0] ||
+    error?.response?.data?.error?.errors?.endDate?.[0] ||
+    error?.response?.data?.error?.detail ||
+    error?.message ||
+    t("t-message-save-error")
+  );
 };
 
 /**
@@ -284,8 +342,9 @@ const onConfirmStart = async () => {
     toast.success(t('t-period-started'));
     await coveragePeriodStore.fetchCoveragePeriods(institutionId.value, 0, itemsPerPage.value);
   } catch (err) {
-    toast.error(t('t-error-starting-period'));
-    console.error(err);
+    const message = extractApiErrorMessage(err);
+    toast.error(message);
+    handleApiError(err);
   } finally {
     startDialog.value = false;
     selectedPeriod.value = null;
@@ -357,8 +416,11 @@ onBeforeUnmount(() => {
                 @update:model-value="toggleSelection(item)" hide-details density="compact" />
             </td>
             <td>{{ item.name }}</td>
-            <td>{{ item.startDate }}</td>
-            <td>{{ item.endDate }}</td>
+            <td>{{ formateDate(item.startDate) }}</td>
+            <td>{{ formateDate(item.endDate) }}</td>
+            <td>
+              <StatusPeriod :status_period="item.status" />
+            </td>
             <td>
               <ListMenuWithIcon :menuItems="getDynamicOptions(item)" @onSelect="onSelect($event, item)" />
             </td>
@@ -382,7 +444,7 @@ onBeforeUnmount(() => {
   </v-row>
 
   <!-- Dialogs -->
-  <CreateEditCoveragePeriod v-model="dialog" :data="coveragePeriodData" @onSubmit="onSubmit" />
+  <CreateEditCoveragePeriod v-model="dialog" :data="coveragePeriodData" @onSubmit="onSubmit" :error="formErrorMsg" />
   <ViewCoveragePeriod v-model="viewDialog" :data="coveragePeriodData" />
   <RemoveItemConfirmationDialog v-model="deleteDialog" :loading="deleteLoading" @onConfirm="onConfirmDelete" />
   <PeriodStartConfirmationDialog v-model="startDialog" @onConfirm="onConfirmStart" />

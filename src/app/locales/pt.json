@@ -874,6 +874,12 @@
   "t-period-started": "Período iniciado com sucesso!",
   "t-period-closed": "Período fechado com sucesso!",
   "t-yes-start": "Sim, iniciar",
-  "t-yes-close": "Sim, fechar"
+  "t-yes-close": "Sim, fechar",
+  "t-inactive": "Inactivo",
+  "t-running": "Iniciado",
+  "t-closed-periods": "Fechado",
+  "t-error-starting-period": "Ocorreu um erro ao iniciar o período",
+  "t-select-start-date": "Selecione a Data de Início",
+  "t-select-end-date": "Selecione a Data de Fim"
  
 }

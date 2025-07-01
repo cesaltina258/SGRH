@@ -255,6 +255,7 @@ export type CoveragePeriodInsertType = {
     startDate: string;
     endDate: string;
     company: string;
+    status: string;
 }
 
 export type CoveragePeriodUpdateType = {
@@ -262,6 +263,7 @@ export type CoveragePeriodUpdateType = {
     startDate?: string;
     endDate?: string;
     company?: string;
+    status: string;
 }
 
 export type CoveragePeriodResponseType = {
