@@ -166,3 +166,12 @@ export const hospitalProcedureHeader: TableHeaderType[] = [
   { title: "action" },
 ];
 
+export const listViewHeader: DataTableHeaderType[] = [
+  { title: "health-plan-limit",  key: "health-plan-limit", sortable: true },
+  { title: "max-number-dependents",  key: "max-number-dependents", sortable: true },
+  { title: "children-max-age",  key: "children-max-age", sortable: true },
+  { title: "fixed-amount", key: "fixed-amount", sortable: true },
+  { title: "salary-component", key: "salary-component", sortable: false },
+  { title: "company-contribution-percentage", key: "company-contribution-percentage", sortable: false },
+  { title: "action", sortable: false },
+];

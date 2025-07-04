@@ -238,3 +238,42 @@ export type HospitalProcedureInsertType = {
     hospitalProcedureType: string;
     company: string; 
 };
+
+
+export type HealthPlanInsertType = {
+    id?: string | null; // Opcional, se quiseres suportar criação e edição
+    company: string | number;
+    childrenMaxAge: number;
+    maxNumberOfDependents: number;
+    healthPlanLimit: string;
+    salaryComponent: string;
+    fixedAmount: number;
+    companyContributionPercentage: number;
+    coveragePeriod: string;
+};
+export type HealthPlanListingType = {
+    id: string;
+    company: string | number;
+    childrenMaxAge: number;
+    maxNumberOfDependents: number;
+    healthPlanLimit: string;
+    salaryComponent: string;
+    fixedAmount: number;
+    companyContributionPercentage: number;
+    coveragePeriod: string;
+    // createdAt: Date | null;
+    // updatedAt: Date | null;
+    // deletedAt: Date | null;
+    // createdBy: string;
+    // updatedBy: string;
+    // deletedBy: string;
+};
+
+export type CoveragePeriodListingType = {
+    id: string;
+    name: string;
+    startDate: string;
+    endDate: string;
+    company: string;
+    status: string;
+};

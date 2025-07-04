@@ -12,6 +12,7 @@ import HospitalProcedureService from "@/app/http/services/institution/hospitalPr
 import InvoiceService from "@/app/http/services/invoice/invoiceService";
 import DependentEmployeeService from "@/app/http/services/employee/dependentService";
 import InvoiceItemService from "@/app/http/services/invoice/invoiceItemService";
+import HealthPlanService from "@/app/http/services/institution/healthPlanService";
 
 //BASETABLES
 import CountryService from "@/app/http/services/baseTables/country/countryService";
@@ -21,6 +22,7 @@ import InstitutionTypeService from "@/app/http/services/baseTables/institutionTy
 import LeaveReasonService from "@/app/http/services/baseTables/leaveReason/leaveReasonService";
 import LanguageService from "@/app/http/services/baseTables/languages/languageService";
 import TaxRateTypeTypeService from "./services/baseTables/taxRate/taxRateService";
+
 
 // FakeBackendService is used for mocking API responses
 import FakeBackendService from "@/app/http/services/fakeBackendService";
@@ -38,6 +40,7 @@ const clinicInstitutionService = new ClinicInstitutionService();
 const invoiceService = new InvoiceService();
 const dependentEmployeeService = new DependentEmployeeService();
 const invoiceItemService = new InvoiceItemService();
+const healthPlanService = new HealthPlanService();
 
 //BASETABLES
 const countryService = new CountryService();
@@ -72,5 +75,6 @@ export {
     invoiceService,
     dependentEmployeeService,
     taxRateTypeService,
-    invoiceItemService
+    invoiceItemService,
+    healthPlanService
 };
