@@ -156,7 +156,7 @@ interface ServiceResponse<T> {
 }
 
 const onSubmit = async (
-  data: HospitalProcedureInsertType,
+  data: HospitalProcedureInsertType, 
   callbacks?: {
     onSuccess?: () => void,
     onFinally?: () => void
@@ -322,7 +322,7 @@ onBeforeUnmount(() => {
   <RemoveItemConfirmationDialog v-model="deleteDialog" :loading="deleteLoading" @onConfirm="onConfirmDelete" />
  
   <v-card-actions class="d-flex justify-space-between mt-5">
-    <v-btn color="secondary" variant="outlined" class="me-2" @click="$emit('onStepChange', 5)">
+    <v-btn color="secondary" variant="outlined" class="me-2" @click="$emit('onStepChange', 6)">
       {{ $t('t-back-to-clinics') }} <i class="ph-arrow-left ms-2" />
     </v-btn>
 

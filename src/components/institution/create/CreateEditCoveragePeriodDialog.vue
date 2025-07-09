@@ -1,8 +1,10 @@
 <script lang="ts" setup>
 import { PropType, computed, ref, watch } from "vue";
-import { DepartmentInsertType } from "@/components/institution/types";
+import { CoveragePeriodInsertType } from "@/components/institution/types";
 import { useI18n } from "vue-i18n";
 import { useToast } from 'vue-toastification';
+import ValidatedDatePicker from "@/app/common/components/ValidatedDatePicker.vue";
+import type { ApiErrorResponse } from "@/app/common/types/errorType";
 
 const { t } = useI18n();
 const emit = defineEmits(["update:modelValue", "onSubmit"]);
@@ -12,14 +14,15 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  // No CreateEditContactDialog.vue
+  // No CreateEditCoveragePeriodDialog.vue
   data: {
-    type: Object as PropType<DepartmentInsertType | null>,
+    type: Object as PropType<CoveragePeriodInsertType | null>,
     required: false,
     default: () => ({
       id: undefined,
       name: "",
-      description: "",
+      startDate: new Date(),
+      endDate: new Date(),
       company: ""
     })
   },
@@ -30,16 +33,19 @@ const errorMsg = ref("");
 
 // Form fields
 const id = ref("");
-const fullname = ref("");
-const phone = ref("");
-const email = ref("");
+const name = ref("");
+const startDate = ref(new Date());
+const endDate = ref(new Date());
+const company = ref("");
 
 // Watch for data changes
 watch(() => props.data, (newData) => {
   if (!newData) return;
   id.value = newData.id || "";
-  fullname.value = newData.name || "";
-  phone.value = newData.description || "";
+  name.value = newData.name || "";
+  startDate.value = newData.startDate || new Date();
+  endDate.value = newData.endDate || new Date();
+  company.value = newData.company || "";
 }, { immediate: true });
 
 
@@ -47,7 +53,7 @@ const isCreate = computed(() => !id.value);
 
 const dialogValue = computed({
   get() {
-    return props.modelValue;
+    return props.modelValue;  
   },
   set(value: boolean) {
     emit("update:modelValue", value);
@@ -59,12 +65,19 @@ const dialogValue = computed({
  */
  const requiredRules = {
   name: [
-    (v: string) => !!v || t('t-please-enter-department-name'),
+    (v: string) => !!v || t('t-please-enter-name'),
   ],
-  description: [
-    (v: string) => !!v || t('t-please-enter-description'),
+  startDate: [
+    (v: Date) => !!v || t('t-please-enter-start-date'),
+  ],
+  endDate: [
+    (v: Date) => !!v || t('t-please-enter-end-date'),
   ]
 };
+
+/**
+ * Submete dados do formulário
+ */
 
 const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 let alertTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -87,25 +100,36 @@ const onSubmit = async () => {
 
   localLoading.value = true;
 
-  const payload: DepartmentInsertType = {
-  id: id.value || undefined,
-  name: fullname.value, // em vez de name.value
-  description: phone.value, // em vez de description.value
-  company: props.data?.company ?? ""
-};
-
+  const payload: CoveragePeriodInsertType = {
+    id: id.value || undefined,
+    name: name.value,
+    startDate: startDate.value,
+    endDate: endDate.value,
+    company: props.data?.company ?? ""
+  };
 
   emit("onSubmit", payload, {
     onSuccess: () => dialogValue.value = false,
+    onError: (error: { error?: ApiErrorResponse }) => {
+      // Mostra mensagem específica para erro 409
+      errorMsg.value = error.error?.message || t('t-message-save-error');
+
+      alertTimeout = setTimeout(() => {
+        errorMsg.value = "";
+        alertTimeout = null;
+      }, 5000);
+    },
     onFinally: () => localLoading.value = false
   });
 };
 </script>
+
 <template>
-  <v-dialog v-model="dialogValue" width="500" >
+  <v-dialog v-model="dialogValue" width="500" :persistent="true"
+  :click:outside="false">
     <v-form ref="form" @submit.prevent="onSubmit"> 
-    <Card :title="isCreate ? $t('t-add-department') : $t('t-edit-department')" title-class="py-0"
-      style="overflow: hidden">
+    <Card :title="isCreate ? $t('t-add-coverage-period') : $t('t-edit-coverage-period')" title-class="py-0"
+      >
       <template #title-action>
         <v-btn icon="ph-x" variant="plain" @click="dialogValue = false" />
       </template>
@@ -113,22 +137,28 @@ const onSubmit = async () => {
 
       <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mx-5 mt-3" density="compact" />
       <v-card-text class="overflow-y-auto" :style="{
-        'max-height': isCreate ? '70vh' : '45vh'
+        'max-height': isCreate ? '80vh' : '60vh'
       }">
         <v-row class="">
           <v-col cols="12" lg="12">
             <div class="font-weight-bold text-caption mb-1">
               {{ $t('t-name') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="fullname" :placeholder="$t('t-enter-name')" :rules="requiredRules.name" />
+            <TextField v-model="name" :placeholder="$t('t-enter-name')" :rules="requiredRules.name" />
           </v-col>
         </v-row>
         <v-row class="mt-n6">
-          <v-col cols="12" lg="12">
+          <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-description') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-start-date') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="phone" :placeholder="$t('t-enter-description')" :rules="requiredRules.description" />
+            <ValidatedDatePicker v-model="startDate" :placeholder="$t('t-enter-start-date')" :rules="requiredRules.startDate" />
+          </v-col>
+          <v-col cols="12" lg="6">
+            <div class="font-weight-bold text-caption mb-1">
+              {{ $t('t-end-date') }} <i class="ph-asterisk ph-xs text-danger" />
+            </div>
+            <ValidatedDatePicker v-model="endDate"  :placeholder="$t('t-enter-end-date')" :rules="requiredRules.endDate" />
           </v-col>
         </v-row>
       </v-card-text>
@@ -142,7 +172,7 @@ const onSubmit = async () => {
             {{ localLoading ? $t('t-saving') : $t('t-save') }}
           </v-btn>
         </div>
-      </v-card-actions>
+      </v-card-actions> 
     </Card>
   </v-form>
   </v-dialog>

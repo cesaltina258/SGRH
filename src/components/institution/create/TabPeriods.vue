@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 /**
- * TabContacts - Componente para  de pessoas de contato de instituições
+ * TabPeriods - Componente para  de pessoas de contato de instituições
  * 
  * Funcionalidades:
- * - Listagem de contatos
- * - Criação/Edição de contatos
+ * - Listagem de períodos de cobertura
+ * - Criação/Edição de períodos de cobertura
  * - Visualização de detalhes
- * - Exclusão de contatos
+ * - Exclusão de períodos de cobertura
  */
 
 import { ref, watch, computed, onMounted, onBeforeUnmount, PropType } from "vue";
@@ -20,29 +20,34 @@ import DataTableServer from "@/app/common/components/DataTableServer.vue";
 import Status from "@/app/common/components/Status.vue";
 import ListMenuWithIcon from "@/app/common/components/ListMenuWithIcon.vue";
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
-import CreateEditContactDialog from "@/components/institution/create/CreateEditContactDialog.vue";
-import ViewContactDialog from "@/components/institution/create/ViewContactDialog.vue";
+import CreateEditCoveragePeriodDialog from "@/components/institution/create/CreateEditCoveragePeriodDialog.vue";
+import ViewCoveragePeriodDialog from "@/components/institution/create/ViewCoveragePeriodDialog.vue";
 import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue";
+import StartConfirmationDialog from "@/app/common/components/StartConfirmationDialog.vue";
+import CloseConfirmationDialog from "@/app/common/components/CloseConfirmationDialog.vue";
 import TableAction from "@/app/common/components/TableAction.vue";
+import { formateDate } from "@/app/common/dateFormate";
 // Stores e Services
-import { useContactPersonStore } from "@/store/institution/contactPersonStore";
-import { contactPersonService } from "@/app/http/httpServiceProvider";
+import { useCoveragePeriodStore } from "@/store/institution/coveragePeriodStore";
+import { coveragePeriodsService } from "@/app/http/httpServiceProvider";
+import type { ApiErrorResponse } from "@/app/common/types/errorType";
 
 // Types
 import type {
-  ContactPersonListingType,
-  ContactPersonInsertType
+  CoveragePeriodListingType,
+  CoveragePeriodInsertType
 } from "@/components/institution/types";
 
 // Utils
-import { contactPersonHeader } from "@/components/institution/create/utils";
-import { contactOptions as Options } from "@/components/institution/create/utils";
+import { coveragePeriodHeader } from "@/components/institution/create/utils";
+import { coverageperiodOptions as Options } from "@/components/institution/create/utils";
+import CoveragePeriodService from "@/app/http/services/institution/coveragePeriods";
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
-const contactPersonStore = useContactPersonStore();
+const coveragePeriodStore = useCoveragePeriodStore();
 
 // props
 const props = defineProps({
@@ -60,20 +65,23 @@ const dialog = ref(false);
 const viewDialog = ref(false);
 const deleteDialog = ref(false);
 const deleteLoading = ref(false);
-const contactPersonData = ref<ContactPersonInsertType | null>(null);
+const coveragePeriodData = ref<CoveragePeriodInsertType | CoveragePeriodListingType | null>(null);
 const deleteId = ref<string | null>(null);
 const errorMsg = ref("");
 const searchQuery = ref("");
-const searchProps = "fullname,email,phone"; // Propriedades de busca
+const searchProps = "name,endDate,startDate"; // Propriedades de busca
 const itemsPerPage = ref(10);
-const selectedContactPersons = ref<ContactPersonListingType[]>([]);
+const selectedCoveragePeriods = ref<CoveragePeriodListingType[]>([]);
 const customerDetail = ref<any>(null); // Adicionado para resolver o erro
-
 let alertTimeout: ReturnType<typeof setTimeout> | null = null;
-
+const periodStartDialog = ref(false);
+const periodCloseDialog = ref(false);
+const periodId = ref<string | null>(null);
+const periodStartLoading = ref(false);
+const periodCloseLoading = ref(false);
 // Computed properties
-const loadingList = computed(() => contactPersonStore.loading);
-const totalItems = computed(() => contactPersonStore.pagination.totalElements);
+const loadingList = computed(() => coveragePeriodStore.loading);
+const totalItems = computed(() => coveragePeriodStore.pagination.totalElements);
 
 interface FetchParams {
   page: number;
@@ -83,12 +91,12 @@ interface FetchParams {
 }
 
 /**
- * Busca pessoas de contato com paginação e filtros
+ * Busca períodos de cobertura com paginação e filtros
  */
-const fetchContactPersons = async ({ page, itemsPerPage, sortBy, search }: FetchParams) => {
+const fetchCoveragePeriods = async ({ page, itemsPerPage, sortBy, search }: FetchParams) => {
   if (!institutionId.value) return;
 
-  await contactPersonStore.fetchContactPersons(
+  await coveragePeriodStore.fetchCoveragePeriods(
     institutionId.value,
     page - 1, // Ajuste para API que começa em 0
     itemsPerPage,
@@ -102,12 +110,12 @@ const fetchContactPersons = async ({ page, itemsPerPage, sortBy, search }: Fetch
 /**
  * Alterna seleção de pessoas de contato
  */
-const toggleSelection = (item: ContactPersonListingType) => {
-  const index = selectedContactPersons.value.findIndex(selected => selected.id === item.id);
+const toggleSelection = (item: CoveragePeriodListingType) => {
+  const index = selectedCoveragePeriods.value.findIndex(selected => selected.id === item.id);
   if (index === -1) {
-    selectedContactPersons.value = [...selectedContactPersons.value, item];
+    selectedCoveragePeriods.value = [...selectedCoveragePeriods.value, item];
   } else {
-    selectedContactPersons.value = selectedContactPersons.value.filter(selected => selected.id !== item.id);
+    selectedCoveragePeriods.value = selectedCoveragePeriods.value.filter(selected => selected.id !== item.id);
   }
 };
 
@@ -116,22 +124,22 @@ const toggleSelection = (item: ContactPersonListingType) => {
  */
 watch(dialog, (newVal: boolean) => {
   if (!newVal) {
-    contactPersonData.value = null;
+    coveragePeriodData.value = null;
   }
 });
-const onCreateEditClick = (data: ContactPersonInsertType | null) => {
+const onCreateEditClick = (data: CoveragePeriodInsertType | CoveragePeriodListingType | null) => {
   const company = institutionId.value || "";
 
-  contactPersonData.value = data
+  coveragePeriodData.value = data
     ? {
       ...data,
       company: company // sobrescreve com o institutionId atual
     }
     : {
       id: undefined,
-      fullname: "",
-      phone: "",
-      email: "",
+      name: "",
+      endDate: new Date(),
+      startDate: new Date(),
       company: company
     };
 
@@ -142,46 +150,204 @@ const onCreateEditClick = (data: ContactPersonInsertType | null) => {
 /**
  * Submete dados do formulário
  */
+interface ServiceResponse<T> {
+  status: 'success' | 'error';
+  data?: T;
+  error?: ApiErrorResponse;
+}
+
 const onSubmit = async (
-  data: ContactPersonInsertType,
+  data: CoveragePeriodInsertType,
   callbacks?: {
     onSuccess?: () => void,
     onFinally?: () => void
   }
 ) => {
   try {
+    let response: ServiceResponse<CoveragePeriodListingType>;
+
     if (!data.id) {
-      await contactPersonService.createContactPerson(data);
-      toast.success(t('t-toast-message-created'));
+      response = await coveragePeriodsService.createCoveragePeriod(data);
     } else {
-      await contactPersonService.updateContactPerson(data.id, data);
-      toast.success(t('t-toast-message-update'));
+      response = await coveragePeriodsService.updateCoveragePeriod(data.id, data);
     }
 
-    await contactPersonStore.fetchContactPersons(
+    // Verifica se a resposta contém erro
+    if (response.status === 'error') {
+      toast.error(response.error?.message || t('t-message-save-error'));
+      return;
+    }
+
+    // Só mostra sucesso se realmente foi bem-sucedido
+    toast.success(data.id ? t('t-toast-message-update') : t('t-toast-message-created'));
+
+    await coveragePeriodStore.fetchCoveragePeriods(
       institutionId.value,
       0,
       itemsPerPage.value
     );
     callbacks?.onSuccess?.();
-  } catch (error) {
-    console.error("Erro ao gravar pessoa de contacto:", error);
+
+  } catch (error: any) {
+    console.error("Erro ao gravar periodo de cobertura:", error);
     toast.error(t('t-message-save-error'));
   } finally {
     callbacks?.onFinally?.();
   }
 };
 
+/*
+Opcoes da lista
+*/
+const getDynamicOptions = (invoice: CoveragePeriodListingType) => {
+  // Opções base
+  let availableOptions = [...Options];
+
+  // Filtros baseados no status
+  if (invoice.status === 'CLOSED') {
+    // Período fechado não pode ser reaberto ou fechado novamente
+    availableOptions = availableOptions.filter(option =>
+      option.title === 'view'
+    );
+  } else if (invoice.status === 'INACTIVE') {
+    // Período inativo não pode ser fechado
+    availableOptions = availableOptions.filter(option =>
+      option.title !== 'close'
+    );
+  }
+  else if (invoice.status === 'RUNNING') {
+    // Período em execução não pode ser fechado
+    availableOptions = availableOptions.filter(option =>
+      option.title !== 'start' && option.title !== 'edit' && option.title !== 'delete'
+    );
+  }
+
+  return availableOptions.map(option => ({
+    ...option,
+    title: t(`t-${option.title}`)
+  }));
+};
+
+
+const onSelect = (option: string, data: CoveragePeriodListingType) => {
+  switch (option) {
+    case "view":
+      onViewClick(data);
+      break;
+    case "edit":
+      onCreateEditClick(data);
+      break;
+    case "start":
+      onStart(data.id);
+      break;
+    case "close":
+      onClose(data.id);
+      break;
+    case "delete":
+      onDelete(data.id);
+      break;
+  }
+};
+
+/* 
+Prepara dados para fechar o periodo
+*/
+// Abre o diálogo de confirmação para do lançamento
+const onClose = (id: string) => {
+  periodId.value = id;
+  periodCloseDialog.value = true; 
+}
+
+const onConfirmClose = async () => {
+  if (!periodId.value) return;
+
+  periodCloseLoading.value = true;
+  try {
+    await coveragePeriodsService.closeCoveragePeriod(periodId.value);
+    toast.success(t('t-toast-message-close'));
+    await coveragePeriodStore.fetchCoveragePeriods(institutionId.value, 0, itemsPerPage.value);
+  } catch (error: unknown) {
+    console.log('Erro completo:', error); // Para debugging
+
+    if (typeof error === 'object' && error !== null) {
+      const apiError = error as {
+        message?: string;
+        details?: any;
+        status?: number;
+      };
+
+      if (apiError.message) {
+        // Mostra a mensagem direta do erro
+        toast.error(apiError.message);
+      } else {
+        // Fallback para mensagem genérica
+        toast.error(t('t-toast-message-error'));
+      }
+    } else {
+      // Caso o erro não seja um objeto
+      toast.error(t('t-toast-message-error'));
+    }
+  } finally {
+    periodCloseLoading.value = false;
+    periodCloseDialog.value = false;
+  }
+};
+
+
+/* 
+Prepara dados para iniciar o periodo
+*/
+const onStart = (id: string) => {
+  periodId.value = id;
+  periodStartDialog.value = true; // Usa a variável específica para start
+}
+
+const onConfirmStart = async () => {
+  if (!periodId.value) return;
+
+  periodStartLoading.value = true;
+  try {
+    await coveragePeriodsService.startCoveragePeriod(periodId.value);
+    toast.success(t('t-toast-message-start'));
+    await coveragePeriodStore.fetchCoveragePeriods(institutionId.value, 0, itemsPerPage.value);
+  } catch (error: unknown) {
+    console.log('Erro completo:', error); // Para debugging
+
+    if (typeof error === 'object' && error !== null) {
+      const apiError = error as {
+        message?: string;
+        details?: any;
+        status?: number;
+      };
+
+      if (apiError.message) {
+        // Mostra a mensagem direta do erro
+        toast.error(apiError.message);
+      } else {
+        // Fallback para mensagem genérica
+        toast.error(t('t-toast-message-error'));
+      }
+    } else {
+      // Caso o erro não seja um objeto
+      toast.error(t('t-toast-message-error'));
+    }
+  } finally {
+    periodStartLoading.value = false;
+    periodStartDialog.value = false;
+  }
+};
+
+
 /**
  * Prepara dados para visualização
  */
 watch(viewDialog, (newVal: boolean) => {
   if (!newVal) {
-    contactPersonData.value = null;
+    coveragePeriodData.value = null;
   }
 });
-const onViewClick = (data: ContactPersonInsertType) => {
-  contactPersonData.value = { ...data };
+const onViewClick = (data: CoveragePeriodInsertType | CoveragePeriodListingType) => {
+  coveragePeriodData.value = { ...data };
   viewDialog.value = true;
 };
 
@@ -201,11 +367,11 @@ const onConfirmDelete = async () => {
 
   deleteLoading.value = true;
   try {
-    await contactPersonService.deleteContactPerson(deleteId.value);
-    selectedContactPersons.value = selectedContactPersons.value.filter(
-      user => user.id !== deleteId.value
+    await coveragePeriodsService.deleteCoveragePeriod(deleteId.value);
+    selectedCoveragePeriods.value = selectedCoveragePeriods.value.filter(
+      period => period.id !== deleteId.value
     );
-    await contactPersonStore.fetchContactPersons(
+    await coveragePeriodStore.fetchCoveragePeriods(
       institutionId.value,
       0,
       itemsPerPage.value
@@ -230,11 +396,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <Card :title="$t('t-contact-person-list')" title-class="py-5">
+  <Card :title="$t('t-coverage-period-list')" title-class="py-5">
     <template #title-action>
       <div>
         <v-btn color="primary" class="mx-1" @click="onCreateEditClick(null)">
-          <i class="ph-plus-circle me-1" /> {{ $t('t-add-contact-person') }}
+          <i class="ph-plus-circle me-1" /> {{ $t('t-add-coverage-period') }}
         </v-btn>
         <v-btn color="secondary" class="mx-1">
           <i class="ph-download-simple me-1" /> {{ $t('t-import') }}
@@ -251,34 +417,36 @@ onBeforeUnmount(() => {
       <v-card-text>
         <v-row>
           <v-col cols="12" lg="12">
-            <QuerySearch v-model="searchQuery" :placeholder="$t('t-search-for-contact')" />
+            <QuerySearch v-model="searchQuery" :placeholder="$t('t-search-for-coverage-period')" />
           </v-col>
         </v-row>
       </v-card-text>
-      <DataTableServer v-model="selectedContactPersons"
-        :headers="contactPersonHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
-        :items="contactPersonStore.contact_persons" :items-per-page="itemsPerPage" :total-items="totalItems"
-        :loading="loadingList" :search-query="searchQuery" :search-props="searchProps" @load-items="fetchContactPersons"
-        item-value="id" show-select>
+      <DataTableServer v-model="selectedCoveragePeriods"
+        :headers="coveragePeriodHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
+        :items="coveragePeriodStore.coverage_periods" :items-per-page="itemsPerPage" :total-items="totalItems"
+        :loading="loadingList" :search-query="searchQuery" :search-props="searchProps"
+        @load-items="fetchCoveragePeriods" item-value="id" show-select>
         <template #body="{ items }">
-          <tr v-for="item in items as ContactPersonListingType[]" :key="item.id" height="50">
+          <tr v-for="item in items as CoveragePeriodListingType[]" :key="item.id" height="50">
             <td>
-              <v-checkbox :model-value="selectedContactPersons.some(selected => selected.id === item.id)"
+              <v-checkbox :model-value="selectedCoveragePeriods.some(selected => selected.id === item.id)"
                 @update:model-value="toggleSelection(item)" hide-details density="compact" />
             </td>
-            <td>{{ item.fullname }}</td>
-            <td>{{ item.email }}</td>
-            <td>{{ item.phone }}</td>
+            <td>{{ item.name }}</td>
+            <td>{{ formateDate(item.startDate) }}</td>
+            <td>{{ formateDate(item.endDate) }}</td>
             <td>
-              <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)"
-                @onDelete="onDelete(item.id)" />
+              <Status :status="item.status" />
+            </td>
+            <td>
+              <ListMenuWithIcon :menuItems="getDynamicOptions(item)" @onSelect="onSelect($event, item)" />
             </td>
           </tr>
         </template>
 
-        <template v-if="contactPersonStore.contact_persons.length === 0" #body>
+        <template v-if="coveragePeriodStore.coverage_periods.length === 0" #body>
           <tr>
-            <td :colspan="contactPersonHeader.length" class="text-center py-10">
+            <td :colspan="coveragePeriodHeader.length" class="text-center py-10">
               <v-avatar size="80" color="primary" variant="tonal">
                 <i class="ph-magnifying-glass" style="font-size: 30px" />
               </v-avatar>
@@ -292,18 +460,20 @@ onBeforeUnmount(() => {
     </v-col>
   </v-row>
 
-  <!-- Dialogs -->
-  <CreateEditContactDialog v-model="dialog" :data="contactPersonData" @onSubmit="onSubmit" />
-  <ViewContactDialog v-model="viewDialog" :data="contactPersonData" />
-  <RemoveItemConfirmationDialog v-model="deleteDialog" :loading="deleteLoading" @onConfirm="onConfirmDelete" />
+ <!-- Dialogs -->
+<CreateEditCoveragePeriodDialog v-model="dialog" :data="coveragePeriodData" @onSubmit="onSubmit" />
+<ViewCoveragePeriodDialog v-model="viewDialog" :data="coveragePeriodData" />
+<RemoveItemConfirmationDialog v-model="deleteDialog" :loading="deleteLoading" @onConfirm="onConfirmDelete" />
+<StartConfirmationDialog v-model="periodStartDialog" :loading="periodStartLoading" @onConfirm="onConfirmStart" />
+<CloseConfirmationDialog v-model="periodCloseDialog" :loading="periodCloseLoading" @onConfirm="onConfirmClose" />
 
   <v-card-actions class="d-flex justify-space-between mt-5">
-    <v-btn color="secondary" variant="outlined" class="me-2" @click="$emit('onStepChange', 3)">
-      {{ $t('t-back-to-organizational-struture') }} <i class="ph-arrow-left ms-2" />
+    <v-btn color="secondary" variant="outlined" class="me-2" @click="$emit('onStepChange', 1)">
+      {{ $t('t-back-to-general-info') }} <i class="ph-arrow-left ms-2" />
     </v-btn>
     <v-btn color="success" variant="elevated" @click="$emit('onStepChange', 5)">
-    {{ $t('t-proceed') }} <i class="ph-arrow-right ms-2" />
-  </v-btn>
-    
+      {{ $t('t-proceed') }} <i class="ph-arrow-right ms-2" />
+    </v-btn>
+
   </v-card-actions>
 </template>

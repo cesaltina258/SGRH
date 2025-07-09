@@ -58,8 +58,8 @@ const isTabDisabled = (tabNumber: number) => {
           rounded="0" 
           color="primary" 
           block 
-          :variant="step === 7 ? 'elevated' : 'tonal'" 
-          @click="step = 7"
+          :variant="step === 2 ? 'elevated' : 'tonal'" 
+          @click="step = 2"
           :disabled="isTabDisabled(2)"
         >
           {{ $t('t-periods') }}
@@ -70,8 +70,8 @@ const isTabDisabled = (tabNumber: number) => {
           rounded="0" 
           color="primary" 
           block 
-          :variant="step === 2 ? 'elevated' : 'tonal'" 
-          @click="step = 2"
+          :variant="step === 3 ? 'elevated' : 'tonal'" 
+          @click="step = 3"
           :disabled="isTabDisabled(2)"
         >
           {{ $t('t-health-plan') }}
@@ -82,23 +82,11 @@ const isTabDisabled = (tabNumber: number) => {
           rounded="0" 
           color="primary" 
           block 
-          :variant="step === 3 ? 'elevated' : 'tonal'" 
-          @click="step = 3"
+          :variant="step === 4 ? 'elevated' : 'tonal'" 
+          @click="step = 4"
           :disabled="isTabDisabled(3)"
         >
           {{ $t('t-organizational-structure') }}
-        </v-btn>
-      </v-col>
-      <v-col cols="4">
-        <v-btn 
-          rounded="0" 
-          color="primary" 
-          block 
-          :variant="step === 4 ? 'elevated' : 'tonal'" 
-          @click="step = 4"
-          :disabled="isTabDisabled(4)"
-        >
-          {{ $t('t-contact') }}
         </v-btn>
       </v-col>
       <v-col cols="4">
@@ -110,7 +98,7 @@ const isTabDisabled = (tabNumber: number) => {
           @click="step = 5"
           :disabled="isTabDisabled(4)"
         >
-          {{ $t('t-clinics') }}
+          {{ $t('t-contact') }}
         </v-btn>
       </v-col>
       <v-col cols="4">
@@ -120,6 +108,18 @@ const isTabDisabled = (tabNumber: number) => {
           block 
           :variant="step === 6 ? 'elevated' : 'tonal'" 
           @click="step = 6"
+          :disabled="isTabDisabled(4)"
+        >
+          {{ $t('t-clinics') }}
+        </v-btn>
+      </v-col>
+      <v-col cols="4">
+        <v-btn 
+          rounded="0" 
+          color="primary" 
+          block 
+          :variant="step === 7 ? 'elevated' : 'tonal'" 
+          @click="step = 7"
           :disabled="isTabDisabled(4)"
         >
           {{ $t('t-hospital-procedures') }}

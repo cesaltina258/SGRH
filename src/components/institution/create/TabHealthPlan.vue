@@ -230,7 +230,7 @@ const submitHealthPlan = async () => {
 
       <v-card-actions class="d-flex justify-space-between mt-5">
         <v-btn color="secondary" variant="outlined" class="me-2" @click="$emit('onStepChange', 1)">
-          {{ $t('t-back-to-general-info') }} <i class="ph-arrow-left ms-2" />
+          {{ $t('t-back-to-periods') }} <i class="ph-arrow-left ms-2" />
         </v-btn>
         <v-btn color="success" variant="elevated" @click="submitHealthPlan">
           {{ $t('t-save') }}

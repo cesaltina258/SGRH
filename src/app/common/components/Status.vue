@@ -15,6 +15,8 @@ const prop = defineProps({
 const warningChips: { text: string; value: string }[] = [
   { text: "Pending", value: "pending" },
   { text: "pending", value: "PENDING" },
+  { text: "closed", value: "CLOSED" },
+
 ];
 const infoChips: { text: string; value: string }[] = [
   { text: "Open", value: "open" },
@@ -31,6 +33,7 @@ const successChips: { text: string; value: string }[] = [
   { value: "Successful", text: "Successful" },
   { value: "unblock", text: "unblock" },
   { value: "POSTED", text: "posted" },
+  { value: "RUNNING", text: "running" },
 ];
 const dangerChips: { text: string; value: string }[] = [
   { value: "ood", text: "Out of Delivery" },
@@ -43,6 +46,7 @@ const dangerChips: { text: string; value: string }[] = [
   { value: "refund", text: "Refund" },
   { value: "high", text: "High" },
   { value: "CANCELLED", text: "cancelled" },
+  { value: "INACTIVE", text: "inactive" },
 ];
 const primaryChips: { text: string; value: string }[] = [
   { value: "shipping", text: "Shipping" },

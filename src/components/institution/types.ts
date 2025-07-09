@@ -238,3 +238,27 @@ export type HospitalProcedureInsertType = {
     hospitalProcedureType: string;
     company: string; 
 };
+
+
+export type CoveragePeriodListingType = {
+    id: string;
+    name: string;
+    startDate: Date;
+    endDate: Date;
+    status: string; 
+    company: string ;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    deletedAt: Date | null;
+    createdBy: string;
+    updatedBy: string;
+    deletedBy: string;
+};
+
+export type CoveragePeriodInsertType = {
+    id?: string | undefined; 
+    name: string;
+    startDate: Date;
+    endDate: Date;
+    company: string;
+};

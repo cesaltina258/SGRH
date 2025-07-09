@@ -118,7 +118,7 @@ onMounted(async () => {
 });
 </script>
 <template>
-  <v-dialog v-model="dialogValue" width="500" scrollable>
+  <v-dialog v-model="dialogValue" width="500" >
     <v-form ref="formClinic" @submit.prevent="onSubmit"> 
     <Card :title="isCreate ? $t('t-add-contracted-clinic') : $t('t-edit-contracted-clinic')" title-class="py-0"
       style="overflow: hidden">
