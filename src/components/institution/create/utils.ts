@@ -82,19 +82,19 @@ export const contactPersonHeader: DataTableHeaderType[] = [
   { title: "full-name", key: "fullname", sortable: true},
   { title: "email", key: "email" , sortable: true },
   { title: "phone", key: "phone" , sortable: true },
-  { title: "action",  sortable: false,  align: "right"}
+  { title: "action",  sortable: false}
 ];
 
 export const departmentHeader: DataTableHeaderType[] = [
   { title: "name", key: "name", sortable: true},
   { title: "description", key: "description" , sortable: true },
-  { title: "action",  sortable: false,  align: "right"}
+  { title: "action",  sortable: false}
 ];
 
 export const positionHeader: DataTableHeaderType[] = [
   { title: "name", key: "name", sortable: true},
   { title: "description", key: "description" , sortable: true },
-  { title: "action",  sortable: false,  align: "right"}
+  { title: "action",  sortable: false,  align: "end"}
 ];
 
 export const coveragePeriodHeader: DataTableHeaderType[] = [
@@ -102,9 +102,25 @@ export const coveragePeriodHeader: DataTableHeaderType[] = [
   { title: "start-date", key: "startDate" , sortable: true },
   { title: "end-date", key: "endDate" , sortable: true },
   { title: "status", key: "status" , sortable: true },
-  { title: "action",  sortable: false,  align: "right"}
+  { title: "action",  sortable: false,  align: "end"}
 ];
 
+
+export const healthPlanHeader: DataTableHeaderType[] = [
+  { title: "max-number-of-dependents", key: "maxNumberOfDependents", sortable: true},
+  { title: "children-max-age", key: "childrenMaxAge", sortable: true},
+  { title: "health-plan-limit", key: "healthPlanLimit", sortable: true},
+  { title: "fixed-amount", key: "fixedAmount", sortable: true},
+  { title: "salary-component", key: "salaryComponent", sortable: true},
+  { title: "company-contribution-percentage", key: "companyContributionPercentage", sortable: true},
+  { title: "action",  sortable: false,  align: "end"}
+];
+
+export const clinicHeader: TableHeaderType[] = [
+  //{ title: "id" },
+  { title: "clinic", sortable: true },
+  { title: "action", align: 'end' },
+];
 
 export const contactOptions: OptionType[] = [
   {
@@ -154,6 +170,30 @@ export const coverageperiodOptions: OptionType[] = [
 ];
 
 
+export const healthPlanOptions: OptionType[] = [
+  {
+    title: "view",
+    icon: "ph-eye",
+    value: "view",
+  },
+  {
+    title: "edit",
+    icon: "ph-pencil",
+    value: "edit",
+  },
+  {
+    title: "clone",
+    icon: "ph-copy",
+    value: "clone",
+  },
+   {
+    title: "delete",
+    icon: "ph-trash",
+    value: "delete",
+  },
+];
+
+
 export const statusContactOptions: MenuSelectItemType[] = [
   { value: "", label: "All Select" },
   { value: "active", label: "Active" },
@@ -187,11 +227,7 @@ export const historyHeader: TableHeaderType[] = [
   { title: "action" },
 ];
 
-export const clinicHeader: TableHeaderType[] = [
-  //{ title: "id" },
-  { title: "clinic" },
-  { title: "action" },
-];
+
 
 export const hospitalProcedureHeader: TableHeaderType[] = [
   //{ title: "id" },

@@ -128,9 +128,7 @@ onMounted(async () => {
       <v-divider />
 
       <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mx-5 mt-3" density="compact" />
-      <v-card-text class="overflow-y-auto" :style="{
-        'max-height': isCreate ? '70vh' : '45vh'
-      }">
+      <v-card-text >
         <v-row class="">
           <v-col cols="12" lg="12">
             <div class="font-weight-bold mb-2">

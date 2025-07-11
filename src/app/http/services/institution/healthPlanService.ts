@@ -1,6 +1,6 @@
 // services/departmentService.ts
 import HttpService from "@/app/http/httpService";
-import type { CoveragePeriodListingType, CoveragePeriodInsertType } from "@/components/institution/types";
+import type { HealthPlanListingType, HealthPlanInsertType } from "@/components/institution/types";
 import type { ApiErrorResponse } from "@/app/common/types/errorType";
 
 interface ApiResponse<T> {
@@ -14,8 +14,8 @@ interface ServiceResponse<T> {
     error?: ApiErrorResponse;
 }
 
-export default class CoveragePeriodService extends HttpService {
-    async getCoveragePeriodByInstitution(
+export default class HealthPlanService extends HttpService {
+    async getHealthPlanByInstitution(
         id: string | null,
         page: number = 0,
         size: number = 10000000,
@@ -23,7 +23,7 @@ export default class CoveragePeriodService extends HttpService {
         direction: string = 'asc',
         query_value?: string,
         query_props?: string
-    ): Promise<{ content: CoveragePeriodListingType[], meta: any }> {
+    ): Promise<{ content: HealthPlanListingType[], meta: any }> {
         try {
             const queryParams = [
                 `id=${id}`,
@@ -38,11 +38,14 @@ export default class CoveragePeriodService extends HttpService {
                 queryParams.push(`query_value=${encodeURIComponent(query_value)}`);
             }
 
+            const includesToUse = 'company,coveragePeriod';
+            queryParams.push(`includes=${includesToUse}`);
+
             const queryString = queryParams.join('&');
-            const url = `/administration/company/coverage-periods/of-company?${queryString}`;
+            const url = `/administration/company/health-plans/of-company?${queryString}`;
 
             console.log('URL da requisição:', url);
-            const response = await this.get<ApiResponse<CoveragePeriodListingType[]>>(url);
+            const response = await this.get<ApiResponse<HealthPlanListingType[]>>(url);
 
             return {
                 content: response.data || [],
@@ -55,9 +58,9 @@ export default class CoveragePeriodService extends HttpService {
         }
     }
 
-    async createCoveragePeriod(coveragePeriodData: CoveragePeriodInsertType): Promise<ServiceResponse<CoveragePeriodListingType>> {
+    async createHealthPlan(healthPlanData: HealthPlanInsertType): Promise<ServiceResponse<HealthPlanListingType>> {
         try {
-            const response = await this.post<ApiResponse<CoveragePeriodListingType>>('/administration/company/coverage-periods', coveragePeriodData);
+            const response = await this.post<ApiResponse<HealthPlanListingType>>('/administration/company/health-plans', healthPlanData);
             return {
                 status: 'success',
                 data: response.data
@@ -85,7 +88,7 @@ export default class CoveragePeriodService extends HttpService {
                 title: 'Network Error',
                 status: 503,
                 detail: 'Could not connect to server',
-                instance: '/administration/company/coverage-periods',
+                instance: '/administration/company/health-plans',
             },
             meta: {
                 timestamp: new Date().toISOString()
@@ -93,12 +96,12 @@ export default class CoveragePeriodService extends HttpService {
         };
     }
 
-    async getCoveragePeriodById(id: string): Promise<{ data: CoveragePeriodListingType }> {
+    async getHealthPlanById(id: string): Promise<{ data: HealthPlanListingType }> {
         try {
-            const response = await this.get<{ data: CoveragePeriodListingType; meta: any }>(
-                `/administration/company/coverage-periods/${id}?includes=company`
+            const response = await this.get<{ data: HealthPlanListingType; meta: any }>(
+                `/administration/company/health-plans/${id}?includes=company`
             );
-            console.log('Resposta da requisição getCoveragePeriodById:------------------------', response);
+            console.log('Resposta da requisição getHealthPlanById:------------------------', response);
 
             return {
                 data: response.data
@@ -110,6 +113,7 @@ export default class CoveragePeriodService extends HttpService {
 
 
     handleError(error: any) {
+        console.error("❌ Erro na requisição:--------------------------------------------", error);
         if (error.response) {
             return {
                 message: error.response.data?.message || 'Erro na requisição',
@@ -123,68 +127,72 @@ export default class CoveragePeriodService extends HttpService {
         };
     }
 
-    async deleteCoveragePeriod(id: string): Promise<void> {
+    async deleteHealthPlan(id: string): Promise<void> {
         try {
-            await this.delete(`/administration/company/coverage-periods/${id}`);
+            await this.delete(`/administration/company/health-plans/${id}`);
         } catch (error) {
-            console.error("❌ Erro ao deletar periodo:", error);
+            console.error("❌ Erro ao deletar plano de saúde:", error);
             throw error;
         }
     }
 
 
-    async updateCoveragePeriod(id: string, coveragePeriodData: CoveragePeriodInsertType): Promise<ServiceResponse<CoveragePeriodListingType>> {
+    async updateHealthPlan(id: string, healthPlanData: HealthPlanInsertType): Promise<ServiceResponse<HealthPlanListingType>> {
         try {
 
             // Corpo da requisição conforme especificado
             const payload = {
-                name: coveragePeriodData.name,
-                startDate: coveragePeriodData.startDate,
-                endDate: coveragePeriodData.endDate,
-                company: coveragePeriodData.company
+                maxNumberOfDependents: healthPlanData.maxNumberOfDependents,
+                childrenMaxAge: healthPlanData.childrenMaxAge,
+                healthPlanLimit: healthPlanData.healthPlanLimit,
+                salaryComponent: healthPlanData.salaryComponent,
+                companyContributionPercentage: healthPlanData.companyContributionPercentage,
+                fixedAmount: healthPlanData.fixedAmount,
+                coveragePeriod: healthPlanData.coveragePeriod
             };
 
-            const response = await this.put<ServiceResponse<CoveragePeriodListingType>>(`/administration/company/coverage-periods/${id}`, payload);
-            console.log('response update periodo', response)
+            const response = await this.put<ServiceResponse<HealthPlanListingType>>(`/administration/company/health-plans/${id}`, payload);
+            console.log('response update health plan', response)
             return response;
 
         }
         catch (error) {
-            console.error("❌ Erro ao actualizar periodo:", error);
+            console.error("❌ Erro ao actualizar plano de saúde:", error);
             throw error;
         }
 
     }
 
-    async startCoveragePeriod(id: string): Promise<{ data: ServiceResponse<CoveragePeriodListingType> }> {
+    async cloneHealthPlan(healthPlanData: HealthPlanInsertType): Promise<ServiceResponse<HealthPlanListingType>> {
         try {
-            const response = await this.put<{ data: ServiceResponse<CoveragePeriodListingType>; meta: any }>(
-                `/administration/company/coverage-periods/${id}/start`
-            );
-            console.log('Resposta ao start do periodo:------------------------', response);
+            const payload = {
+                coveragePeriod: healthPlanData.coveragePeriod,
+                company: healthPlanData.company,
+                companyHealthPlan: healthPlanData.id
+            };
+            console.log('Payload para clonagem:', payload);
+
+            const response = await this.post<ApiResponse<HealthPlanListingType>>('/administration/company/health-plans/clone', payload);
 
             return {
+                status: 'success',
                 data: response.data
             };
-        } catch (error) {
-            throw this.handleError(error);
+        } catch (error: any) {
+            if (error.response) {
+                return {
+                    status: 'error',
+                    error: error.response.data as ApiErrorResponse
+                };
+            }
+            return {
+                status: 'error',
+                error: this.NetworkErrorResponse()
+            };
         }
     }
 
-    async closeCoveragePeriod(id: string): Promise<{ data: ServiceResponse<CoveragePeriodListingType> }> {
-        try {
-            const response = await this.put<{ data: ServiceResponse<CoveragePeriodListingType>; meta: any }>(
-                `/administration/company/coverage-periods/${id}/close`
-            );
-            console.log('Resposta ao close do periodo:------------------------', response);
 
-            return {
-                data: response.data
-            };
-        } catch (error) {
-            throw this.handleError(error);
-        }
-    }
 
 }
 

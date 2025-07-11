@@ -1,12 +1,12 @@
 // stores/departmentStore.ts
 import { defineStore } from 'pinia';
-import { coveragePeriodsService } from "@/app/http/httpServiceProvider";
-import type { CoveragePeriodListingType } from '@/components/institution/types';
+import { healthPlanService } from "@/app/http/httpServiceProvider";
+import type { HealthPlanListingType } from '@/components/institution/types';
 
-export const useCoveragePeriodStore = defineStore('coverage_periods', { 
+export const useHealthPlanStore = defineStore('health_plans', { 
   state: () => ({
-    coverage_periods: [] as CoveragePeriodListingType[],
-    coverage_periods_for_dropdown: [] as CoveragePeriodListingType[],
+    health_plans: [] as HealthPlanListingType[],
+    health_plans_for_dropdown: [] as HealthPlanListingType[],
     pagination: { 
       totalElements: 0,
       currentPage: 0,
@@ -18,7 +18,7 @@ export const useCoveragePeriodStore = defineStore('coverage_periods', {
   }),
 
   actions: {
-    async fetchCoveragePeriods(
+    async fetchHealthPlans(
       id: string | null,
       page?: number,
       size?: number,
@@ -34,7 +34,7 @@ export const useCoveragePeriodStore = defineStore('coverage_periods', {
       const actualSize = size ?? this.pagination.itemsPerPage;
     
       try {
-        const { content, meta } = await coveragePeriodsService.getCoveragePeriodByInstitution(
+        const { content, meta } = await healthPlanService.getHealthPlanByInstitution(
           id,
           actualPage,
           actualSize,
@@ -44,26 +44,26 @@ export const useCoveragePeriodStore = defineStore('coverage_periods', {
           query_props
         );
     
-        this.coverage_periods = content;
+        this.health_plans = content;
         this.pagination = {
           totalElements: meta.totalElements,
           currentPage: meta.page,
           itemsPerPage: meta.size,
           totalPages: meta.totalPages || Math.ceil(meta.totalElements / meta.size)
         };
-        console.log('Periodos de cobertura:', this.coverage_periods);
+        console.log('Planos de saúde:', this.health_plans);
         console.log('Meta:', this.pagination);
       } catch (err: any) {
-        this.error = err.message || 'Erro ao buscar periodos de cobertura';
-        console.error("❌ Erro ao buscar periodos de cobertura:", err);
-        this.coverage_periods = [];
+        this.error = err.message || 'Erro ao buscar planos de saúde';
+        console.error("❌ Erro ao buscar planos de saúde:", err);
+        this.health_plans = [];
         this.pagination.totalElements = 0;
       } finally {
         this.loading = false;
       }
     },
-    async fetchCoveragePeriodsForDropdown(
-      id: string | undefined,
+    async fetchHealthPlansForDropdown(
+      id: string | null,
       page?: number,
       size?: number,
       sortColumn: string = 'createdAt',
@@ -78,7 +78,7 @@ export const useCoveragePeriodStore = defineStore('coverage_periods', {
       const actualSize = size ?? this.pagination.itemsPerPage;
     
       try {
-        const { content, meta } = await coveragePeriodsService.getCoveragePeriodByInstitutionForDropdown(
+        const { content, meta } = await healthPlanService.getHealthPlanByInstitution(
           id,
           actualPage,
           actualSize,
@@ -88,25 +88,24 @@ export const useCoveragePeriodStore = defineStore('coverage_periods', {
           query_props
         );
     
-        this.coverage_periods_for_dropdown = content;
+        this.health_plans_for_dropdown = content;
         this.pagination = {
           totalElements: meta.totalElements,
           currentPage: meta.page,
           itemsPerPage: meta.size,
           totalPages: meta.totalPages || Math.ceil(meta.totalElements / meta.size)
         };
-        console.log('Periodos de cobertura:', this.coverage_periods_for_dropdown);
+        console.log('Planos de saúde:', this.health_plans_for_dropdown);
         console.log('Meta:', this.pagination);
       } catch (err: any) {
-        this.error = err.message || 'Erro ao buscar periodos de cobertura';
-        console.error("❌ Erro ao buscar periodos de cobertura:", err);
-        this.coverage_periods_for_dropdown = [];
+        this.error = err.message || 'Erro ao buscar planos de saúde';
+        console.error("❌ Erro ao buscar planos de saúde:", err);
+        this.health_plans_for_dropdown = [];
         this.pagination.totalElements = 0;
       } finally {
         this.loading = false;
       }
     }
     
-  },
-  
+  }
 });

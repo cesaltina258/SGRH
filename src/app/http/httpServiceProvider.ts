@@ -9,7 +9,8 @@ import ClinicInstitutionService from "@/app/http/services/institution/clinicServ
 import ClinicService from "@/app/http/services/clinicService";
 import ContactPersonService from "@/app/http/services/institution/contactPersonService";
 import HospitalProcedureService from "@/app/http/services/institution/hospitalProcedureService";
-import CoveragePeriods from "@/app/http/services/institution/coveragePeriods";
+import CoveragePeriodsService from "@/app/http/services/institution/coveragePeriodsService";
+import HealthPlanService from "@/app/http/services/institution/healthPlanService";
 import InvoiceService from "@/app/http/services/invoice/invoiceService";
 import DependentEmployeeService from "@/app/http/services/employee/dependentService";
 import InvoiceItemService from "@/app/http/services/invoice/invoiceItemService";
@@ -32,7 +33,8 @@ const employeeService = new EmployeeService();
 const institutionService = new InstitutionService();
 const departmentService = new DepartmentService();
 const positionService = new PositionService();
-const coveragePeriodsService = new CoveragePeriods();
+const coveragePeriodsService = new CoveragePeriodsService();
+const healthPlanService = new HealthPlanService();
 const clinicService = new ClinicService();
 const contactPersonService = new ContactPersonService();
 const hospitalProcedureService = new HospitalProcedureService();
@@ -75,5 +77,6 @@ export {
     dependentEmployeeService,
     taxRateTypeService,
     invoiceItemService,
-    coveragePeriodsService
+    coveragePeriodsService,
+    healthPlanService
 };

@@ -222,6 +222,10 @@ export type HospitalProcedureListingType = {
         name: string;
     };
     company: string ;
+    companyHealthPlan: {
+        id: string;
+        maxNumberOfDependents: number | undefined;
+    };
     createdAt: Date | null;
     updatedAt: Date | null;
     deletedAt: Date | null;
@@ -236,6 +240,7 @@ export type HospitalProcedureInsertType = {
     percentage: number | null;
     limitTypeDefinition: string;
     hospitalProcedureType: string;
+    companyHealthPlan: string;
     company: string; 
 };
 
@@ -260,5 +265,45 @@ export type CoveragePeriodInsertType = {
     name: string;
     startDate: Date;
     endDate: Date;
+    company: string;
+};
+
+
+export type HealthPlanListingType = {
+    id: string;
+    maxNumberOfDependents: number | undefined;
+    childrenMaxAge: number | undefined;
+    healthPlanLimit: string | undefined;
+    fixedAmount: number | undefined;
+    salaryComponent: string | undefined;
+    companyContributionPercentage: number | undefined;
+    coveragePeriod: {
+        id: string;
+        name: string;
+    };
+    company: string;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    deletedAt: Date | null;
+    createdBy: string;
+    updatedBy: string;
+    deletedBy: string;
+};
+
+export type HealthPlanInsertType = {
+    id?: string | undefined; 
+    maxNumberOfDependents: number | undefined;
+    childrenMaxAge: number | undefined;
+    healthPlanLimit: string | undefined;
+    fixedAmount: number | undefined;
+    salaryComponent: string | undefined;
+    companyContributionPercentage: number | undefined;
+    coveragePeriod: string;
+    company: string;
+};
+
+export type HealthPlanCloneType = {
+    companyHealthPlan: string; 
+    coveragePeriod: string;
     company: string;
 };

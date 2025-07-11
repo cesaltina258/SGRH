@@ -5,6 +5,7 @@ import { HospitalProcedureTypeListing } from "@/components/baseTables/hospitalPr
 import { useI18n } from "vue-i18n";
 import { useToast } from 'vue-toastification';
 import { useHospitalProcedureTypeStore } from '@/store/baseTables/hospitalProcedureTypeStore';
+import { useHealthPlanStore } from "@/store/institution/healthPlanStore";
 import type { ApiErrorResponse } from "@/app/common/types/errorType";
 
 const { t } = useI18n();
@@ -15,6 +16,7 @@ import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
 
 // Store para tipos de procedimentos hospitalares
 const hospitalProcedureTypeStore = useHospitalProcedureTypeStore();
+const healthPlanStore = useHealthPlanStore();
 
 const props = defineProps({
   modelValue: {
@@ -31,6 +33,7 @@ const props = defineProps({
       percentage: 0,
       limitTypeDefinition: "",
       hospitalProcedureType: "",
+      companyHealthPlan: "",
       company: ""
     })
   },
@@ -45,6 +48,7 @@ const fixedAmount = ref(0);
 const percentage = ref(0);
 const limitTypeDefinition = ref("");
 const hospitalProcedureType = ref("");
+const companyHealthPlan = ref(""); 
 const company = ref("");
 
 //Options Enums
@@ -153,6 +157,7 @@ const onSubmit = async () => {
     percentage: percentage.value,
     limitTypeDefinition: limitTypeDefinition.value,
     hospitalProcedureType: hospitalProcedureType.value,
+    companyHealthPlan: companyHealthPlan.value,
     company: company.value
   };
 
@@ -171,15 +176,36 @@ const onSubmit = async () => {
   });
 };
 
+/* Watch for changes in the company prop to fetch coverage periods
+*/
+
+watch(() => props.data?.company, (newCompany) => {
+  if (newCompany) {
+    company.value = newCompany;
+    hospitalProcedureTypeStore.fetchHospitalProcedureTypesForDropdown( 0, 10000000);
+  }
+}, { immediate: true });
+
+
 onMounted(async () => {
+  // Garante que company.value está definido antes de carregar
+  if (!company.value && props.data?.company) {
+    company.value = props.data.company;
+  }
+
   try {
-    await hospitalProcedureTypeStore.fetchHospitalProcedureTypesForDropdown(0,10000000);
+    if (company.value) {
+      await hospitalProcedureTypeStore.fetchHospitalProcedureTypesForDropdown(0,10000000);
+      await healthPlanStore.fetchHealthPlansForDropdown(company.value, 0, 10000000);
+    }
   } catch (error) {
     console.error("Failed to load procedimentos hospitalares:", error);
     errorMsg.value = "Falha ao carregar procedimentos hospitalares";
     setTimeout(() => errorMsg.value = "", 5000);
   }
 });
+
+
 </script>
 <template>
   <v-dialog v-model="dialogValue" width="500" >
@@ -193,9 +219,7 @@ onMounted(async () => {
         <v-divider />
 
         <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mx-5 mt-3" density="compact" />
-        <v-card-text class="overflow-y-auto" :style="{
-          'max-height': isCreate ? '70vh' : '45vh'
-        }">
+        <v-card-text >
           <v-row class="">
             <v-col cols="12" lg="12">
               <div class="font-weight-bold text-caption mb-1">
@@ -204,7 +228,7 @@ onMounted(async () => {
               <MenuSelect v-model="hospitalProcedureType" :items="hospitalProceduresTypes"
                 :loading="hospitalProcedureTypeStore.loading" :rules="requiredRules.hospitalProcedureType" :disabled="!isCreate"/>
             </v-col>
-          </v-row>
+          </v-row> 
           <v-row class="mt-n6">
             <v-col cols="12" lg="12">
               <div class="font-weight-bold text-caption mb-1">

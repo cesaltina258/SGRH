@@ -236,12 +236,12 @@ onBeforeUnmount(() => {
         <v-btn color="primary" class="mx-1" @click="onCreateEditClick(null)">
           <i class="ph-plus-circle me-1" /> {{ $t('t-add-contact-person') }}
         </v-btn>
-        <v-btn color="secondary" class="mx-1">
+        <!--<v-btn color="secondary" class="mx-1">
           <i class="ph-download-simple me-1" /> {{ $t('t-import') }}
         </v-btn>
         <v-btn color="info" class="mx-1" variant="tonal">
           <i class="ph-upload-simple me-1" /> {{ $t('t-export') }}
-        </v-btn>
+        </v-btn>-->
       </div>
     </template>
   </Card>

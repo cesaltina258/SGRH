@@ -41,7 +41,6 @@ import type {
 // Utils
 import { coveragePeriodHeader } from "@/components/institution/create/utils";
 import { coverageperiodOptions as Options } from "@/components/institution/create/utils";
-import CoveragePeriodService from "@/app/http/services/institution/coveragePeriods";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -402,12 +401,12 @@ onBeforeUnmount(() => {
         <v-btn color="primary" class="mx-1" @click="onCreateEditClick(null)">
           <i class="ph-plus-circle me-1" /> {{ $t('t-add-coverage-period') }}
         </v-btn>
-        <v-btn color="secondary" class="mx-1">
+        <!--<v-btn color="secondary" class="mx-1">
           <i class="ph-download-simple me-1" /> {{ $t('t-import') }}
         </v-btn>
         <v-btn color="info" class="mx-1" variant="tonal">
           <i class="ph-upload-simple me-1" /> {{ $t('t-export') }}
-        </v-btn>
+        </v-btn>-->
       </div>
     </template>
   </Card>
@@ -439,7 +438,7 @@ onBeforeUnmount(() => {
               <Status :status="item.status" />
             </td>
             <td>
-              <ListMenuWithIcon :menuItems="getDynamicOptions(item)" @onSelect="onSelect($event, item)" />
+              <ListMenuWithIcon :menuItems="getDynamicOptions(item)" @onSelect="onSelect($event, item)"/>
             </td>
           </tr>
         </template>

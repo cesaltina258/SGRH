@@ -64,7 +64,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <v-dialog v-model="dialogValue" width="500" scrollable>
+  <v-dialog v-model="dialogValue" width="500" >
     <Card :title="$t('t-view-contracted-clinic')" title-class="py-0" style="overflow: hidden">
       <template #title-action>
         <v-btn icon="ph-x" variant="plain" @click="dialogValue = false" />
@@ -72,7 +72,7 @@ onMounted(async () => {
 
       <v-divider />
 
-      <v-card-text class="overflow-y-auto" style="max-height: 50vh">
+      <v-card-text >
         <v-row>
           <v-col cols="12">
             <div class="font-weight-bold text-caption mb-1">{{ $t('t-clinic') }}</div>

@@ -297,8 +297,7 @@ onBeforeUnmount(() => {
       <Step1 v-if="step === 1" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)"
         :loading="loading" />
       <Step2 v-if="step === 2" @onStepChange="onStepChange" :institution-id="institutionId"/>
-      <Step3 v-if="step === 3" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)"
-        :loading="loading"  />
+      <Step3 v-if="step === 3" @onStepChange="onStepChange" :institution-id="institutionId"/>
       <Step4 v-if="step === 4" @onStepChange="onStepChange" :institution-id="institutionId"/>
       <Step5 v-if="step === 5" @onStepChange="onStepChange" :institution-id="institutionId"/>
       <Step6 v-if="step === 6" @onStepChange="onStepChange" :institution-id="institutionId"/>
