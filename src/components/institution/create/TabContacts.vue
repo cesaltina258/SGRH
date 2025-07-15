@@ -132,7 +132,8 @@ const onCreateEditClick = (data: ContactPersonInsertType | null) => {
       fullname: "",
       phone: "",
       email: "",
-      company: company
+      company: company,
+      enabled: true
     };
 
   dialog.value = true;

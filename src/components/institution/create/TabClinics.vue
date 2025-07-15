@@ -13,7 +13,7 @@ import { ref, watch, computed, onMounted, onBeforeUnmount, PropType } from "vue"
 import { useRoute, useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
 import { useI18n } from "vue-i18n";
-import { v4 as uuidv4 } from "uuid"; 
+import { v4 as uuidv4 } from "uuid";
 
 // Components
 import DataTableServer from "@/app/common/components/DataTableServer.vue";
@@ -37,7 +37,7 @@ import type {
 
 // Utils
 import { clinicHeader } from "@/components/institution/create/utils";
-
+import type { ApiErrorResponse } from "@/app/common/types/errorType";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -135,11 +135,21 @@ const onCreateEditClick = (data: ClinicInsertType | null) => {
     : {
       id: undefined,
       clinic: "",
-      company: company
+      company: company,
+      enabled: true 
     };
 
   dialog.value = true;
 };
+
+/**
+ * Submete dados do formulário
+ */
+interface ServiceResponse<T> {
+  status: 'success' | 'error';
+  data?: T;
+  error?: ApiErrorResponse;
+}
 
 
 /**
@@ -153,13 +163,24 @@ const onSubmit = async (
   }
 ) => {
   try {
+    let response: ServiceResponse<ClinicListingType>;
+
     if (!data.id) {
-      await clinicInstitutionService.createClinic(data);
-      toast.success(t('t-toast-message-created'));
+      response = await clinicInstitutionService.createClinic(data);
     } else {
-      await clinicInstitutionService.updateClinic(data.id, data);
-      toast.success(t('t-toast-message-update'));
+      response = await clinicInstitutionService.updateClinic(data.id, data);
     }
+
+
+    // Verifica se a resposta contém erro
+    if (response.status === 'error') {
+      toast.error(response.error?.message || t('t-message-save-error'));
+      return;
+    }
+
+    // Só mostra sucesso se realmente foi bem-sucedido
+    toast.success(data.id ? t('t-toast-message-update') : t('t-toast-message-created'));
+
 
     await clinicInstitutionStore.fetchInstitutionClinics(
       institutionId.value,
@@ -262,8 +283,8 @@ onBeforeUnmount(() => {
       <DataTableServer v-model="selectedClinics"
         :headers="clinicHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
         :items="clinicInstitutionStore.clinics" :items-per-page="itemsPerPage" :total-items="totalItems"
-        :loading="loadingList" :search-query="searchQuery" :search-props="searchProps" @load-items="fetchInstitutionClinics"
-        item-value="id" show-select>
+        :loading="loadingList" :search-query="searchQuery" :search-props="searchProps"
+        @load-items="fetchInstitutionClinics" item-value="id" show-select>
         <template #body="{ items }">
           <tr v-for="item in items as ClinicListingType[]" :key="item.id" height="50">
             <td>
@@ -272,8 +293,7 @@ onBeforeUnmount(() => {
             </td>
             <td>{{ item.clinic.name }}</td>
             <td class="justify-end">
-              <TableActionSimplified @onView="onViewClick(item)"
-                @onDelete="onDelete(item.id)" />
+              <TableActionSimplified @onView="onViewClick(item)" @onDelete="onDelete(item.id)" />
             </td>
           </tr>
         </template>
@@ -304,7 +324,7 @@ onBeforeUnmount(() => {
       {{ $t('t-back-to-contact-person') }} <i class="ph-arrow-left ms-2" />
     </v-btn>
     <v-btn color="success" variant="elevated" @click="$emit('onStepChange', 7)">
-    {{ $t('t-proceed') }} <i class="ph-arrow-right ms-2" />
-  </v-btn>
+      {{ $t('t-proceed') }} <i class="ph-arrow-right ms-2" />
+    </v-btn>
   </v-card-actions>
 </template>

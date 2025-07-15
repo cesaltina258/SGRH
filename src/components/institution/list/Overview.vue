@@ -23,7 +23,7 @@ const employeeStats = computed(() => {
     },
     {
       title: "total-active-institutions",
-      endVal: institutions.filter(e => e.enable === null).length,
+      endVal: institutions.filter(e => e.enabled === false).length,
       color: "danger",
       percent: "0%",
       isProgress: false,

@@ -139,7 +139,8 @@ const onCreateEditClick = (data: CoveragePeriodInsertType | CoveragePeriodListin
       name: "",
       endDate: new Date(),
       startDate: new Date(),
-      company: company
+      company: company,
+      enabled: true
     };
 
   dialog.value = true;

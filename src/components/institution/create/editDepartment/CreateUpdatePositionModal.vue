@@ -90,7 +90,8 @@ const onSubmit = async () => {
   id: id.value || undefined,
   name: name.value, // em vez de name.value
   description: description.value, // em vez de description.value
-  department: props.data?.department ?? ""
+  department: props.data?.department ?? "",
+  enabled: true
 };
 
 

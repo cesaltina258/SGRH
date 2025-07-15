@@ -129,7 +129,8 @@ const onCreateClick = (data: DepartmentInsertType | null) => {
       id: undefined,
       name: "",
       description: "",
-      company: company
+      company: company,
+      enabled: true
     };
 
   dialog.value = true;

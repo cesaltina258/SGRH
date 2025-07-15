@@ -181,7 +181,8 @@ const onSubmitClonePlan = async () => {
     healthPlanLimit: healthPlanLimit.value,
     salaryComponent: salaryComponent.value,
     coveragePeriod: coveragePeriod.value,
-    company: props.data?.company ?? ""
+    company: props.data?.company ?? "",
+    enabled: true 
   };
 
   emit("onSubmitClone", payload, {

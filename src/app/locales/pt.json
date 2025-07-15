@@ -881,5 +881,7 @@
   "t-dialog-title-confirm-clone": "Confirmar clonagem",
   "t-dialog-text-confirm-clone": "Tem certeza que deseja clonar este registo?",
   "t-toast-message-clone": "Plano de saúde clonado com sucesso!",
-  "t-clone-health-plan": "Clonar Plano de Saúde"
+  "t-clone-health-plan": "Clonar Plano de Saúde",
+  "t-min-zero-percentage": "O valor mínimo deve ser 0%",
+  "t-max-100-percentage": "O valor máximo deve ser 100%"
 }

@@ -30,11 +30,7 @@ const router = useRouter();
 
 
 // Emits e Props
-const emit = defineEmits<{
-  (e: 'onStepChange', step: number): void;
-  (e: 'save'): void;
-  (e: 'update:modelValue', value: InstitutionInsertType): void; 
-}>();
+const emit = defineEmits(['onStepChange', 'save', 'update:modelValue']);
 
 const props = defineProps({
   modelValue: {
@@ -151,7 +147,8 @@ const submitGeneralInfo = async () => {
     return;
   }
 
-  emit('onStepChange', 2);
+  emit('save', false);
+
 };
 
 </script>
@@ -232,9 +229,8 @@ const submitGeneralInfo = async () => {
         <v-btn color="secondary" variant="outlined" class="me-2" @click="onBack()">
           {{ $t('t-back') }} <i class="ph-arrow-left ms-2" />
         </v-btn>
-        <v-btn color="success" variant="elevated" @click="submitGeneralInfo"
-        :loading="loading">
-          {{ $t('t-proceed') }} <i class="ph-arrow-right ms-2" />
+        <v-btn color="success" variant="elevated" @click="submitGeneralInfo" :loading="loading">
+          {{ $t('t-save') }}
         </v-btn>
       </v-card-actions>
     </Card>

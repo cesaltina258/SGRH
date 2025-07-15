@@ -65,6 +65,12 @@ const institutionRoutes = [
     component: () => import("@/views/institution/editDepartment/List.vue"),
     meta: { title: "EditDepartment", authRequired: true },
   },
+    {
+    path: `${institutionPrefix}/healthPlan/:id`,
+    name: "EditHealthPlan",
+    component: () => import("@/views/institution/editHealthPlan/List.vue"),
+    meta: { title: "EditHealthPlan", authRequired: true },
+  },
 ].map((data) => {
   return {
     ...data,

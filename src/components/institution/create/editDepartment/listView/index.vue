@@ -34,7 +34,8 @@ const form = ref<DepartmentInsertType>({
   id: departmentId.value || undefined,
   name: "",
   description: "",
-  company: ""
+  company: "",
+  enabled: true
 });
 
 // Estado para posições
@@ -67,7 +68,8 @@ onMounted(async () => {
           id: dept.id,
           name: dept.name,
           description: dept.description || "",
-          company: dept.company?.id
+          company: dept.company?.id,
+          enabled: dept.enabled || true
         };
       }
 
@@ -124,7 +126,8 @@ const onCreateEditClick = (data: PositionListingForListType | null) => {
         id: undefined,
         name: "",
         description: "",
-        department: departmentId.value || ""
+        department: departmentId.value || "",
+        enabled: true
       };
   dialog.value = true;
 };
@@ -209,7 +212,7 @@ const onBack = () => {
     // Navega para a rota de edição da instituição e força a tab 3
     router.push({
       path: `/institution/edit/${institutionId}`,
-      query: { tab: '3' } // Adiciona o query param para a tab
+      query: { tab: '4' } // Adiciona o query param para a tab
     });
   } else {
     // Fallback caso não tenha institutionId

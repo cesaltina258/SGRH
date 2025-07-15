@@ -89,7 +89,7 @@ const isTabDisabled = (tabNumber: number) => {
           {{ $t('t-organizational-structure') }}
         </v-btn>
       </v-col>
-      <v-col cols="4">
+      <v-col cols="6">
         <v-btn 
           rounded="0" 
           color="primary" 
@@ -101,7 +101,7 @@ const isTabDisabled = (tabNumber: number) => {
           {{ $t('t-contact') }}
         </v-btn>
       </v-col>
-      <v-col cols="4">
+      <v-col cols="6">
         <v-btn 
           rounded="0" 
           color="primary" 
@@ -113,7 +113,7 @@ const isTabDisabled = (tabNumber: number) => {
           {{ $t('t-clinics') }}
         </v-btn>
       </v-col>
-      <v-col cols="4">
+      <!--<v-col cols="4">
         <v-btn 
           rounded="0" 
           color="primary" 
@@ -124,7 +124,7 @@ const isTabDisabled = (tabNumber: number) => {
         >
           {{ $t('t-hospital-procedures') }}
         </v-btn>
-      </v-col>
+      </v-col>-->
     </v-row>
   </div>
 </template>

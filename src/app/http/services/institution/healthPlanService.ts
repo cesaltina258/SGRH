@@ -99,7 +99,7 @@ export default class HealthPlanService extends HttpService {
     async getHealthPlanById(id: string): Promise<{ data: HealthPlanListingType }> {
         try {
             const response = await this.get<{ data: HealthPlanListingType; meta: any }>(
-                `/administration/company/health-plans/${id}?includes=company`
+                `/administration/company/health-plans/${id}?includes=company,coveragePeriod`
             );
             console.log('Resposta da requisição getHealthPlanById:------------------------', response);
 
@@ -148,17 +148,26 @@ export default class HealthPlanService extends HttpService {
                 salaryComponent: healthPlanData.salaryComponent,
                 companyContributionPercentage: healthPlanData.companyContributionPercentage,
                 fixedAmount: healthPlanData.fixedAmount,
-                coveragePeriod: healthPlanData.coveragePeriod
+                coveragePeriod: healthPlanData.coveragePeriod,
+                company: healthPlanData.company
             };
 
             const response = await this.put<ServiceResponse<HealthPlanListingType>>(`/administration/company/health-plans/${id}`, payload);
-            console.log('response update health plan', response)
-            return response;
-
-        }
-        catch (error) {
-            console.error("❌ Erro ao actualizar plano de saúde:", error);
-            throw error;
+            return {
+                status: 'success',
+                data: response.data
+            };
+        } catch (error: any) {
+            if (error.response) {
+                return {
+                    status: 'error',
+                    error: error.response.data as ApiErrorResponse
+                };
+            }
+            return {
+                status: 'error',
+                error: this.NetworkErrorResponse()
+            };
         }
 
     }

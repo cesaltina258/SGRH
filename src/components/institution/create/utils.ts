@@ -15,13 +15,24 @@ export const breadcrumb: BreadcrumbType[] = [
   },
 ];
 
-export const breadcrumb1: BreadcrumbType[] = [
+export const breadcrumbDepartmet: BreadcrumbType[] = [
   {
     title: "department-list",
     disabled: false,
   },
   {
-    title: "position-list",
+    title: "edit-department",
+    disabled: true,
+  },
+];
+
+export const breadcrumbHealthPlan: BreadcrumbType[] = [
+  {
+    title: "health-plan-list",
+    disabled: false,
+  },
+  {
+    title: "edit-health-plan",
     disabled: true,
   },
 ];
@@ -46,7 +57,7 @@ export const limitTypeDefinitionOptions: MenuSelectItemType[] = [
     value: "FIXED_AMOUNT"
   },
   {
-    label: "Porcentagem",
+    label: "Percentagem",
     value: "PERCENTAGE"
   }
 ];

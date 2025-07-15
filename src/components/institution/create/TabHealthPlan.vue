@@ -142,7 +142,8 @@ const onCreateEditClick = (data: HealthPlanInsertType | HealthPlanListingType | 
       salaryComponent: "",
       companyContributionPercentage: 0,
       coveragePeriod: "",
-      company: company
+      company: company, 
+      enabled: true
     };
 
   dialog.value = true;
@@ -163,7 +164,7 @@ const onSubmit = async (
   callbacks?: {
     onSuccess?: () => void,
     onFinally?: () => void
-  }
+  } 
 ) => {
   try {
     let response: ServiceResponse<HealthPlanListingType>;
@@ -232,7 +233,7 @@ const onSelect = (option: string, data: HealthPlanListingType) => {
       onViewClick(data);
       break;
     case "edit":
-      onCreateEditClick(data);
+      onEdit(data.id);
       break;
     case "clone":
       onClone(data);
@@ -294,6 +295,12 @@ const onSubmitClone = async (
   }
 };
 
+/**
+ * Prepara exclusão de contato
+ */
+const onEdit = (id: string) => {
+  router.push(`/institution/healthPlan/${id}`);
+};
 
 /**
  * Prepara dados para visualização

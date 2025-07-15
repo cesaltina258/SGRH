@@ -183,7 +183,7 @@ export default class ClinicService extends HttpService {
     }
 
 
-    async updateClinic(id: string, clinicData: ClinicInsertType): Promise<ClinicListingType> {
+    async updateClinic(id: string, clinicData: ClinicInsertType): Promise<ServiceResponse<ClinicListingType>> {
         try {
 
             // Corpo da requisição conforme especificado
@@ -192,13 +192,22 @@ export default class ClinicService extends HttpService {
                 company: clinicData.company
             };
 
-            const response = await this.put<ClinicListingType>(`/administration/company/contracted-clinics/${id}`, payload);
-            console.log('response update institution', response)
-            return response;
-
-        } catch (error) {
-            console.error("❌ Erro ao actualizar instituicao:", error);
-            throw error;
+            const response = await this.put<ServiceResponse<ClinicListingType>>(`/administration/company/contracted-clinics/${id}`, payload);
+             return {
+                status: 'success',
+                data: response.data
+            };
+        } catch (error: any) {
+            if (error.response) {
+                return {
+                    status: 'error',
+                    error: error.response.data as ApiErrorResponse
+                };
+            }
+            return {
+                status: 'error',
+                error: this.NetworkErrorResponse()
+            };
         }
     }
 

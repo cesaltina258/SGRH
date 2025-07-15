@@ -89,9 +89,10 @@ const onSubmit = async () => {
 
   const payload: DepartmentInsertType = {
   id: id.value || undefined,
-  name: fullname.value, // em vez de name.value
-  description: phone.value, // em vez de description.value
-  company: props.data?.company ?? ""
+  name: fullname.value, 
+  description: phone.value, 
+  company: props.data?.company ?? "",
+  enabled: true 
 };
 
 

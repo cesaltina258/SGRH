@@ -98,7 +98,8 @@ const onSubmit = async () => {
   const payload: ClinicInsertType = {
     id: id.value || undefined,
     clinic: clinic.value.toString(), // Garante que seja string
-    company: props.data?.company ?? ""
+    company: props.data?.company ?? "",
+    enabled: true
   };
 
   emit("onSubmit", payload, {

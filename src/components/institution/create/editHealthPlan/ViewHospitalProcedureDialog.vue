@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { PropType, computed } from "vue";
-import { HospitalProcedureListingType } from "@/components/institution/types";
+import { HospitalProcedureListingType, HospitalProcedureInsertType } from "@/components/institution/types";
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
@@ -12,17 +12,18 @@ const props = defineProps({
     default: false,
   },
   data: {
-    type: Object as PropType<HospitalProcedureListingType | null>,
-    required: false,
-    default: () => ({
-      id: undefined,
-      fixedAmount: 0,
-      percentage: 0,
-      limitTypeDefinition: "",
-      hospitalProcedureType: { id: "", name: "" },
-      company: ""
-    })
-  },
+  type: Object as PropType<HospitalProcedureListingType | HospitalProcedureInsertType | null>,
+  required: false,
+  default: () => ({
+    id: undefined,
+    fixedAmount: 0,
+    percentage: 0,
+    limitTypeDefinition: "",
+    hospitalProcedureType: undefined,
+    companyHealthPlan: undefined,
+    company: undefined
+  })
+},
 });
 
 // Função para obter o label do tipo de limite

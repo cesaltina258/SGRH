@@ -11,7 +11,6 @@ export type InstitutionListingType = {
         id: number;
         name: string
     } | null;
-    enable: boolean;
 
     maxNumberOfDependents: number | null;
     childrenMaxAge: number | null;
@@ -26,6 +25,7 @@ export type InstitutionListingType = {
     createdBy: string;
     updatedBy: string;
     deletedBy: string;
+    enabled: boolean;
 };
 
 export type InstitutionResponseType = { 
@@ -41,7 +41,6 @@ export type InstitutionResponseType = {
         id: string;
         name: string
     } | undefined ;
-    enable: boolean;
 
     maxNumberOfDependents: number | null;
     childrenMaxAge: number | null;
@@ -56,6 +55,7 @@ export type InstitutionResponseType = {
     createdBy: string;
     updatedBy: string;
     deletedBy: string;
+    enabled: boolean;
 };
 
 export type InstitutionInsertType = {
@@ -74,6 +74,7 @@ export type InstitutionInsertType = {
     fixedAmount: number | null;
     salaryComponent: string | undefined;
     companyContributionPercentage: number | null;
+    enabled: boolean;
 }
 
 export type DepartmentInsertType = {
@@ -81,6 +82,7 @@ export type DepartmentInsertType = {
     name: string;
     description: string | null;
     company: string;
+    enabled: boolean;
 }
 
 export type DepartmentListingForListType = {
@@ -94,6 +96,7 @@ export type DepartmentListingForListType = {
     createdBy: string;
     updatedBy: string;
     deletedBy: string;
+    enabled: boolean;
 }
 
 export type DepartmentListingType = {
@@ -117,6 +120,7 @@ export type DepartmentListingType = {
     createdBy: string;
     updatedBy: string;
     deletedBy: string;
+    enabled: boolean;
 };
 
 export type PositionListingType = {
@@ -140,6 +144,7 @@ export type PositionListingType = {
     createdBy: string;
     updatedBy: string;
     deletedBy: string;
+    enabled: boolean;
 };
 
 export type PositionInsertType = {
@@ -147,6 +152,7 @@ export type PositionInsertType = {
     name: string;
     description: string | null;
     department: string;
+    enabled: boolean;
 }
 
 export type PositionListingForListType = {
@@ -160,6 +166,7 @@ export type PositionListingForListType = {
     createdBy: string;
     updatedBy: string;
     deletedBy: string;
+    enabled: boolean;
 }
 
 export type ContactPersonListingType = {
@@ -174,6 +181,7 @@ export type ContactPersonListingType = {
     createdBy: string;
     updatedBy: string;
     deletedBy: string;
+    enabled: boolean;
 };
 
 export type ContactPersonInsertType = {
@@ -182,6 +190,7 @@ export type ContactPersonInsertType = {
     email: string;
     phone: string;
     company: string; 
+    enabled: boolean;
 };
 
 export type ClinicListingType = {
@@ -204,44 +213,42 @@ export type ClinicListingType = {
     createdBy: string;
     updatedBy: string;
     deletedBy: string;
+    enabled: boolean;
 };
 
 export type ClinicInsertType = {
     id?: string | null; 
     clinic: string; 
     company: string; 
+    enabled: boolean;
 };
 
 export type HospitalProcedureListingType = {
-    id: string;
+    id: string | undefined;
     fixedAmount: number | null;
     percentage: number | null;
     limitTypeDefinition: string;
-    hospitalProcedureType: {
-        id: string;
-        name: string;
-    };
-    company: string ;
-    companyHealthPlan: {
-        id: string;
-        maxNumberOfDependents: number | undefined;
-    };
+    hospitalProcedureType: any | undefined;
+    companyHealthPlan: any | undefined;
+    company: any;
     createdAt: Date | null;
     updatedAt: Date | null;
     deletedAt: Date | null;
     createdBy: string;
     updatedBy: string;
     deletedBy: string;
+    enabled: boolean;
 };
 
 export type HospitalProcedureInsertType = {
-    id?: string | null; 
+    id?: string | undefined; 
     fixedAmount: number | null;
     percentage: number | null;
     limitTypeDefinition: string;
-    hospitalProcedureType: string;
-    companyHealthPlan: string;
-    company: string; 
+    hospitalProcedureType: any | undefined;
+    companyHealthPlan: any;
+    company: any;
+    enabled: boolean;
 };
 
 
@@ -258,6 +265,7 @@ export type CoveragePeriodListingType = {
     createdBy: string;
     updatedBy: string;
     deletedBy: string;
+    enabled: boolean;
 };
 
 export type CoveragePeriodInsertType = {
@@ -266,6 +274,7 @@ export type CoveragePeriodInsertType = {
     startDate: Date;
     endDate: Date;
     company: string;
+    enabled: boolean;
 };
 
 
@@ -277,17 +286,15 @@ export type HealthPlanListingType = {
     fixedAmount: number | undefined;
     salaryComponent: string | undefined;
     companyContributionPercentage: number | undefined;
-    coveragePeriod: {
-        id: string;
-        name: string;
-    };
-    company: string;
+    coveragePeriod: any
+    company: any;
     createdAt: Date | null;
     updatedAt: Date | null;
     deletedAt: Date | null;
     createdBy: string;
     updatedBy: string;
     deletedBy: string;
+    enabled: boolean;
 };
 
 export type HealthPlanInsertType = {
@@ -298,12 +305,14 @@ export type HealthPlanInsertType = {
     fixedAmount: number | undefined;
     salaryComponent: string | undefined;
     companyContributionPercentage: number | undefined;
-    coveragePeriod: string;
-    company: string;
+    coveragePeriod: any;
+    company: any;
+    enabled: boolean;
 };
 
 export type HealthPlanCloneType = {
     companyHealthPlan: string; 
     coveragePeriod: string;
     company: string;
+    enabled: boolean;
 };

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { PropType, computed, ref, watch, onMounted } from "vue";
-import { HospitalProcedureInsertType, HospitalProcedureListingType } from "@/components/institution/types";
+import { HealthPlanListingType, HospitalProcedureInsertType, HospitalProcedureListingType } from "@/components/institution/types";
 import { HospitalProcedureTypeListing } from "@/components/baseTables/hospitalProcedureType/types";
 import { useI18n } from "vue-i18n";
 import { useToast } from 'vue-toastification';
@@ -23,7 +23,6 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  // No CreateEditContactDialog.vue
   data: {
     type: Object as PropType<HospitalProcedureInsertType | HospitalProcedureListingType | null>,
     required: false,
@@ -33,8 +32,7 @@ const props = defineProps({
       percentage: 0,
       limitTypeDefinition: "",
       hospitalProcedureType: "",
-      companyHealthPlan: "",
-      company: ""
+      companyHealthPlan: ""
     })
   },
 });
@@ -49,7 +47,6 @@ const percentage = ref(0);
 const limitTypeDefinition = ref("");
 const hospitalProcedureType = ref("");
 const companyHealthPlan = ref(""); 
-const company = ref("");
 
 //Options Enums
 import {
@@ -58,17 +55,21 @@ import {
 
 // Watch for data changes
 watch(() => props.data, (newData) => {
-  if (!newData) return;
-  id.value = newData.id || "";
-  fixedAmount.value = newData.fixedAmount || 0;
-  percentage.value = newData.percentage || 0;
-  limitTypeDefinition.value = newData.limitTypeDefinition || "";
-  if (typeof newData.hospitalProcedureType === 'object' && newData.hospitalProcedureType !== null) {
-    hospitalProcedureType.value = newData.hospitalProcedureType.id; // Para HospitalProcedureTypeListing
-  } else {
-    hospitalProcedureType.value = newData.hospitalProcedureType; // Para ClinicInsertType
+  if (newData) {
+    id.value = newData.id || "";
+    fixedAmount.value = newData.fixedAmount || 0;
+    percentage.value = newData.percentage || 0;
+    limitTypeDefinition.value = newData.limitTypeDefinition || "";
+    
+    if (typeof newData.hospitalProcedureType === 'object' && newData.hospitalProcedureType !== null) {
+      hospitalProcedureType.value = newData.hospitalProcedureType.id; 
+    } else {
+      hospitalProcedureType.value = newData.hospitalProcedureType || ""; 
+    }
+    
+    // Garanta que companyHealthPlan nunca seja perdido
+    companyHealthPlan.value = newData.companyHealthPlan || (props.data?.companyHealthPlan || "");
   }
-  company.value = newData.company || "";
 }, { immediate: true });
 
 watch(limitTypeDefinition, (newVal) => {
@@ -100,6 +101,9 @@ const requiredRules = {
   limitTypeDefinition: [
     (v: string) => !!v || t('t-please-enter-limit-type-definition'),
   ],
+  companyHealthPlan: [
+    (v: string) => !!v || t('t-please-enter-health-plan'),
+  ],
   // ... outras regras
   fixedAmount: [
     (v: number) => {
@@ -130,6 +134,14 @@ const hospitalProceduresTypes = computed(() => {
   }));
 });
 
+const heathPlanOptions = computed(() => {
+  return (healthPlanStore.health_plans_for_dropdown || []).map((item: HealthPlanListingType) => ({
+    value: item.id,
+    label: item.healthPlanLimit + " - " + item.fixedAmount + item.salaryComponent,
+  }));
+});
+
+
 const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 let alertTimeout: ReturnType<typeof setTimeout> | null = null;
 const toast = useToast();
@@ -158,7 +170,8 @@ const onSubmit = async () => {
     limitTypeDefinition: limitTypeDefinition.value,
     hospitalProcedureType: hospitalProcedureType.value,
     companyHealthPlan: companyHealthPlan.value,
-    company: company.value
+    company: props.data?.company || "",
+    enabled: true 
   };
 
   emit("onSubmit", payload, {
@@ -176,27 +189,26 @@ const onSubmit = async () => {
   });
 };
 
-/* Watch for changes in the company prop to fetch coverage periods
+/* Watch for changes in the companyHealthPlan prop to fetch coverage periods
 */
 
-watch(() => props.data?.company, (newCompany) => {
-  if (newCompany) {
-    company.value = newCompany;
-    hospitalProcedureTypeStore.fetchHospitalProcedureTypesForDropdown( 0, 10000000);
+watch(() => props.data?.companyHealthPlan, (newCompanyHealthPlan) => {
+  if (newCompanyHealthPlan) {
+    companyHealthPlan.value = newCompanyHealthPlan;
+    hospitalProcedureTypeStore.fetchHospitalProcedureTypesForDropdown(0, 10000000);
+    healthPlanStore.fetchHealthPlansForDropdown(newCompanyHealthPlan, 0, 10000000);
   }
 }, { immediate: true });
 
 
 onMounted(async () => {
-  // Garante que company.value está definido antes de carregar
-  if (!company.value && props.data?.company) {
-    company.value = props.data.company;
-  }
-
+  // Garante que companyHealthPlan.value está definido antes de carregar
+  companyHealthPlan.value = props.data?.companyHealthPlan || "";
+  
   try {
-    if (company.value) {
+    if (companyHealthPlan.value) {
       await hospitalProcedureTypeStore.fetchHospitalProcedureTypesForDropdown(0,10000000);
-      await healthPlanStore.fetchHealthPlansForDropdown(company.value, 0, 10000000);
+      await healthPlanStore.fetchHealthPlansForDropdown(companyHealthPlan.value, 0, 10000000);
     }
   } catch (error) {
     console.error("Failed to load procedimentos hospitalares:", error);
@@ -204,7 +216,6 @@ onMounted(async () => {
     setTimeout(() => errorMsg.value = "", 5000);
   }
 });
-
 
 </script>
 <template>
@@ -220,7 +231,16 @@ onMounted(async () => {
 
         <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mx-5 mt-3" density="compact" />
         <v-card-text >
-          <v-row class="">
+          <!--<v-row class="">
+            <v-col cols="12" lg="12">
+              <div class="font-weight-bold text-caption mb-1">
+                {{ $t('t-health-plan') }} <i class="ph-asterisk ph-xs text-danger" />
+              </div>
+              <MenuSelect v-model="companyHealthPlan" :items="heathPlanOptions"
+                :loading="healthPlanStore.loading" :rules="requiredRules.companyHealthPlan" :disabled="!isCreate"/>
+            </v-col>
+          </v-row>-->
+          <v-row class="mt-n6">
             <v-col cols="12" lg="12">
               <div class="font-weight-bold text-caption mb-1">
                 {{ $t('t-hospital-procedure-type') }} <i class="ph-asterisk ph-xs text-danger" />

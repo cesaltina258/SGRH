@@ -21,7 +21,6 @@ import Step3 from "@/components/institution/create/TabHealthPlan.vue";
 import Step4 from "@/components/institution/create/TabOrganizationalStructure.vue";
 import Step5 from "@/components/institution/create/TabContacts.vue";
 import Step6 from "@/components/institution/create/TabClinics.vue";
-import Step7 from "@/components/institution/create/TabHospitalProcedures.vue";
 
 
 
@@ -74,7 +73,8 @@ let institutionData = reactive<InstitutionInsertType>({
   healthPlanLimit: '',
   fixedAmount: null,
   salaryComponent: undefined,
-  companyContributionPercentage: null
+  companyContributionPercentage: null,
+  enabled: true
 
 });
 
@@ -219,7 +219,7 @@ watch(() => route.query.tab, (newTab) => {
  * Salva os dados do employee
  * @param isFinalStep - Indica se é o passo final (salvar e sair)
  */
-const saveInstitution = async (isFinalStep: boolean = false) => {
+const saveInstitution = async (isFinalStep: boolean = false) => { 
   try {
     loading.value = true;
     errorMsg.value = "";
@@ -296,12 +296,11 @@ onBeforeUnmount(() => {
 
       <Step1 v-if="step === 1" @onStepChange="onStepChange" v-model="institutionData" @save="saveInstitution(false)"
         :loading="loading" />
-      <Step2 v-if="step === 2" @onStepChange="onStepChange" :institution-id="institutionId"/>
+      <Step2 v-if="step === 2" @onStepChange="onStepChange" :institution-id="institutionId" />
       <Step3 v-if="step === 3" @onStepChange="onStepChange" :institution-id="institutionId"/>
       <Step4 v-if="step === 4" @onStepChange="onStepChange" :institution-id="institutionId"/>
       <Step5 v-if="step === 5" @onStepChange="onStepChange" :institution-id="institutionId"/>
       <Step6 v-if="step === 6" @onStepChange="onStepChange" :institution-id="institutionId"/>
-      <Step7 v-if="step === 7" @onStepChange="onStepChange" :institution-id="institutionId"/>
     </v-card-text>
   </Card>
 </template>

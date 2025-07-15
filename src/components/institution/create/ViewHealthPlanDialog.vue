@@ -75,7 +75,7 @@ const getsalaryComponentLabel = (value: string | undefined) => {
             <div class="font-weight-bold text-caption mb-1">
               {{ $t('t-coverage-period') }} 
             </div>
-            <div>{{ props.data?.coveragePeriod.name || '-' }}</div>
+            <div>{{ props.data?.coveragePeriod?.name || '-' }}</div>
           </v-col>
         </v-row>
         <v-row class="">

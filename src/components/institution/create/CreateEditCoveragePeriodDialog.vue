@@ -105,7 +105,8 @@ const onSubmit = async () => {
     name: name.value,
     startDate: startDate.value,
     endDate: endDate.value,
-    company: props.data?.company ?? ""
+    company: props.data?.company ?? "",
+    enabled: true
   };
 
   emit("onSubmit", payload, {

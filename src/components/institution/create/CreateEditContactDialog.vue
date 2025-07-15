@@ -99,7 +99,8 @@ const onSubmit = async () => {
     fullname: fullname.value,
     phone: phone.value,
     email: email.value,
-    company: props.data?.company ?? ""
+    company: props.data?.company ?? "",
+    enabled: true
   };
 
   emit("onSubmit", payload, {
