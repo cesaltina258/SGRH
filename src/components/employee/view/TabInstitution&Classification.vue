@@ -172,7 +172,7 @@ const loadMorePositions = () => {
 /**
  * Trata erros de forma consistente
  */
-const handleError = (message: string, error: any) => {
+const handleError = (message: string, error: any) => { 
   console.error(message, error);
   errorMsg.value = message;
   alertTimeout = setTimeout(() => {
@@ -198,6 +198,25 @@ const saveData = async () => {
   }
   emit('save');
 };
+
+const companyName = computed(() => {
+  if (!employeeData.value.company) return '-';
+  const company = institutionStore.institutions.find(c => c.id === employeeData.value.company);
+  return company ? company.name : '-';
+});
+
+const departmentName = computed(() => {
+  if (!employeeData.value.department) return '-';
+  const department = departmentStore.departments.find(d => d.id === employeeData.value.department);
+  return department ? department.name : '-';
+});
+
+const positionName = computed(() => {
+  if (!employeeData.value.position) return '-';
+  const position = positionStore.positions.find(p => p.id === employeeData.value.position);
+  return position ? position.name : '-';
+});
+
 </script>
 
 <template>
@@ -214,64 +233,31 @@ const saveData = async () => {
         <v-row>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
-              {{ $t('t-institution') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-institution') }} 
             </div>
-            <MenuSelect 
-              v-model="employeeData.company" 
-              :items="institutions" 
-              :loading="institutionStore.loading"
-              :placeholder="t('t-select-institution')" 
-              clearable 
-              :rules="requiredRules.institution"
-              disabled
-            />
+            <div>{{ companyName || '-' }}</div>
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
-              {{ $t('t-department') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-department') }} 
             </div>
-            <MenuSelect 
-              v-model="employeeData.department" 
-              :items="departments" 
-              :loading="departmentStore.loading"
-              :placeholder="t('t-select-department')" 
-              :rules="requiredRules.department"
-              @scroll-end="loadMoreDepartments" 
-              clearable 
-              disabled
-            />
+             <div>{{ departmentName|| '-' }}</div>
           </v-col>
         </v-row>
 
         <!-- Cargo e Salário -->
-        <v-row class="mt-n6">
+        <v-row class="">
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
-              {{ $t('t-position') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-position') }} 
             </div>
-            <MenuSelect 
-              v-model="employeeData.position" 
-              :items="positions" 
-              :loading="positionStore.loading" 
-              :rules="requiredRules.position"
-              :placeholder="t('t-select-position')" 
-              disabled
-              @scroll-end="loadMorePositions"
-              clearable 
-            />
+            <div>{{ positionName || '-' }}</div>
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
-              {{ $t('t-base-salary') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-base-salary') }} 
             </div>
-            <TextField 
-              v-model="employeeData.salary" 
-              isRequired 
-              :placeholder="t('t-enter-the-employee-base-salary')" 
-              :rules="requiredRules.salary"
-              class="mb-2" 
-              disabled
-            />
+            <div>{{ employeeData.salary || '-' }}</div>
           </v-col>
         </v-row>
       </v-card-text>
@@ -286,6 +272,16 @@ const saveData = async () => {
           :disabled="loading"
         >
           {{ $t('t-back-to-general-info') }} <i class="ph-arrow-left ms-2" />
+        </v-btn>
+
+        <v-btn 
+          color="secondary" 
+          variant="outlined" 
+          class="me-2" 
+          @click="emit('onStepChange', 1)" 
+          :disabled="loading"
+        >
+          {{ $t('t-proceed') }} <i class="ph-arrow-right ms-2" />
         </v-btn>
 
       </v-card-actions>

@@ -3,7 +3,7 @@ import { PropType, computed } from "vue";
 import { HealthPlanInsertType, HealthPlanListingType } from "@/components/institution/types";
 import { useI18n } from "vue-i18n";
 import { formateDate } from "@/app/common/dateFormate";
-
+import Status from "@/app/common/components/Status.vue";
 
 const { t } = useI18n();
 const emit = defineEmits(["update:modelValue"]);
@@ -61,19 +61,24 @@ const getsalaryComponentLabel = (value: string | undefined) => {
 </script>
 
 <template>
-  <v-dialog v-model="dialogValue" width="500" >
-    <Card :title="$t('t-view-coverage-period')" title-class="py-0" style="overflow: hidden">
+  <v-dialog v-model="dialogValue" width="500">
+    <Card :title="$t('t-view-health-plan')" title-class="py-0" style="overflow: hidden">
       <template #title-action>
         <v-btn icon="ph-x" variant="plain" @click="dialogValue = false" />
       </template>
 
       <v-divider />
 
-      <v-card-text >
+      <v-card-text>
         <v-row class="">
+          <v-col cols="12" lg="12" class="text-right">
+            <Status :status="props.data?.enabled ? 'enabled' : 'disabled'" />
+          </v-col>
+        </v-row>
+        <v-row class="mt-n6">
           <v-col cols="12" lg="12">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-coverage-period') }} 
+              {{ $t('t-coverage-period') }}
             </div>
             <div>{{ props.data?.coveragePeriod?.name || '-' }}</div>
           </v-col>
@@ -93,33 +98,33 @@ const getsalaryComponentLabel = (value: string | undefined) => {
           </v-col>
         </v-row>
         <v-row class="">
-            <v-col cols="12" lg="6">
-              <div class="font-weight-bold mb-2">
-                {{ $t('t-health-plan-limit') }}
-              </div>
-              <div>{{ gethealthPlanLimitLabel(props.data?.healthPlanLimit) || '-' }}</div>
-            </v-col>
-            <v-col cols="12" lg="6">
-              <div class="font-weight-bold mb-2">
-                {{ $t('t-fixed-amount') }} 
-              </div>
-              <div>{{ props.data?.fixedAmount || '-' }}</div>
-            </v-col>
-          </v-row>
-          <v-row class="">
-            <v-col cols="12" lg="6">
-              <div class="font-weight-bold mb-2">
-                {{ $t('t-salary-component') }} 
-              </div>
-              <div>{{ getsalaryComponentLabel(props.data?.salaryComponent) || '-' }}</div>
-            </v-col>
-            <v-col cols="12" lg="6">
-              <div class="font-weight-bold mb-2">
-                {{ $t('t-company-contribuition-percentage') }}
-              </div>
-              <div>{{ props.data?.companyContributionPercentage || '-' }}</div>
-            </v-col>
-          </v-row>
+          <v-col cols="12" lg="6">
+            <div class="font-weight-bold mb-2">
+              {{ $t('t-health-plan-limit') }}
+            </div>
+            <div>{{ gethealthPlanLimitLabel(props.data?.healthPlanLimit) || '-' }}</div>
+          </v-col>
+          <v-col cols="12" lg="6">
+            <div class="font-weight-bold mb-2">
+              {{ $t('t-fixed-amount') }}
+            </div>
+            <div>{{ props.data?.fixedAmount || '-' }}</div>
+          </v-col>
+        </v-row>
+        <v-row class="">
+          <v-col cols="12" lg="6">
+            <div class="font-weight-bold mb-2">
+              {{ $t('t-salary-component') }}
+            </div>
+            <div>{{ getsalaryComponentLabel(props.data?.salaryComponent) || '-' }}</div>
+          </v-col>
+          <v-col cols="12" lg="6">
+            <div class="font-weight-bold mb-2">
+              {{ $t('t-company-contribuition-percentage') }}
+            </div>
+            <div>{{ props.data?.companyContributionPercentage || '-' }}</div>
+          </v-col>
+        </v-row>
       </v-card-text>
 
       <v-divider />

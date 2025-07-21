@@ -31,7 +31,8 @@ import { departmentService } from "@/app/http/httpServiceProvider";
 // Types
 import type {
   DepartmentInsertType,
-  DepartmentListingForListType
+  DepartmentListingForListType,
+  DepartmentListingType
 } from "@/components/institution/types";
 
 // Utils
@@ -59,7 +60,7 @@ const viewDialog = ref(false);
 const deleteDialog = ref(false);
 const deleteLoading = ref(false);
 const departmentData = ref<DepartmentInsertType | null>(null);
-const departmentDataView = ref<DepartmentListingForListType | null>(null);
+const departmentDataView = ref<DepartmentListingType | null>(null);
 const deleteId = ref<string | null>(null);
 const errorMsg = ref("");
 const searchQuery = ref("");
@@ -178,7 +179,7 @@ watch(viewDialog, (newVal: boolean) => {
     departmentData.value = null;
   }
 });
-const onViewClick = (data: DepartmentListingForListType) => {
+const onViewClick = (data: DepartmentListingType) => {
   departmentDataView.value = { ...data };
   viewDialog.value = true;
 };
@@ -259,17 +260,20 @@ onBeforeUnmount(() => {
         :loading="loadingList" :search-query="searchQuery" :search-props="searchProps" @load-items="fetchDepartments" 
         item-value="id" show-select>
         <template #body="{ items }">
-          <tr v-for="item in items as DepartmentListingForListType[]" :key="item.id" height="50"> 
+          <tr v-for="item in items as DepartmentListingType[]" :key="item.id" height="50"> 
             <td>
               <v-checkbox :model-value="selectedDepartments.some(selected => selected.id === item.id)"
                 @update:model-value="toggleSelection(item)" hide-details density="compact" />
             </td>
             <td style="padding-right: 200px;">{{ item.name }}</td>
             <td style="padding-right: 200px;">{{ item.description }}</td>
+            <td>
+              <Status :status="item.enabled ? 'enabled' : 'disabled'" />
+            </td>
             <td class="text-end" style="padding-right: 5px;">
               <TableAction 
               @onEdit="() => router.push(`/institution/department/${item.id}`)" 
-              @onView="onViewClick(item)"
+              @onView="onViewClick(item)" 
               @onDelete="onDelete(item.id)" />
             </td>
           </tr>
@@ -293,7 +297,7 @@ onBeforeUnmount(() => {
 
   <!-- Dialogs -->
   <CreateEditDepartmentDialog v-model="dialog" :data="departmentData" @onSubmit="onSubmit" />
-  <ViewDepartmentDialog v-model="viewDialog" :data="departmentData" />
+  <ViewDepartmentDialog v-model="viewDialog" :data="departmentDataView" />
   <RemoveItemConfirmationDialog v-model="deleteDialog" :loading="deleteLoading" @onConfirm="onConfirmDelete" />
 
   <v-card-actions class="d-flex justify-space-between mt-5">

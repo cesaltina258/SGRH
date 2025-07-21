@@ -16,6 +16,7 @@ import { useI18n } from 'vue-i18n';
 import ButtonNav from "@/components/employee/view/ButtonNav.vue";
 import Step1 from "@/components/employee/view/TabGeneralInfo.vue";
 import Step2 from "@/components/employee/view/TabInstitution&Classification.vue";
+import Step3 from "@/components/employee/view/TabDependents.vue";
 
 // Stores
 import { useEmployeeStore } from '@/store/employee/employeeStore';
@@ -277,6 +278,9 @@ onBeforeUnmount(() => {
         @save="saveEmployee(true)"
         :loading="loading" 
       />
+
+       <Step3 v-if="step === 3" @onStepChange="onStepChange" :loading="loading" :employee-id="employeeId" />
+
     </v-card-text>
   </Card>
 </template>

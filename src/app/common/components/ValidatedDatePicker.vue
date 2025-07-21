@@ -87,7 +87,7 @@ defineExpose({
 </script>
 
 <template>
-  <div class="validated-datetime-picker" @click.stop>
+  <div class="validated-datetime-picker">
     <VueDatePicker
       v-model="internalValue"
       :format="format"
@@ -96,10 +96,8 @@ defineExpose({
       :enable-time-picker="false"
       :disabled="disabled"
       auto-apply
-      teleport="body"
       @update:model-value="handleUpdate"
       @blur="handleBlur"
-      @click.stop
     >
       
     </VueDatePicker>
@@ -111,8 +109,6 @@ defineExpose({
 </template>
 
 <style scoped>
-/* Adicione isso ao seu CSS global */
-
 .validated-datetime-picker {
   position: relative;
   width: 100%;
@@ -137,8 +133,4 @@ defineExpose({
   color: #EEF0F7;
 }
 
-/* Adicione isso ao seu CSS global */
-.dp__menu {
-  z-index: 2500 !important;
-}
 </style>

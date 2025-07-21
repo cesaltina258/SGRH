@@ -403,6 +403,9 @@ onBeforeUnmount(() => {
             <td>{{ getsalaryComponentLabel(item.salaryComponent) }}</td>
             <td>{{ item.companyContributionPercentage }}</td>
             <td>
+              <Status :status="item.enabled ? 'enabled' : 'disabled'" />
+            </td>
+            <td>
               <ListMenuWithIcon :menuItems="getDynamicOptions(item)" @onSelect="onSelect($event, item)" />
             </td>
           </tr>

@@ -34,6 +34,7 @@ const successChips: { text: string; value: string }[] = [
   { value: "unblock", text: "unblock" },
   { value: "POSTED", text: "posted" },
   { value: "RUNNING", text: "running" },
+  { value: "enabled" , text: "enabled"}
 ];
 const dangerChips: { text: string; value: string }[] = [
   { value: "ood", text: "Out of Delivery" },
@@ -47,6 +48,7 @@ const dangerChips: { text: string; value: string }[] = [
   { value: "high", text: "High" },
   { value: "CANCELLED", text: "cancelled" },
   { value: "INACTIVE", text: "inactive" },
+  { value: "disabled", text: "disabled" },
 ];
 const primaryChips: { text: string; value: string }[] = [
   { value: "shipping", text: "Shipping" },

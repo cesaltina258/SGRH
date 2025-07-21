@@ -21,7 +21,7 @@ const monthNames: string[] = [
  * @returns Data formatada como string
  */
 export const formateDate = (
-  dateValue: Date | string,
+  dateValue: Date | string | undefined,
   format: string = "dd/mm/yyyy"
 ): string => {
   // Verifica se a data é válida

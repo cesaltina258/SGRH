@@ -270,6 +270,7 @@ onBeforeUnmount(() => {
             <td>{{ item.fullname }}</td>
             <td>{{ item.email }}</td>
             <td>{{ item.phone }}</td>
+            <td><Status :status="item.enabled ? 'enabled' : 'disabled'" /></td>
             <td>
               <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)"
                 @onDelete="onDelete(item.id)" />

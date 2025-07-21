@@ -58,6 +58,7 @@ let clinicData = reactive<ClinicInsertType>({
   personOfContactFullname2: '',
   personOfContactPhone2: '',
   personOfContactEmail2: '',
+  enabled: true
 });
 
 /**

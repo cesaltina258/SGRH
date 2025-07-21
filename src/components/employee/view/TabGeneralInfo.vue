@@ -17,6 +17,10 @@ import { useToast } from 'vue-toastification';
 // Components
 import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
 import ValidatedDatePicker from "@/app/common/components/ValidatedDatePicker.vue";
+import Status from "@/app/common/components/Status.vue";
+import { formateDate } from "@/app/common/dateFormate";
+
+
 
 // Stores
 import { useEmployeeStore } from '@/store/employee/employeeStore';
@@ -29,11 +33,11 @@ import { ProvinceListingType } from "@/components/baseTables/province/types"
 import { EmployeeInsertType } from "../types";
 
 // Utils
-import { 
-  genderOptions, 
-  maritalStatusOptions, 
-  bloodGroupOptions, 
-  nationalityOptions 
+import {
+  genderOptions,
+  maritalStatusOptions,
+  bloodGroupOptions,
+  nationalityOptions
 } from "@/components/employee/create/utils";
 
 // Configuração inicial
@@ -140,32 +144,6 @@ const requiredRules = {
   ],
 }
 
-/**
- * Opções para selects (países e províncias)
- */
-const countries = computed(() => {
-  return countryStore.countries.map((country: CountryListingType) => ({
-    value: country.id,
-    label: country.name,
-    meta: {
-      code: country.iso2Code,
-      phoneCode: country.phoneCode
-    }
-  }));
-});
-
-const provinces = computed(() => {
-  const list = provinceStore.provincesbyCountry as ProvinceListingType[];
-  if (!Array.isArray(list)) return [];
-  return list.map((province) => ({ 
-    value: province.id,
-    label: province.name,
-    meta: {
-      code: province.code,
-      country: province.country
-    }
-  }));
-});
 
 
 /**
@@ -174,7 +152,7 @@ const provinces = computed(() => {
 onMounted(async () => {
   try {
     await countryStore.fetchCountries();
-    
+
     // Carrega províncias se já houver país selecionado
     if (employeeData.value.country) {
       await provinceStore.fetchProvincesbyCountry(employeeData.value.country);
@@ -198,7 +176,7 @@ watch(() => employeeData.value.country, async (newCountryId, oldCountryId) => {
     if (newCountryId) {
       try {
         await provinceStore.fetchProvincesbyCountry(newCountryId);
-        
+
         // Mantém a província atual apenas se for do mesmo país
         if (employeeData.value.province) {
           const currentProvince = provinceStore.provincesbyCountry.find(
@@ -252,271 +230,290 @@ const submitForm = async () => {
 
   emit('save');
 };
+
+
+const getgenderLabel = (value: string | undefined) => {
+  const option = genderOptions.find(opt => opt.value === value);
+  return option ? option.label : value;
+};
+
+const getMaritalStatusLabel = (value: string | undefined) => {
+  const option = maritalStatusOptions.find(opt => opt.value === value);
+  return option ? option.label : value;
+};
+
+const getBloodGroupLabel = (value: string | undefined) => {
+  const option = bloodGroupOptions.find(opt => opt.value === value);
+  return option ? option.label : value;
+};
+
+
+const countryName = computed(() => {
+  if (!employeeData.value.country) return '-';
+  const country = countryStore.countries.find(c => c.id === employeeData.value.country);
+  return country ? country.name : '-';
+});
+
+const provinceName = computed(() => {
+  if (!employeeData.value.province) return '-';
+  const province = provinceStore.provincesbyCountry.find(p => p.id === employeeData.value.province);
+  return province ? province.name : '-';
+});
+
+
+
 </script>
 
 <template>
-  <v-form ref="form" @submit.prevent="submitForm">
-    <Card :title="$t('t-general-information')" elevation="0" title-class="pb-0">
-      <!-- Mensagem de erro -->
-      <transition name="fade">
-        <v-alert v-if="errorMsg" :text="errorMsg" type="error" class="mb-4 mx-5 mt-3" variant="tonal" color="danger"
-          density="compact" @click="errorMsg = ''" style="cursor: pointer;" />
-      </transition>
+  <Card :title="$t('t-general-information')" elevation="0" title-class="pb-0">
+    <!-- Mensagem de erro -->
+    <transition name="fade">
+      <v-alert v-if="errorMsg" :text="errorMsg" type="error" class="mb-4 mx-5 mt-3" variant="tonal" color="danger"
+        density="compact" @click="errorMsg = ''" style="cursor: pointer;" />
+    </transition>
 
-      <v-card-text class="pt-0">
-        <!-- Seção: Informações básicas -->
-        <div class="font-weight-bold mb-2 mt-5">
-          {{ $t('t-employeeNumber') }} <i class="ph-asterisk ph-xs text-danger" />
-        </div>
-        <TextField v-model="employeeData.employeeNumber" :placeholder="$t('t-enter-employee-number')"
-          :rules="requiredRules.employeeNumber" disabled  />
-        
-        <!-- Nome completo -->
-        <v-row class="mt-n3">
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-firstname') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <TextField v-model="employeeData.firstName" :placeholder="$t('t-enter-employee-number')"
-              :rules="requiredRules.firstName" disabled/>
-          </v-col>
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-middle-name') }}
-            </div>
-            <TextField v-model="employeeData.middleName" :placeholder="$t('t-enter-middle-name')" disabled/>
-          </v-col>
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-lastname') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <TextField v-model="employeeData.lastName" :placeholder="$t('t-enter-lastname')"
-              :rules="requiredRules.lastName" disabled/>
-          </v-col>
-        </v-row>
+    <v-card-text class="pt-0">
+      <v-row class="">
+        <v-col cols="12" lg="12" class="text-right">
+          <Status :status="employeeData.enabled ? 'enabled' : 'disabled'" />
+        </v-col>
+      </v-row>
+      <!-- Seção: Informações básicas -->
+      <v-row class="mt-n12">
+        <v-col cols="12" lg="12">
+          <div class="font-weight-bold mb-2 mt-5">
+            {{ $t('t-employeeNumber') }} 
+          </div>
+          <div>{{ employeeData.employeeNumber || '-' }}</div>
+        </v-col>
+      </v-row>
+      <!-- Nome completo -->
+      <v-row class="">
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-firstname') }} 
+          </div>
+          <div>{{ employeeData.firstName || '-' }}</div>
+        </v-col>
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-middle-name') }}
+          </div>
+          <div>{{ employeeData.middleName || '-' }}</div>
+        </v-col>
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-lastname') }} 
+          </div>
+          <div>{{ employeeData.lastName || '-' }}</div>
+        </v-col>
+      </v-row>
 
-        <!-- Dados pessoais -->
-        <v-row class="mt-n6">
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-gender') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <MenuSelect v-model="employeeData.gender" :items="genderOptions" :rules="requiredRules.gender" disabled/>
-          </v-col>
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-marital-status') }} 
-            </div>
-            <MenuSelect v-model="employeeData.maritalStatus" :items="maritalStatusOptions" disabled/>
-          </v-col>
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-blood-group') }}
-            </div>
-            <MenuSelect v-model="employeeData.bloodGroup" :items="bloodGroupOptions" disabled/>
-          </v-col>
-        </v-row>
+      <!-- Dados pessoais -->
+      <v-row class="">
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-gender') }} 
+          </div>
+          <div>{{ getgenderLabel(employeeData.gender) || '-' }}</div>
+        </v-col>
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-marital-status') }}
+          </div>
+          <div>{{ getMaritalStatusLabel(employeeData.maritalStatus) || '-' }}</div>
+        </v-col>
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-blood-group') }}
+          </div>
+          <div>{{ getBloodGroupLabel(employeeData.bloodGroup) || '-' }}</div>
+        </v-col>
+      </v-row>
 
-        <!-- Data de nascimento e local -->
-        <v-row class="mt-n3">
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-birth-date') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <ValidatedDatePicker v-model="employeeData.birthDate" :teleport="true" placeholder="Select date"  
-              :rules="requiredRules.birthDate" format="dd/MM/yyyy" disabled/>
-          </v-col>
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-place-of-birth') }} 
-            </div>
-            <TextField v-model="employeeData.placeOfBirth" :placeholder="$t('t-enter-place-of-birth')" hide-details disabled/>
-          </v-col>
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-nacionality') }}
-            </div>
-            <MenuSelect v-model="employeeData.nationality" :items="nationalityOptions" disabled/>
-          </v-col>
-        </v-row>
+      <!-- Data de nascimento e local -->
+      <v-row class="">
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-birth-date') }} 
+          </div>
+          <div>{{ formateDate(employeeData.birthDate) || '-' }}</div>
+        </v-col>
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-place-of-birth') }}
+          </div>
+          <div>{{ employeeData.placeOfBirth || '-' }}</div>
+        </v-col>
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-nacionality') }}
+          </div>
+          <div>{{ employeeData.nationality || '-' }}</div>
+        </v-col>
+      </v-row>
 
-        <!-- Documentos -->
-        <v-row class="mt-n3">
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-nuit') }}
-            </div>
-            <TextField v-model="employeeData.incomeTaxNumber" :placeholder="$t('t-enter-nuit')" hide-details disabled/>
-          </v-col>
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-social-security-number') }}
-            </div>
-            <TextField v-model="employeeData.socialSecurityNumber" 
-              :placeholder="$t('t-enter-social-security-number')" hide-details disabled/>
-          </v-col>
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-address') }}
-            </div>
-            <TextField v-model="employeeData.address" :placeholder="$t('t-enter-address')" hide-details disabled/>
-          </v-col>
-        </v-row>
+      <!-- Documentos -->
+      <v-row class="">
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-nuit') }}
+          </div>
+          <div>{{ employeeData.incomeTaxNumber || '-' }}</div>
+        </v-col>
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-social-security-number') }}
+          </div>
+          <div>{{ employeeData.socialSecurityNumber || '-' }}</div>
+        </v-col>
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-address') }}
+          </div>
+          <div>{{ employeeData.address || '-' }}</div>
+        </v-col>
+      </v-row>
 
-        <!-- País e Província -->
-        <v-row class="">
-          <v-col cols="12" lg="6">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-country') }}
-            </div>
-            <MenuSelect v-model="employeeData.country" :items="countries" :loading="countryStore.loading" disabled />
-          </v-col>
-          <v-col cols="12" lg="6">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-province') }}
-            </div>
-            <MenuSelect v-model="employeeData.province" :items="provinces" :loading="provinceStore.loading"
-            disabled />
-          </v-col>
-        </v-row>
+      <!-- País e Província -->
+      <v-row class="">
+        <v-col cols="12" lg="6">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-country') }}
+          </div>
+          <div>{{ countryName || '-' }}</div>
+        </v-col>
+        <v-col cols="12" lg="6">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-province') }}
+          </div>
+          <div>{{ provinceName || '-' }}</div>
+        </v-col>
+      </v-row>
 
-        <!-- Código postal e contatos -->
-        <v-row class="mt-n6">
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-postal-code') }}
-            </div>
-            <TextField v-model="employeeData.postalCode" :placeholder="$t('t-enter-postal-code')" hide-details disabled/>
-          </v-col>
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-email') }}
-            </div>
-            <TextField v-model="employeeData.email" :placeholder="$t('t-enter-email')" hide-details
-              disabled/>
-          </v-col>
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-phone') }}
-            </div>
-            <MazPhoneNumberInput v-model="employeeData.phone" size="sm" fetchCountry
-              :placeholder="$t('t-enter-phone-number')" class="custom-phone-input" disabled/>
-          </v-col>
-        </v-row>
+      <!-- Código postal e contatos -->
+      <v-row class="">
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-postal-code') }}
+          </div>
+          <div>{{ employeeData.postalCode || '-' }}</div>
+        </v-col>
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-email') }}
+          </div>
+          <div>{{ employeeData.email || '-' }}</div>
+        </v-col>
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-phone') }}
+          </div>
+          <div>{{ employeeData.phone || '-' }}</div>
+        </v-col>
+      </v-row>
 
-        <!-- Contatos adicionais -->
-        <v-row class="">
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-mobile') }}
-            </div>
-            <MazPhoneNumberInput v-model="employeeData.mobile" size="sm"
-              :placeholder="$t('t-enter-phone-number')" fetchCountry class="custom-phone-input" disabled/>
-          </v-col>
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-emergency-contact-name') }}
-            </div>
-            <TextField v-model="employeeData.emergencyContactName" 
-              :placeholder="$t('t-enter-phone-number')" hide-details disabled/>
-          </v-col>
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-emergency-contact-phone') }}
-            </div>
-            <MazPhoneNumberInput v-model="employeeData.emergencyContactPhone" size="sm"
-              :placeholder="$t('t-enter-phone-number')" fetchCountry class="custom-phone-input" disabled/>
-          </v-col>
-        </v-row>
+      <!-- Contatos adicionais -->
+      <v-row class="">
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-mobile') }}
+          </div>
+          <div>{{ employeeData.mobile || '-' }}</div>
+        </v-col>
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-emergency-contact-name') }}
+          </div>
+          <div>{{ employeeData.emergencyContactName || '-' }}</div>
+        </v-col>
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-emergency-contact-phone') }}
+          </div>
+          <div>{{ employeeData.emergencyContactPhone || '-' }}</div>
+        </v-col>
+      </v-row>
 
-        <!-- Documentos de identificação -->
-        <v-row class="">
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-id-card-number') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <TextField v-model="employeeData.idCardNumber" :placeholder="$t('t-id-card-number')"
-              :rules="requiredRules.idCardNumber" disabled/>
-          </v-col>
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-id-card-issuer') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <TextField v-model="employeeData.idCardIssuer" :placeholder="$t('t-enter-id-card-issuer')" 
-              :rules="requiredRules.idCardIssuer" disabled/>
-          </v-col>
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-id-card-expiry-date') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <ValidatedDatePicker v-model="employeeData.idCardExpiryDate" :teleport="true" 
-              :rules="requiredRules.idCardExpiryDate" :placeholder="$t('t-enter-id-card-expiry-date')" 
-              format="dd/MM/yyyy" disabled/>
-          </v-col>
-        </v-row>
+      <!-- Documentos de identificação -->
+      <v-row class="mb-3">
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-id-card-number') }} 
+          </div>
+          <div>{{ employeeData.idCardNumber || '-' }}</div>
+        </v-col>
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-id-card-issuer') }} 
+          </div>
+          <div>{{ employeeData.idCardIssuer || '-' }}</div>
+        </v-col>
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-id-card-expiry-date') }} 
+          </div>
+          <div>{{ formateDate(employeeData.idCardExpiryDate) || '-' }}</div>
+        </v-col>
+      </v-row>
 
-        <!-- Datas de emissão de documentos -->
-        <v-row class="mt-n6">
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-id-card-issuance-date') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <ValidatedDatePicker v-model="employeeData.idCardIssuanceDate" :teleport="true" 
-              :rules="requiredRules.idCardIssuanceDate" :placeholder="$t('t-enter-id-card-issuance-date')" 
-              format="dd/MM/yyyy" disabled/>
-          </v-col>
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-passport-number') }}
-            </div>
-            <TextField v-model="employeeData.passportNumber" 
-              :placeholder="$t('t-enter-passport-number')" hide-details disabled/>
-          </v-col>
-          <v-col cols="12" lg="4">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-passport-issuer') }}
-            </div>
-            <TextField v-model="employeeData.passportIssuer" 
-              :placeholder="$t('t-enter-passport-issuer')" hide-details disabled/>
-          </v-col>
-        </v-row>
+      <!-- Datas de emissão de documentos -->
+      <v-row class="mb-3">
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-id-card-issuance-date') }} 
+          </div>
+          <div>{{ formateDate(employeeData.idCardIssuanceDate) || '-' }}</div>
+        </v-col>
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-passport-number') }}
+          </div>
+          <div>{{ employeeData.passportNumber || '-' }}</div>
+        </v-col>
+        <v-col cols="12" lg="4">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-passport-issuer') }}
+          </div>
+          <div>{{ employeeData.passportIssuer || '-' }}</div>
+        </v-col>
+      </v-row>
 
-        <!-- Datas de passaporte -->
-        <v-row class="">
-          <v-col cols="12" lg="6">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-passport-issuance-date') }}
-            </div>
-            <ValidatedDatePicker v-model="employeeData.passportIssuanceDate" :teleport="true"
-              :placeholder="$t('t-enter-passport-issuance-date')" :enable-time-picker="false" 
-              format="dd/MM/yyyy" disabled />
-          </v-col>
-          <v-col cols="12" lg="6">
-            <div class="font-weight-bold mb-2">
-              {{ $t('t-id-passport-expiry-date') }}
-            </div>
-            <ValidatedDatePicker v-model="employeeData.passportExpiryDate" :teleport="true"
-              :placeholder="$t('t-enter-id-passport-expiry-date')" :enable-time-picker="false" 
-              format="dd/MM/yyyy" :disabled="true" />
-          </v-col>
-        </v-row>
-      </v-card-text>
+      <!-- Datas de passaporte -->
+      <v-row class="">
+        <v-col cols="12" lg="6">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-passport-issuance-date') }}
+          </div>
+          <div>{{ formateDate(employeeData.passportIssuanceDate) || '-' }}</div>
+        </v-col>
+        <v-col cols="12" lg="6">
+          <div class="font-weight-bold mb-2">
+            {{ $t('t-id-passport-expiry-date') }}
+          </div>
+          <div>{{ formateDate(employeeData.passportExpiryDate) || '-' }}</div>
+        </v-col>
+      </v-row>
+    </v-card-text>
 
-      <!-- Ações do formulário -->
-      <v-card-actions class="d-flex justify-space-between mt-3">
-        <v-btn 
+    <!-- Ações do formulário -->
+    <v-card-actions class="d-flex justify-space-between mt-3">
+      <v-btn color="secondary" variant="outlined" class="me-2" @click="onBack()" :disabled="loading">
+        {{ $t('t-back') }} <i class="ph-arrow-left ms-2" />
+      </v-btn>
+
+      <v-btn 
           color="secondary" 
           variant="outlined" 
           class="me-2" 
-          @click="onBack()"
+          @click="emit('onStepChange', 2)" 
           :disabled="loading"
         >
-          {{ $t('t-back') }} <i class="ph-arrow-left ms-2" />
+          {{ $t('t-proceed') }} <i class="ph-arrow-right ms-2" />
         </v-btn>
-        
-      </v-card-actions>
-    </Card>
-  </v-form>
+
+    </v-card-actions>
+  </Card>
 </template>
 
 <style scoped>

@@ -168,6 +168,7 @@ export default class CountryService extends HttpService {
 
   async getProvinceByID(id: string): Promise<{ data: ProvinceResponseType }> {
     try {
+     
       const response = await this.get<{ data: ProvinceResponseType; meta: any }>
         (`/administration/setup/provinces/${id}`);
 
@@ -182,7 +183,7 @@ export default class CountryService extends HttpService {
   }
 
   async getProvincesByCountryID(
-    id: number,
+    id: string,
     page: number = 0,
     size: number = 10,
     sortColumn: string = 'name',
@@ -207,8 +208,10 @@ export default class CountryService extends HttpService {
       const queryString = queryParams.join('&');
 
       const url = `/administration/setup/provinces/in-country?${queryString}`;
+      //console.log("URL para buscar províncias por país:", url);
 
       const response = await this.get<ApiResponse<ProvinceListingType[]>>(url);
+      //console.log('Response de províncias por país:', response);
 
       return {
         content: response.data || [],

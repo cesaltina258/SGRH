@@ -45,7 +45,7 @@ const props = defineProps({
 
 // Stores
 const institutionStore = useInstitutionStore();
-const institutionTypeStore = useInstitutionTypeStore(); 
+const institutionTypeStore = useInstitutionTypeStore();
 
 // Referências do formulário
 const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
@@ -70,7 +70,7 @@ let alertTimeout: ReturnType<typeof setTimeout> | null = null;
 /**
  * Regras de validação para os campos do formulário
  */
- const requiredRules = {
+const requiredRules = {
   name: [
     (v: string) => !!v || t('t-please-enter-institution-name'),
   ],
@@ -79,7 +79,7 @@ let alertTimeout: ReturnType<typeof setTimeout> | null = null;
   ],
   incomeTaxNumber: [
     (v: string) => !!v || t('t-please-enter-income-tax-number'),
-    (v: string) => (v &&  v.length == 9) || t('t-lenght-must-be-9'),
+    (v: string) => (v && v.length == 9) || t('t-lenght-must-be-9'),
   ],
   address: [
     (v: string) => !!v || t('t-please-enter-address'),
@@ -136,7 +136,7 @@ const submitGeneralInfo = async () => {
   if (!form.value) return;
 
   const { valid } = await form.value.validate();
-  
+
   if (!valid) {
     toast.error(t('t-validation-error'));
     errorMsg.value = t('t-please-correct-errors');
@@ -157,27 +157,39 @@ const submitGeneralInfo = async () => {
   <v-form ref="form" @submit.prevent="submitGeneralInfo">
     <Card :title="$t('t-general-information')" elevation="0" title-class="pb-0">
       <transition name="fade">
-        <v-alert v-if="errorMsg" :text="errorMsg" type="error" class="mb-4 mx-5 mt-3" variant="tonal" color="danger" 
+        <v-alert v-if="errorMsg" :text="errorMsg" type="error" class="mb-4 mx-5 mt-3" variant="tonal" color="danger"
           density="compact" @click="errorMsg = ''" style="cursor: pointer;" />
       </transition>
       <v-card-text class="pt-0">
-        <div class="font-weight-bold mb-2 mt-5">
+        <v-row class="mt-n6">
+          <v-col cols="12" lg="12" class="text-right">
+            <div class="font-weight-bold">{{ $t('t-availability') }}</div>
+            <v-checkbox v-model="institutionData.enabled" density="compact" color="primary" class="d-inline-flex">
+              <template #label>
+                <span>{{ $t('t-is-enabled') }}</span>
+              </template>
+            </v-checkbox>
+          </v-col> 
+        </v-row>
+        <div class="font-weight-bold mb-2 mt-n6">
           {{ $t('t-institution-name') }} <i class="ph-asterisk ph-xs text-danger" />
         </div>
-        <TextField v-model="institutionData.name" :placeholder="$t('t-enter-institution-name')" :rules="requiredRules.name" />
+        <TextField v-model="institutionData.name" :placeholder="$t('t-enter-institution-name')"
+          :rules="requiredRules.name" />
         <v-row class="">
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
               {{ $t('t-institution-type') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <MenuSelect v-model="institutionData.institutionType " :items="institutionTypes"
+            <MenuSelect v-model="institutionData.institutionType" :items="institutionTypes"
               :loading="institutionTypeStore.loading" :rules="requiredRules.institutionType" />
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
               NUIT <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="institutionData.incomeTaxNumber" :placeholder="$t('t-enter-nuit')" :rules="requiredRules.incomeTaxNumber" />
+            <TextField v-model="institutionData.incomeTaxNumber" :placeholder="$t('t-enter-nuit')"
+              :rules="requiredRules.incomeTaxNumber" />
           </v-col>
         </v-row>
         <v-row class="mt-n6">
@@ -185,13 +197,15 @@ const submitGeneralInfo = async () => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-address') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="institutionData.address" :placeholder="$t('t-enter-address')" :rules="requiredRules.address" />
+            <TextField v-model="institutionData.address" :placeholder="$t('t-enter-address')"
+              :rules="requiredRules.address" />
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
               {{ $t('t-phone-number') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="institutionData.phone" :placeholder="$t('t-enter-phone-number')" :rules="requiredRules.phone" />
+            <TextField v-model="institutionData.phone" :placeholder="$t('t-enter-phone-number')"
+              :rules="requiredRules.phone" />
           </v-col>
         </v-row>
         <v-row class="mt-n6">
@@ -199,21 +213,22 @@ const submitGeneralInfo = async () => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-email') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="institutionData.email" :placeholder="$t('t-enter-email-address')" :rules="requiredRules.email" />
+            <TextField v-model="institutionData.email" :placeholder="$t('t-enter-email-address')"
+              :rules="requiredRules.email" />
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
-              {{ $t('t-website') }} 
+              {{ $t('t-website') }}
             </div>
             <TextField v-model="institutionData.website" :placeholder="$t('t-enter-website')" hide-details />
           </v-col>
         </v-row>
         <v-row class="mt-n6">
           <v-col cols="12" lg="12">
-          <div class="font-weight-bold mb-2">{{ $t('t-description') }}</div>
-          <TextArea v-model="institutionData.description" :placeholder="$t('t-enter-description')" />
-        
-        </v-col>
+            <div class="font-weight-bold mb-2">{{ $t('t-description') }}</div>
+            <TextArea v-model="institutionData.description" :placeholder="$t('t-enter-description')" />
+
+          </v-col>
         </v-row>
         <!--<v-row class="">
         <v-col cols="12" lg="12">

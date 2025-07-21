@@ -16,7 +16,7 @@ import { useToast } from 'vue-toastification';
 
 // Components
 import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
-import ValidatedDatePicker from "@/app/common/components/ValidatedDatePicker.vue";
+import ValidatedDatePicker from "@/app/common/components/ValidatedDatePicker.vue"; 
 
 // Stores
 // import { useEmployeeStore } from '@/store/employeeStore';
@@ -154,9 +154,20 @@ const submitForm = async () => {
       </transition>
 
       <v-card-text class="pt-0">
+
+                <v-row class="mt-n9">
+          <v-col cols="12" lg="12" class="text-right">
+            <div class="font-weight-bold">{{ $t('t-availability') }}</div>
+            <v-checkbox v-model="clinicData.enabled" density="compact" color="primary" class="d-inline-flex">
+              <template #label>
+                <span>{{ $t('t-is-enabled') }}</span>
+              </template>
+            </v-checkbox>
+          </v-col>
+        </v-row>
         
         <!-- Nome da Clínica -->
-        <v-row class="mt-n3">
+        <v-row class="mt-n9">
           <v-col cols="12">
             <div class="font-weight-bold mb-2 mt-5">
               {{ $t('t-clinic-name') }} <i class="ph-asterisk ph-xs text-danger" />

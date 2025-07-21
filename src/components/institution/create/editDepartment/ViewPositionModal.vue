@@ -2,6 +2,7 @@
 import { PropType, computed } from "vue";
 import { PositionInsertType, PositionListingForListType } from "@/components/institution/types";
 import { useI18n } from "vue-i18n";
+import Status from "@/app/common/components/Status.vue";
 
 const { t } = useI18n();
 const emit = defineEmits(["update:modelValue"]);
@@ -43,13 +44,17 @@ const dialogValue = computed({
       <v-divider />
 
       <v-card-text class="overflow-y-auto" style="max-height: 50vh">
-        <v-row>
+        <v-row class="">
+          <v-col cols="12" lg="12" class="text-right">
+            <Status :status="props.data?.enabled ? 'enabled' : 'disabled'" />
+          </v-col>
+        </v-row>
+        <v-row class="mt-n6">
           <v-col cols="12">
             <div class="font-weight-bold text-caption mb-1">{{ $t('t-name') }}</div>
             <div>{{ props.data?.name || '-' }}</div>
           </v-col>
         </v-row>
-
         <v-row class="mt-3">
           <v-col cols="12" lg="12">
             <div class="font-weight-bold text-caption mb-1">{{ $t('t-description') }}</div>

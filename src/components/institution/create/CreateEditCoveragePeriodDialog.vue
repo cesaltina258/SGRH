@@ -37,6 +37,7 @@ const name = ref("");
 const startDate = ref(new Date());
 const endDate = ref(new Date());
 const company = ref("");
+const enabled = ref(true);
 
 // Watch for data changes
 watch(() => props.data, (newData) => {
@@ -46,6 +47,7 @@ watch(() => props.data, (newData) => {
   startDate.value = newData.startDate || new Date();
   endDate.value = newData.endDate || new Date();
   company.value = newData.company || "";
+  enabled.value = newData.enabled;
 }, { immediate: true });
 
 
@@ -106,7 +108,7 @@ const onSubmit = async () => {
     startDate: startDate.value,
     endDate: endDate.value,
     company: props.data?.company ?? "",
-    enabled: true
+    enabled: enabled.value
   };
 
   emit("onSubmit", payload, {
@@ -129,13 +131,11 @@ const onSubmit = async () => {
   <v-dialog v-model="dialogValue" width="500" :persistent="true"
   :click:outside="false">
     <v-form ref="form" @submit.prevent="onSubmit"> 
-    <Card :title="isCreate ? $t('t-add-coverage-period') : $t('t-edit-coverage-period')" title-class="py-0"
-      >
+    <Card :title="isCreate ? $t('t-add-coverage-period') : $t('t-edit-coverage-period')" title-class="py-0">
       <template #title-action>
         <v-btn icon="ph-x" variant="plain" @click="dialogValue = false" />
       </template>
       <v-divider />
-
       <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mx-5 mt-3" density="compact" />
       <v-card-text >
         <v-row class="">
@@ -158,6 +158,16 @@ const onSubmit = async () => {
               {{ $t('t-end-date') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
             <ValidatedDatePicker v-model="endDate"  :placeholder="$t('t-enter-end-date')" :rules="requiredRules.endDate" />
+          </v-col>
+        </v-row>
+        <v-row class="">
+          <v-col cols="12" lg="12" class="">
+            <div class="font-weight-bold">{{ $t('t-availability') }}</div>
+            <v-checkbox v-model="enabled" density="compact" color="primary" class="d-inline-flex">
+              <template #label>
+                <span>{{ $t('t-is-enabled') }}</span>
+              </template>
+            </v-checkbox>
           </v-col>
         </v-row>
       </v-card-text>

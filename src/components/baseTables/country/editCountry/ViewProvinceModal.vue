@@ -20,7 +20,7 @@ const prop = defineProps({
     required: true,
   },
   country: {
-    type: Number,
+    type: String,
     required: true,
   }
 });

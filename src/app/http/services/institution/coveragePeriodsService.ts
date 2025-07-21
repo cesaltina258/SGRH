@@ -181,7 +181,8 @@ export default class CoveragePeriodService extends HttpService {
                 name: coveragePeriodData.name,
                 startDate: coveragePeriodData.startDate,
                 endDate: coveragePeriodData.endDate,
-                company: coveragePeriodData.company
+                company: coveragePeriodData.company,
+                enabled: coveragePeriodData.enabled
             };
 
             const response = await this.put<ServiceResponse<CoveragePeriodListingType>>(`/administration/company/coverage-periods/${id}`, payload);

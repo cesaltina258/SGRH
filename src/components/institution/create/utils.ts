@@ -38,9 +38,6 @@ export const breadcrumbHealthPlan: BreadcrumbType[] = [
 ];
 
 export const healthPlanLimitOptions: MenuSelectItemType[] = [
-  { 
-    value: undefined, 
-    label: "Selecione o Limite do Plano" },
   {
     label: "Valor Fixo",
     value: "FIXED_AMOUNT"
@@ -63,9 +60,10 @@ export const limitTypeDefinitionOptions: MenuSelectItemType[] = [
 ];
 
 export const salaryComponentOptions: MenuSelectItemType[] = [
-  { 
-    value: undefined, 
-    label: "Selecione a Componente Salarial" },
+  {
+    value: undefined,
+    label: "Selecione a Componente Salarial"
+  },
   {
     label: "Salário Base",
     value: "BASE_SALARY"
@@ -90,41 +88,46 @@ export const statusOptions: MenuSelectItemType[] = [
 ];
 
 export const contactPersonHeader: DataTableHeaderType[] = [
-  { title: "full-name", key: "fullname", sortable: true},
-  { title: "email", key: "email" , sortable: true },
-  { title: "phone", key: "phone" , sortable: true },
-  { title: "action",  sortable: false}
+  { title: "full-name", key: "fullname", sortable: true },
+  { title: "email", key: "email", sortable: true },
+  { title: "phone", key: "phone", sortable: true },
+  { title: "is-enabled", key: "enabled", sortable: true },
+  { title: "action", sortable: false }
 ];
 
 export const departmentHeader: DataTableHeaderType[] = [
-  { title: "name", key: "name", sortable: true},
-  { title: "description", key: "description" , sortable: true },
-  { title: "action",  sortable: false}
+  { title: "name", key: "name", sortable: true },
+  { title: "description", key: "description", sortable: true },
+  { title: "is-enabled", key: "enabled", sortable: true },
+  { title: "action", sortable: false }
 ];
 
 export const positionHeader: DataTableHeaderType[] = [
-  { title: "name", key: "name", sortable: true},
-  { title: "description", key: "description" , sortable: true },
-  { title: "action",  sortable: false,  align: "end"}
+  { title: "name", key: "name", sortable: true },
+  { title: "description", key: "description", sortable: true },
+  { title: "is-enabled", key: "enabled", sortable: true },
+  { title: "action", sortable: false, }
 ];
 
 export const coveragePeriodHeader: DataTableHeaderType[] = [
-  { title: "name", key: "name", sortable: true},
-  { title: "start-date", key: "startDate" , sortable: true },
-  { title: "end-date", key: "endDate" , sortable: true },
-  { title: "status", key: "status" , sortable: true },
-  { title: "action",  sortable: false,  align: "end"}
+  { title: "name", key: "name", sortable: true },
+  { title: "start-date", key: "startDate", sortable: true },
+  { title: "end-date", key: "endDate", sortable: true },
+  { title: "status", key: "status", sortable: true },
+  { title: "is-enabled", key: "enabled", sortable: true },
+  { title: "action", sortable: false, align: "end" }
 ];
 
 
 export const healthPlanHeader: DataTableHeaderType[] = [
-  { title: "max-number-of-dependents", key: "maxNumberOfDependents", sortable: true},
-  { title: "children-max-age", key: "childrenMaxAge", sortable: true},
-  { title: "health-plan-limit", key: "healthPlanLimit", sortable: true},
-  { title: "fixed-amount", key: "fixedAmount", sortable: true},
-  { title: "salary-component", key: "salaryComponent", sortable: true},
-  { title: "company-contribution-percentage", key: "companyContributionPercentage", sortable: true},
-  { title: "action",  sortable: false,  align: "end"}
+  { title: "max-number-of-dependents", key: "maxNumberOfDependents", sortable: true },
+  { title: "children-max-age", key: "childrenMaxAge", sortable: true },
+  { title: "health-plan-limit", key: "healthPlanLimit", sortable: true },
+  { title: "fixed-amount", key: "fixedAmount", sortable: true },
+  { title: "salary-component", key: "salaryComponent", sortable: true },
+  { title: "company-contribution-percentage", key: "companyContributionPercentage", sortable: true },
+  { title: "is-enabled", key: "enabled", sortable: true },
+  { title: "action", sortable: false, align: "end" }
 ];
 
 export const clinicHeader: TableHeaderType[] = [
@@ -173,7 +176,7 @@ export const coverageperiodOptions: OptionType[] = [
     icon: "ph-stop-circle",
     value: "close",
   },
-   {
+  {
     title: "delete",
     icon: "ph-trash",
     value: "delete",
@@ -197,7 +200,7 @@ export const healthPlanOptions: OptionType[] = [
     icon: "ph-copy",
     value: "clone",
   },
-   {
+  {
     title: "delete",
     icon: "ph-trash",
     value: "delete",
@@ -226,6 +229,7 @@ export const contactHeader: TableHeaderType[] = [
   { title: "phone-number" },
   { title: "created-date" },
   { title: "status" },
+  { title: "is-enabled" },
   { title: "action" },
 ];
 
@@ -242,10 +246,11 @@ export const historyHeader: TableHeaderType[] = [
 
 export const hospitalProcedureHeader: TableHeaderType[] = [
   //{ title: "id" },
-  { title: "hospital-procedure-type" },
-  { title: "limit-type-definition" },
-  { title: "fixed-amount" },
-  { title: "percentage" },
-  { title: "action" },
+  { title: "hospital-procedure-type", key: "hospitalProcedureType", sortable: true },
+  { title: "limit-type-definition", key: "limitTypeDefinition", sortable: true },
+  { title: "fixed-amount", key: "fixedAmount", sortable: true },
+  { title: "percentage", key: "percentage", sortable: true },
+  { title: "enabled", key: "enabled", sortable: true },
+  { title: "action", sortable: false, align: "end" }
 ];
 

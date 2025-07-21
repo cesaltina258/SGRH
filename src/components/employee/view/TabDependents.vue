@@ -24,7 +24,7 @@ import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
 import CreateEditDependentsDialog from "@/components/employee/create/CreateEditDependentsDialog.vue";
 import ViewDependentsDialog from "@/components/employee/create/ViewDependentsDialog.vue";
 import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConfirmationDialog.vue";
-import TableAction from "@/app/common/components/TableAction.vue";
+import TableActionView from "@/app/common/components/TableActionView.vue";
 // Stores e Services
 import { useDependentEmployeeStore } from "@/store/employee/dependentStore";
 import { dependentEmployeeService } from "@/app/http/httpServiceProvider";
@@ -138,66 +138,6 @@ watch(dialog, (newVal: boolean) => {
     dependentData.value = null;
   }
 });
-const onCreateEditClick = (data: DependentInsertType | DependentListingType | null) => {
-  const employee = employeeId.value || "";
-
-  dependentData.value = data
-    ? {
-      ...data,
-      employee: employee // sobrescreve com o employeeId atual
-    }
-    : {
-      id: undefined,
-      firstName: "",
-      middleName: "",
-      lastName: "",
-      gender: "",
-      birthDate: undefined,
-      relationship: "",
-      employee: employee,
-      idCardNumber: "",
-      idCardIssuer: "",
-      idCardExpiryDate: undefined,
-      idCardIssuanceDate: undefined,
-      enabled: true
-    };
-
-  dialog.value = true;
-};
-
-
-/**
- * Submete dados do formulário
- */
-const onSubmit = async (
-  data: DependentInsertType,
-  callbacks?: {
-    onSuccess?: () => void,
-    onFinally?: () => void
-  }
-) => {
-  try {
-    if (!data.id) {
-      await dependentEmployeeService.createDependent(data);
-      toast.success(t('t-toast-message-created'));
-    } else {
-      await dependentEmployeeService.updateDependent(data.id, data);
-      toast.success(t('t-toast-message-update'));
-    }
-
-    await dependentStore.fetchDependentsEmployee(
-      employeeId.value,
-      0,
-      itemsPerPage.value
-    );
-    callbacks?.onSuccess?.();
-  } catch (error) {
-    console.error("Erro ao gravar dependentes:", error);
-    toast.error(t('t-message-save-error'));
-  } finally {
-    callbacks?.onFinally?.();
-  }
-};
 
 /**
  * Prepara dados para visualização
@@ -212,41 +152,6 @@ const onViewClick = (data: DependentInsertType | DependentListingType) => {
   viewDialog.value = true;
 };
 
-/**
- * Prepara exclusão de contato
- */
-const onDelete = (id: string) => {
-  deleteId.value = id;
-  deleteDialog.value = true;
-};
-
-/**
- * Confirma exclusão de contato
- */
-const onConfirmDelete = async () => {
-  if (!deleteId.value) return;
-
-  deleteLoading.value = true;
-  try {
-    await dependentEmployeeService.deleteDependent(deleteId.value);
-    selectedDependentData.value = selectedDependentData.value.filter(
-      user => user.id !== deleteId.value
-    );
-    await dependentStore.fetchDependentsEmployee(
-      employeeId.value,
-      0,
-      itemsPerPage.value
-    );
-    toast.success(t('t-toast-message-deleted'));
-  } catch (error) {
-    toast.error(t('t-toast-message-deleted-erros'));
-    console.error("Delete error:", error);
-  } finally {
-    deleteLoading.value = false;
-    deleteDialog.value = false;
-    deleteId.value = null;
-  }
-};
 
 
 // Limpeza ao desmontar
@@ -262,9 +167,6 @@ onBeforeUnmount(() => {
   <Card :title="$t('t-dependent-list')" title-class="py-5">
     <template #title-action>
       <div>
-        <v-btn color="primary" class="mx-1" @click="onCreateEditClick(null)">
-          <i class="ph-plus-circle me-1" /> {{ $t('t-add-dependent') }}
-        </v-btn>
         <!--<v-btn color="secondary" class="mx-1">
           <i class="ph-download-simple me-1" /> {{ $t('t-import') }}
         </v-btn>
@@ -303,8 +205,7 @@ onBeforeUnmount(() => {
               <Status :status="item.enabled ? 'enabled' : 'disabled'" />
             </td>
             <td>
-              <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)"
-                @onDelete="onDelete(item.id)" />
+              <TableActionView  @onView="onViewClick(item)"/>
             </td>
           </tr>
         </template>
@@ -326,12 +227,10 @@ onBeforeUnmount(() => {
   </v-row>
 
   <!-- Dialogs -->
-  <CreateEditDependentsDialog v-model="dialog" :data="dependentData" @onSubmit="onSubmit" />
   <ViewDependentsDialog v-model="viewDialog" :data="dependentData" />
-  <RemoveItemConfirmationDialog v-model="deleteDialog" :loading="deleteLoading" @onConfirm="onConfirmDelete" />
 
   <v-card-actions class="d-flex justify-space-between mt-5">
-    <v-btn color="secondary" variant="outlined" class="me-2" @click="$emit('onStepChange', 2)">
+     <v-btn color="secondary" variant="outlined" class="me-2" @click="$emit('onStepChange', 2)">
       {{ $t('t-back-to-institution-and-classification') }} 
     </v-btn>
     

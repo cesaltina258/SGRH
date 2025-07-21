@@ -255,7 +255,7 @@ Prepara dados para fechar o periodo
 // Abre o diálogo de confirmação para do lançamento
 const onClose = (id: string) => {
   periodId.value = id;
-  periodCloseDialog.value = true; 
+  periodCloseDialog.value = true;
 }
 
 const onConfirmClose = async () => {
@@ -439,7 +439,10 @@ onBeforeUnmount(() => {
               <Status :status="item.status" />
             </td>
             <td>
-              <ListMenuWithIcon :menuItems="getDynamicOptions(item)" @onSelect="onSelect($event, item)"/>
+              <Status :status="item.enabled ? 'enabled' : 'disabled'" />
+            </td>
+            <td>
+              <ListMenuWithIcon :menuItems="getDynamicOptions(item)" @onSelect="onSelect($event, item)" />
             </td>
           </tr>
         </template>
@@ -460,12 +463,12 @@ onBeforeUnmount(() => {
     </v-col>
   </v-row>
 
- <!-- Dialogs -->
-<CreateEditCoveragePeriodDialog v-model="dialog" :data="coveragePeriodData" @onSubmit="onSubmit" />
-<ViewCoveragePeriodDialog v-model="viewDialog" :data="coveragePeriodData" />
-<RemoveItemConfirmationDialog v-model="deleteDialog" :loading="deleteLoading" @onConfirm="onConfirmDelete" />
-<StartConfirmationDialog v-model="periodStartDialog" :loading="periodStartLoading" @onConfirm="onConfirmStart" />
-<CloseConfirmationDialog v-model="periodCloseDialog" :loading="periodCloseLoading" @onConfirm="onConfirmClose" />
+  <!-- Dialogs -->
+  <CreateEditCoveragePeriodDialog v-model="dialog" :data="coveragePeriodData" @onSubmit="onSubmit" />
+  <ViewCoveragePeriodDialog v-model="viewDialog" :data="coveragePeriodData" />
+  <RemoveItemConfirmationDialog v-model="deleteDialog" :loading="deleteLoading" @onConfirm="onConfirmDelete" />
+  <StartConfirmationDialog v-model="periodStartDialog" :loading="periodStartLoading" @onConfirm="onConfirmStart" />
+  <CloseConfirmationDialog v-model="periodCloseDialog" :loading="periodCloseLoading" @onConfirm="onConfirmClose" />
 
   <v-card-actions class="d-flex justify-space-between mt-5">
     <v-btn color="secondary" variant="outlined" class="me-2" @click="$emit('onStepChange', 1)">

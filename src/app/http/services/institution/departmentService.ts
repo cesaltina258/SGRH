@@ -186,7 +186,8 @@ export default class DepartmentService extends HttpService {
       const payload = {
         name: departmentData.name,
         description: departmentData.description,
-        company: departmentData.company
+        company: departmentData.company,
+        enabled: departmentData.enabled
       };
 
       const response = await this.put<DepartmentListingForListType>(`/administration/departments/${id}`, payload);

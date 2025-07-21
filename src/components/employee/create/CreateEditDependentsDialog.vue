@@ -37,7 +37,8 @@ const props = defineProps({
       idCardNumber: "",
       idCardIssuer: "",
       idCardExpiryDate: undefined,
-      idCardIssuanceDate: undefined
+      idCardIssuanceDate: undefined,
+      enabled: true
     })
   },
 });
@@ -51,13 +52,14 @@ const firstName = ref("");
 const middleName = ref("");
 const lastName = ref("");
 const gender = ref("");
-const birthDate = ref<Date | undefined>(); 
+const birthDate = ref<Date | undefined>();
 const relationship = ref("");
 const employee = ref<string | { id: string; employeeNumber: string; firstName: string; lastName: string; }>("");
 const idCardNumber = ref("");
 const idCardIssuer = ref("");
-const idCardExpiryDate = ref<Date | undefined>();  
+const idCardExpiryDate = ref<Date | undefined>();
 const idCardIssuanceDate = ref<Date | undefined>();
+const enabled = ref(true);
 
 // Watch for data changes
 watch(() => props.data, (newData) => {
@@ -69,15 +71,16 @@ watch(() => props.data, (newData) => {
   gender.value = newData.gender || "";
   birthDate.value = newData.birthDate ? new Date(newData.birthDate) : undefined;
   relationship.value = newData.relationship || "";
-  employee.value = typeof newData.employee === 'string' 
-    ? newData.employee 
-    : newData.employee 
-      ? { ...newData.employee } 
+  employee.value = typeof newData.employee === 'string'
+    ? newData.employee
+    : newData.employee
+      ? { ...newData.employee }
       : "";
   idCardNumber.value = newData.idCardNumber || "";
   idCardIssuer.value = newData.idCardIssuer || "";
   idCardExpiryDate.value = newData.idCardExpiryDate ? new Date(newData.idCardExpiryDate) : undefined;
   idCardIssuanceDate.value = newData.idCardIssuanceDate ? new Date(newData.idCardIssuanceDate) : undefined;
+  enabled.value = newData.enabled !== undefined ? newData.enabled : true;
 }, { immediate: true });
 
 
@@ -95,7 +98,7 @@ const dialogValue = computed({
 /**
  * Regras de validação para os campos do formulário
  */
- const requiredRules = {
+const requiredRules = {
   firstName: [
     (v: string) => !!v || t('t-please-enter-firstname'),
   ],
@@ -108,7 +111,7 @@ const dialogValue = computed({
   birthDate: [
     (v: Date | string | null) => !!v || t('t-please-enter-birth-date'),
   ],
-   relationship: [
+  relationship: [
     (v: string) => !!v || t('t-please-enter-relationship'),
   ],
   idCardNumber: [
@@ -134,7 +137,7 @@ const onSubmit = async () => {
   if (!form.value) return;
 
   const { valid } = await form.value.validate();
-  
+
   if (!valid) {
     toast.error(t('t-validation-error'));
     errorMsg.value = t('t-please-correct-errors');
@@ -155,13 +158,14 @@ const onSubmit = async () => {
     gender: gender.value,
     birthDate: birthDate.value,
     relationship: relationship.value,
-    employee: typeof employee.value === 'string' 
-    ? employee.value 
-    : employee.value?.id ?? "",
+    employee: typeof employee.value === 'string'
+      ? employee.value
+      : employee.value?.id ?? "",
     idCardNumber: idCardNumber.value,
     idCardIssuer: idCardIssuer.value,
     idCardExpiryDate: idCardExpiryDate.value,
-    idCardIssuanceDate: idCardIssuanceDate.value
+    idCardIssuanceDate: idCardIssuanceDate.value,
+    enabled: enabled.value
   };
 
   emit("onSubmit", payload, {
@@ -172,104 +176,119 @@ const onSubmit = async () => {
 </script>
 <template>
   <v-dialog v-model="dialogValue" width="500" scrollable>
-    <v-form ref="form" @submit.prevent="onSubmit"> 
-    <Card :title="isCreate ? $t('t-add-dependent') : $t('t-edit-dependent')" title-class="py-0"
-      style="overflow: hidden">
-      <template #title-action>
-        <v-btn icon="ph-x" variant="plain" @click="dialogValue = false" />
-      </template>
-      <v-divider />
+    <v-form ref="form" @submit.prevent="onSubmit">
+      <Card :title="isCreate ? $t('t-add-dependent') : $t('t-edit-dependent')" title-class="py-0"
+        style="overflow: hidden">
+        <template #title-action>
+          <v-btn icon="ph-x" variant="plain" @click="dialogValue = false" />
+        </template>
+        <v-divider />
 
-      <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mx-5 mt-3" density="compact" />
-      <v-card-text class="overflow-y-auto" :style="{
-        'max-height': isCreate ? '70vh' : '45vh'
-      }">
-        <v-row class="">
-          <v-col cols="12" lg="6">
-            <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-firstname') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <TextField v-model="firstName" :placeholder="$t('t-enter-firstname')" :rules="requiredRules.firstName" />
-          </v-col>
-          <v-col cols="12" lg="6">
-            <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-middle-name') }} 
-            </div>
-            <TextField v-model="middleName" :placeholder="$t('t-enter-middle-name')"  />
-          </v-col>
-        </v-row>
-         <v-row class="mt-n6">
-          <v-col cols="12" lg="6">
-            <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-lastname') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <TextField v-model="lastName" :placeholder="$t('t-enter-lastname')" :rules="requiredRules.lastName" />
-          </v-col>
-          <v-col cols="12" lg="6">
-            <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-relationship') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <MenuSelect v-model="relationship" :items="relationshipOptions" :rules="requiredRules.relationship" />
-          </v-col>
-        </v-row>
-        <v-row class="mt-n6">
-          <v-col cols="12" lg="6">
-            <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-gender') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <MenuSelect v-model="gender" :items="genderOptions" :rules="requiredRules.gender" />
-          </v-col>
-          <v-col cols="12" lg="6">
-            <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-birth-date') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <ValidatedDatePicker ref="birthDatePicker" v-model="birthDate" :teleport="true" :placeholder="$t('t-enter-birth-date')"
-              :rules="requiredRules.birthDate" format="dd/MM/yyyy" />
-          </v-col>
-        </v-row>
-        <v-row class="mt-n6">
-          <v-col cols="12" lg="6">
-            <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-id-card-number') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <TextField v-model="idCardNumber" :placeholder="$t('t-enter-id-card-number')"  :rules="requiredRules.idCardNumber" />
-          </v-col>
-          <v-col cols="12" lg="6">
-            <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-id-card-issuer') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <TextField v-model="idCardIssuer" :placeholder="$t('t-enter-id-card-issuer')" :rules="requiredRules.idCardIssuer" />
-          </v-col>
-        </v-row>
-        <v-row class="mt-n6">
-          <v-col cols="12" lg="6">
-            <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-id-card-expiry-date') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <ValidatedDatePicker ref="idCardExpiryDatePicker" v-model="idCardExpiryDate" :teleport="true" :placeholder="$t('t-enter-id-card-expiry-date')"
-              :rules="requiredRules.idCardExpiryDate" format="dd/MM/yyyy" />
-          </v-col>
-          <v-col cols="12" lg="6">
-            <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-id-card-issuance-date') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <ValidatedDatePicker ref="idCardIssuanceDatePicker" v-model="idCardIssuanceDate" :teleport="true" :placeholder="$t('t-enter-id-card-issuance-date')"
-              :rules="requiredRules.idCardIssuanceDate" format="dd/MM/yyyy" />
-          </v-col>
-        </v-row>
-      </v-card-text>
-      <v-divider />
-      <v-card-actions class="d-flex justify-end">
-        <div>
-          <v-btn color="danger" class="me-1" @click="dialogValue = false">
-            <i class="ph-x me-1" /> {{ $t('t-close') }}
-          </v-btn>
-          <v-btn color="primary" variant="elevated" @click="onSubmit" :loading="localLoading" :disabled="localLoading">
-            {{ localLoading ? $t('t-saving') : $t('t-save') }}
-          </v-btn>
-        </div>
-      </v-card-actions>
-    </Card>
-  </v-form>
+        <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mx-5 mt-3" density="compact" />
+        <v-card-text class="overflow-y-auto" :style="{
+          'max-height': isCreate ? '70vh' : '45vh'
+        }">
+          <v-row class="">
+            <v-col cols="12" lg="6">
+              <div class="font-weight-bold text-caption mb-1">
+                {{ $t('t-firstname') }} <i class="ph-asterisk ph-xs text-danger" />
+              </div>
+              <TextField v-model="firstName" :placeholder="$t('t-enter-firstname')" :rules="requiredRules.firstName" />
+            </v-col>
+            <v-col cols="12" lg="6">
+              <div class="font-weight-bold text-caption mb-1">
+                {{ $t('t-middle-name') }}
+              </div>
+              <TextField v-model="middleName" :placeholder="$t('t-enter-middle-name')" />
+            </v-col>
+          </v-row>
+          <v-row class="mt-n6">
+            <v-col cols="12" lg="6">
+              <div class="font-weight-bold text-caption mb-1">
+                {{ $t('t-lastname') }} <i class="ph-asterisk ph-xs text-danger" />
+              </div>
+              <TextField v-model="lastName" :placeholder="$t('t-enter-lastname')" :rules="requiredRules.lastName" />
+            </v-col>
+            <v-col cols="12" lg="6">
+              <div class="font-weight-bold text-caption mb-1">
+                {{ $t('t-relationship') }} <i class="ph-asterisk ph-xs text-danger" />
+              </div>
+              <MenuSelect v-model="relationship" :items="relationshipOptions" :rules="requiredRules.relationship" />
+            </v-col>
+          </v-row>
+          <v-row class="mt-n6">
+            <v-col cols="12" lg="6">
+              <div class="font-weight-bold text-caption mb-1">
+                {{ $t('t-gender') }} <i class="ph-asterisk ph-xs text-danger" />
+              </div>
+              <MenuSelect v-model="gender" :items="genderOptions" :rules="requiredRules.gender" />
+            </v-col>
+            <v-col cols="12" lg="6">
+              <div class="font-weight-bold text-caption mb-1">
+                {{ $t('t-birth-date') }} <i class="ph-asterisk ph-xs text-danger" />
+              </div>
+              <ValidatedDatePicker ref="birthDatePicker" v-model="birthDate" :teleport="true"
+                :placeholder="$t('t-enter-birth-date')" :rules="requiredRules.birthDate" format="dd/MM/yyyy" />
+            </v-col>
+          </v-row>
+          <v-row class="mt-n6">
+            <v-col cols="12" lg="6">
+              <div class="font-weight-bold text-caption mb-1">
+                {{ $t('t-id-card-number') }} <i class="ph-asterisk ph-xs text-danger" />
+              </div>
+              <TextField v-model="idCardNumber" :placeholder="$t('t-enter-id-card-number')"
+                :rules="requiredRules.idCardNumber" />
+            </v-col>
+            <v-col cols="12" lg="6">
+              <div class="font-weight-bold text-caption mb-1">
+                {{ $t('t-id-card-issuer') }} <i class="ph-asterisk ph-xs text-danger" />
+              </div>
+              <TextField v-model="idCardIssuer" :placeholder="$t('t-enter-id-card-issuer')"
+                :rules="requiredRules.idCardIssuer" />
+            </v-col>
+          </v-row>
+          <v-row class="mt-n6">
+            <v-col cols="12" lg="6">
+              <div class="font-weight-bold text-caption mb-1">
+                {{ $t('t-id-card-expiry-date') }} <i class="ph-asterisk ph-xs text-danger" />
+              </div>
+              <ValidatedDatePicker ref="idCardExpiryDatePicker" v-model="idCardExpiryDate" :teleport="true"
+                :placeholder="$t('t-enter-id-card-expiry-date')" :rules="requiredRules.idCardExpiryDate"
+                format="dd/MM/yyyy" />
+            </v-col>
+            <v-col cols="12" lg="6">
+              <div class="font-weight-bold text-caption mb-1">
+                {{ $t('t-id-card-issuance-date') }} <i class="ph-asterisk ph-xs text-danger" />
+              </div>
+              <ValidatedDatePicker ref="idCardIssuanceDatePicker" v-model="idCardIssuanceDate" :teleport="true"
+                :placeholder="$t('t-enter-id-card-issuance-date')" :rules="requiredRules.idCardIssuanceDate"
+                format="dd/MM/yyyy" />
+            </v-col>
+          </v-row>
+          <v-row class="mt-">
+            <v-col cols="12" lg="12" class="">
+              <div class="font-weight-bold">{{ $t('t-enabled') }}</div>
+              <v-checkbox v-model="enabled" density="compact" color="primary" class="d-inline-flex">
+                <template #label>
+                  <span>{{ $t('t-is-enabled') }}</span>
+                </template>
+              </v-checkbox>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-divider />
+        <v-card-actions class="d-flex justify-end">
+          <div>
+            <v-btn color="danger" class="me-1" @click="dialogValue = false">
+              <i class="ph-x me-1" /> {{ $t('t-close') }}
+            </v-btn>
+            <v-btn color="primary" variant="elevated" @click="onSubmit" :loading="localLoading"
+              :disabled="localLoading">
+              {{ localLoading ? $t('t-saving') : $t('t-save') }}
+            </v-btn>
+          </div>
+        </v-card-actions>
+      </Card>
+    </v-form>
   </v-dialog>
 </template>

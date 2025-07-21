@@ -20,7 +20,8 @@ const props = defineProps({
       id: undefined,
       name: "",
       description: "",
-      company: ""
+      company: "",
+      enabled: true
     })
   },
 });
@@ -31,15 +32,16 @@ const errorMsg = ref("");
 // Form fields
 const id = ref("");
 const fullname = ref("");
-const phone = ref("");
-const email = ref("");
+const description = ref("");
+const enabled = ref(true);
 
 // Watch for data changes
 watch(() => props.data, (newData) => {
   if (!newData) return;
   id.value = newData.id || "";
   fullname.value = newData.name || "";
-  phone.value = newData.description || "";
+  description.value = newData.description || "";
+  enabled.value = newData.enabled || true;
 }, { immediate: true });
 
 
@@ -90,7 +92,7 @@ const onSubmit = async () => {
   const payload: DepartmentInsertType = {
   id: id.value || undefined,
   name: fullname.value, 
-  description: phone.value, 
+  description: description.value, 
   company: props.data?.company ?? "",
   enabled: true 
 };
@@ -127,7 +129,17 @@ const onSubmit = async () => {
             <div class="font-weight-bold text-caption mb-1">
               {{ $t('t-description') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <TextField v-model="phone" :placeholder="$t('t-enter-description')" :rules="requiredRules.description" />
+            <TextField v-model="description" :placeholder="$t('t-enter-description')" :rules="requiredRules.description" />
+          </v-col>
+        </v-row>
+        <v-row class="mt-n6">
+          <v-col cols="12" lg="12" class="">
+            <div class="font-weight-bold">{{ $t('t-status') }}</div>
+            <v-checkbox v-model="enabled" density="compact" color="primary" class="d-inline-flex">
+              <template #label>
+                <span>{{ $t('t-is-active') }}</span>
+              </template>
+            </v-checkbox>
           </v-col>
         </v-row>
       </v-card-text>

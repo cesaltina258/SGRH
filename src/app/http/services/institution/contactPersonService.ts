@@ -141,7 +141,8 @@ export default class ContactPersonService extends HttpService {
                 fullname: contactPersonData.fullname,
                 email: contactPersonData.email,
                 phone: contactPersonData.phone,
-                company: contactPersonData.company 
+                company: contactPersonData.company,
+                enabled: contactPersonData.enabled
               };
         
               const response = await this.put<ContactPersonListingType>(`/administration/persons-of-contact/${id}`, payload);

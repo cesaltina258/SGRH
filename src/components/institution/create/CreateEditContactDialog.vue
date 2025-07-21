@@ -21,7 +21,8 @@ const props = defineProps({
       fullname: "",
       phone: "",
       email: "",
-      company: ""
+      company: "",
+      enabled: true
     })
   },
 });
@@ -34,6 +35,7 @@ const id = ref("");
 const fullname = ref("");
 const phone = ref("");
 const email = ref("");
+const enabled = ref(true);
 
 // Watch for data changes
 watch(() => props.data, (newData) => {
@@ -42,6 +44,7 @@ watch(() => props.data, (newData) => {
   fullname.value = newData.fullname || "";
   phone.value = newData.phone || "";
   email.value = newData.email || "";
+  enabled.value = newData.enabled;
 }, { immediate: true });
 
 
@@ -59,7 +62,7 @@ const dialogValue = computed({
 /**
  * Regras de validação para os campos do formulário
  */
- const requiredRules = {
+const requiredRules = {
   fullname: [
     (v: string) => !!v || t('t-please-enter-fullname'),
   ],
@@ -81,7 +84,7 @@ const onSubmit = async () => {
   if (!form.value) return;
 
   const { valid } = await form.value.validate();
-  
+
   if (!valid) {
     toast.error(t('t-validation-error'));
     errorMsg.value = t('t-please-correct-errors');
@@ -100,7 +103,7 @@ const onSubmit = async () => {
     phone: phone.value,
     email: email.value,
     company: props.data?.company ?? "",
-    enabled: true
+    enabled: enabled.value
   };
 
   emit("onSubmit", payload, {
@@ -110,52 +113,64 @@ const onSubmit = async () => {
 };
 </script>
 <template>
-  <v-dialog v-model="dialogValue" width="500" >
-    <v-form ref="form" @submit.prevent="onSubmit"> 
-    <Card :title="isCreate ? $t('t-add-contact-person') : $t('t-edit-contact-person')" title-class="py-0"
-      style="overflow: hidden">
-      <template #title-action>
-        <v-btn icon="ph-x" variant="plain" @click="dialogValue = false" />
-      </template>
-      <v-divider />
+  <v-dialog v-model="dialogValue" width="500">
+    <v-form ref="form" @submit.prevent="onSubmit">
+      <Card :title="isCreate ? $t('t-add-contact-person') : $t('t-edit-contact-person')" title-class="py-0"
+        style="overflow: hidden">
+        <template #title-action>
+          <v-btn icon="ph-x" variant="plain" @click="dialogValue = false" />
+        </template>
+        <v-divider />
 
-      <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mx-5 mt-3" density="compact" />
-      <v-card-text >
-        <v-row class="">
-          <v-col cols="12" lg="12">
-            <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-fullname') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <TextField v-model="fullname" :placeholder="$t('t-enter-fullname')" :rules="requiredRules.fullname" />
-          </v-col>
-        </v-row>
-        <v-row class="mt-n6">
-          <v-col cols="12" lg="6">
-            <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-phone') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <TextField v-model="phone" :placeholder="$t('t-enter-phone')" :rules="requiredRules.phone" />
-          </v-col>
-          <v-col cols="12" lg="6">
-            <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-email') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <TextField v-model="email" !isEmail :placeholder="$t('t-enter-email-form')" :rules="requiredRules.email" />
-          </v-col>
-        </v-row>
-      </v-card-text>
-      <v-divider />
-      <v-card-actions class="d-flex justify-end">
-        <div>
-          <v-btn color="danger" class="me-1" @click="dialogValue = false">
-            <i class="ph-x me-1" /> {{ $t('t-close') }}
-          </v-btn>
-          <v-btn color="primary" variant="elevated" @click="onSubmit" :loading="localLoading" :disabled="localLoading">
-            {{ localLoading ? $t('t-saving') : $t('t-save') }}
-          </v-btn>
-        </div>
-      </v-card-actions>
-    </Card>
-  </v-form>
+        <v-alert v-if="errorMsg" :text="errorMsg" variant="tonal" color="danger" class="mx-5 mt-3" density="compact" />
+        <v-card-text>
+          <v-row class="">
+            <v-col cols="12" lg="12">
+              <div class="font-weight-bold text-caption mb-1">
+                {{ $t('t-fullname') }} <i class="ph-asterisk ph-xs text-danger" />
+              </div>
+              <TextField v-model="fullname" :placeholder="$t('t-enter-fullname')" :rules="requiredRules.fullname" />
+            </v-col>
+          </v-row>
+          <v-row class="mt-n6">
+            <v-col cols="12" lg="6">
+              <div class="font-weight-bold text-caption mb-1">
+                {{ $t('t-phone') }} <i class="ph-asterisk ph-xs text-danger" />
+              </div>
+              <TextField v-model="phone" :placeholder="$t('t-enter-phone')" :rules="requiredRules.phone" />
+            </v-col>
+            <v-col cols="12" lg="6">
+              <div class="font-weight-bold text-caption mb-1">
+                {{ $t('t-email') }} <i class="ph-asterisk ph-xs text-danger" />
+              </div>
+              <TextField v-model="email" !isEmail :placeholder="$t('t-enter-email-form')"
+                :rules="requiredRules.email" />
+            </v-col>
+          </v-row>
+          <v-row class="mt-n6">
+            <v-col cols="12" lg="12" class="">
+              <div class="font-weight-bold">{{ $t('t-enabled') }}</div>
+              <v-checkbox v-model="enabled" density="compact" color="primary" class="d-inline-flex">
+                <template #label>
+                  <span>{{ $t('t-is-enabled') }}</span>
+                </template>
+              </v-checkbox>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-divider />
+        <v-card-actions class="d-flex justify-end">
+          <div>
+            <v-btn color="danger" class="me-1" @click="dialogValue = false">
+              <i class="ph-x me-1" /> {{ $t('t-close') }}
+            </v-btn>
+            <v-btn color="primary" variant="elevated" @click="onSubmit" :loading="localLoading"
+              :disabled="localLoading">
+              {{ localLoading ? $t('t-saving') : $t('t-save') }}
+            </v-btn>
+          </div>
+        </v-card-actions>
+      </Card>
+    </v-form>
   </v-dialog>
 </template>

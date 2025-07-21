@@ -149,10 +149,11 @@ export const useProvinceStore = defineStore('provinces', {
       this.loading = true;
       this.error = null;
       try {
-        const data = await countryService.getProvinceByID(countryId);
+        const data = await countryService.getProvincesByCountryID(countryId);
+        //console.log('response store provinces by country data--------------', data);
         // Garante que a resposta seja tratada como array
-        this.provincesbyCountry = Array.isArray(data) ? data : [];
-        console.log('response store provinces by country', this.provincesbyCountry);
+        this.provincesbyCountry = data?.content || [];
+    //console.log('response store provinces by country------------------', this.provincesbyCountry);
       } catch (error) {
         this.error = 'Failed to load provinces';
         this.provincesbyCountry = []; // Garante que seja array mesmo em caso de erro
@@ -180,7 +181,7 @@ export const useProvinceByCountryStoreID = defineStore('province_by_country', {
 
   actions: {
     async fetchProvincesByCountryID(
-      countryId: number,
+      countryId: string,
       page?: number,
       size?: number,
       sortColumn: string = 'name',

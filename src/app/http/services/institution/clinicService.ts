@@ -189,7 +189,8 @@ export default class ClinicService extends HttpService {
             // Corpo da requisição conforme especificado
             const payload = {
                 clinic: clinicData.clinic,
-                company: clinicData.company
+                company: clinicData.company,
+                enabled: clinicData.enabled
             };
 
             const response = await this.put<ServiceResponse<ClinicListingType>>(`/administration/company/contracted-clinics/${id}`, payload);

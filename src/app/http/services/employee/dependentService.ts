@@ -196,7 +196,8 @@ export default class DependentEmployeeService extends HttpService {
                 idCardNumber: dependentData.idCardNumber,
                 idCardIssuer: dependentData.idCardIssuer,
                 idCardExpiryDate: dependentData.idCardExpiryDate,
-                idCardIssuanceDate: dependentData.idCardIssuanceDate
+                idCardIssuanceDate: dependentData.idCardIssuanceDate,
+                enabled: dependentData.enabled
               };
         
               const response = await this.put<DependentListingType>(`/human-resource/employees-dependents/${id}`, payload);

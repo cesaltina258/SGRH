@@ -149,7 +149,8 @@ export default class HealthPlanService extends HttpService {
                 companyContributionPercentage: healthPlanData.companyContributionPercentage,
                 fixedAmount: healthPlanData.fixedAmount,
                 coveragePeriod: healthPlanData.coveragePeriod,
-                company: healthPlanData.company
+                company: healthPlanData.company,
+                enabled: healthPlanData.enabled
             };
 
             const response = await this.put<ServiceResponse<HealthPlanListingType>>(`/administration/company/health-plans/${id}`, payload);
@@ -177,7 +178,8 @@ export default class HealthPlanService extends HttpService {
             const payload = {
                 coveragePeriod: healthPlanData.coveragePeriod,
                 company: healthPlanData.company,
-                companyHealthPlan: healthPlanData.id
+                companyHealthPlan: healthPlanData.id,
+                enabled: healthPlanData.enabled
             };
             console.log('Payload para clonagem:', payload);
 

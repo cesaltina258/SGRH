@@ -44,7 +44,7 @@ const router = useRouter();
 // Emits e Props
 const emit = defineEmits<{
   (e: 'onStepChange', step: number): void;
-  (e: 'save', payload: EmployeeInsertType): void; 
+  (e: 'save', payload: EmployeeInsertType): void;
   (e: 'update:modelValue', value: EmployeeInsertType): void;
 }>();
 
@@ -68,7 +68,7 @@ const provinceStore = useProvinceStore();
 const birthDatePicker = ref();
 const idCardIssuanceDatePicker = ref();
 const idCardExpiryDatePicker = ref();
-const form = ref<{ 
+const form = ref<{
   validate: () => Promise<{ valid: boolean }>;
   resetValidation: () => void;
 } | null>(null);
@@ -115,21 +115,21 @@ const requiredRules = {
     (v: Date | string | null) => !!v || t('t-please-enter-birth-date'),
     (v: Date | string | null) => {
       if (!v) return true;
-      
+
       // Converter para Date se for string
       const date = v instanceof Date ? v : new Date(v);
       const today = new Date();
-      
+
       // Validação de idade máxima (120 anos)
       const minDate = new Date();
       minDate.setFullYear(minDate.getFullYear() - 120);
       if (date < minDate) return t('t-birth-date-too-old');
-      
+
       // Validação de idade mínima (18 anos)
       const maxDate = new Date();
       maxDate.setFullYear(maxDate.getFullYear() - 18);
       if (date > maxDate) return t('t-must-be-over-18');
-      
+
       return true;
     }
   ],
@@ -214,7 +214,7 @@ watch(() => employeeData.value.country, async (newCountryId, oldCountryId) => {
   // Só executa se o país realmente mudou
   if (newCountryId !== oldCountryId) {
     if (newCountryId) {
-      try {
+      try { 
         await provinceStore.fetchProvincesbyCountry(newCountryId);
 
         // Mantém a província atual apenas se for do mesmo país
@@ -267,7 +267,7 @@ const submitForm = async () => {
 
     // Resto da validação...
     const { valid } = await form.value.validate();
-    
+
     if (!valid) {
       toast.error(t('t-validation-error'));
       errorMsg.value = t('t-please-correct-errors');
@@ -298,13 +298,26 @@ const submitForm = async () => {
       </transition>
 
       <v-card-text class="pt-0">
+        <v-row class="mt-n9">
+          <v-col cols="12" lg="12" class="text-right">
+            <div class="font-weight-bold">{{ $t('t-availability') }}</div>
+            <v-checkbox v-model="employeeData.enabled" density="compact" color="primary" class="d-inline-flex">
+              <template #label>
+                <span>{{ $t('t-is-enabled') }}</span>
+              </template>
+            </v-checkbox>
+          </v-col>
+        </v-row>
         <!-- Seção: Informações básicas -->
-        <div class="font-weight-bold mb-2 mt-5">
-          {{ $t('t-employeeNumber') }} <i class="ph-asterisk ph-xs text-danger" />
-        </div>
-        <TextField v-model="employeeData.employeeNumber" :placeholder="$t('t-enter-employee-number')"
-          :rules="requiredRules.employeeNumber" />
-
+        <v-row class="mt-n12">
+          <v-col cols="12" lg="12">
+            <div class="font-weight-bold mb-2 mt-5">
+              {{ $t('t-employeeNumber') }} <i class="ph-asterisk ph-xs text-danger" />
+            </div>
+            <TextField v-model="employeeData.employeeNumber" :placeholder="$t('t-enter-employee-number')"
+              :rules="requiredRules.employeeNumber" />
+          </v-col>
+        </v-row>
         <!-- Nome completo -->
         <v-row class="mt-n3">
           <v-col cols="12" lg="4">
@@ -357,8 +370,8 @@ const submitForm = async () => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-birth-date') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <ValidatedDatePicker ref="birthDatePicker" v-model="employeeData.birthDate" :teleport="true" :placeholder="$t('t-enter-birth-date')"
-              :rules="requiredRules.birthDate" format="dd/MM/yyyy" />
+            <ValidatedDatePicker ref="birthDatePicker" v-model="employeeData.birthDate" :teleport="true"
+              :placeholder="$t('t-enter-birth-date')" :rules="requiredRules.birthDate" format="dd/MM/yyyy" />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">
@@ -495,9 +508,9 @@ const submitForm = async () => {
             <div class="font-weight-bold mb-2">
               {{ $t('t-id-card-issuance-date') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
-            <ValidatedDatePicker ref="idCardIssuanceDatePicker" v-model="employeeData.idCardIssuanceDate" :teleport="true"
-              :rules="requiredRules.idCardIssuanceDate" :placeholder="$t('t-enter-id-card-issuance-date')"
-              format="dd/MM/yyyy" />
+            <ValidatedDatePicker ref="idCardIssuanceDatePicker" v-model="employeeData.idCardIssuanceDate"
+              :teleport="true" :rules="requiredRules.idCardIssuanceDate"
+              :placeholder="$t('t-enter-id-card-issuance-date')" format="dd/MM/yyyy" />
           </v-col>
           <v-col cols="12" lg="4">
             <div class="font-weight-bold mb-2">

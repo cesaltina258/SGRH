@@ -139,7 +139,7 @@ const toggleSelection = (item: InstitutionListingType) => {
             <td>{{ item.phone || 'N/A' }}</td>
             <td>{{ formateDate(item.createdAt) || 'N/A' }}</td>
             <td>
-              <Status :status="item.enabled ? 'active' : 'unactive'" />
+              <Status :status="item.enabled ? 'enabled' : 'disabled'" />
             </td>
             <td>
               <TableAction @onEdit="() => router.push(`/institution/edit/${item.id}`)" 

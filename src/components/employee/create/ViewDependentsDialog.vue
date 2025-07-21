@@ -2,6 +2,7 @@
 import { PropType, computed } from "vue";
 import { DependentInsertType, DependentListingType } from "@/components/employee/types";
 import { useI18n } from "vue-i18n";
+import Status from "@/app/common/components/Status.vue";
 
 const { t } = useI18n();
 const emit = defineEmits(["update:modelValue"]);
@@ -45,7 +46,8 @@ const props = defineProps({
       idCardNumber: "",
       idCardIssuer: "",
       idCardExpiryDate: undefined,
-      idCardIssuanceDate: undefined
+      idCardIssuanceDate: undefined,
+      enabled: true
     })
   },
 });
@@ -74,7 +76,12 @@ const formatDate = (date: Date | undefined) => {
       <v-divider />
 
       <v-card-text class="overflow-y-auto" style="max-height: 70vh">
-        <v-row>
+        <v-row class="">
+          <v-col cols="12" lg="12" class="text-right">
+            <Status :status="props.data?.enabled ? 'enabled' : 'disabled'" />
+          </v-col>
+        </v-row>
+        <v-row class="mt-n6">
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
               {{ $t('t-firstname') }}

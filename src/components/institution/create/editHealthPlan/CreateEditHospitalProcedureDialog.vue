@@ -32,7 +32,8 @@ const props = defineProps({
       percentage: 0,
       limitTypeDefinition: "",
       hospitalProcedureType: "",
-      companyHealthPlan: ""
+      companyHealthPlan: "",
+      enabled: true
     })
   },
 });
@@ -47,6 +48,7 @@ const percentage = ref(0);
 const limitTypeDefinition = ref("");
 const hospitalProcedureType = ref("");
 const companyHealthPlan = ref(""); 
+const enabled = ref(true);
 
 //Options Enums
 import {
@@ -69,6 +71,8 @@ watch(() => props.data, (newData) => {
     
     // Garanta que companyHealthPlan nunca seja perdido
     companyHealthPlan.value = newData.companyHealthPlan || (props.data?.companyHealthPlan || "");
+    enabled.value = newData.enabled || true;
+
   }
 }, { immediate: true });
 
@@ -171,7 +175,7 @@ const onSubmit = async () => {
     hospitalProcedureType: hospitalProcedureType.value,
     companyHealthPlan: companyHealthPlan.value,
     company: props.data?.company || "",
-    enabled: true 
+    enabled: enabled.value 
   };
 
   emit("onSubmit", payload, {
@@ -276,6 +280,16 @@ onMounted(async () => {
                 :rules="requiredRules.percentage" />
             </v-col>
           </v-row>
+          <v-row class="mt-n6">
+          <v-col cols="12" lg="12" class="">
+            <div class="font-weight-bold">{{ $t('t-enabled') }}</div>
+            <v-checkbox v-model="enabled" density="compact" color="primary" class="d-inline-flex">
+              <template #label>
+                <span>{{ $t('t-is-enabled') }}</span>
+              </template>
+            </v-checkbox>
+          </v-col>
+        </v-row>
         </v-card-text>
         <v-divider />
         <v-card-actions class="d-flex justify-end">

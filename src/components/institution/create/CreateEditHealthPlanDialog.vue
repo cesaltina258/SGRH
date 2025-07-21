@@ -53,10 +53,11 @@ const maxNumberOfDependents = ref(0);
 const childrenMaxAge = ref(0);
 const healthPlanLimit = ref("");
 const fixedAmount = ref(0);
-const salaryComponent = ref<string | undefined>(undefined); 
+const salaryComponent = ref<string | undefined>(undefined);
 const companyContributionPercentage = ref(0);
 const coveragePeriod = ref("");
 const company = ref("");
+const enabled = ref(true);
 //Options Enums
 import {
   limitTypeDefinitionOptions
@@ -72,10 +73,11 @@ watch(() => props.data, (newData) => {
   companyContributionPercentage.value = newData.companyContributionPercentage || 0;
   healthPlanLimit.value = newData.healthPlanLimit || "";
   salaryComponent.value = newData.salaryComponent || undefined;
-   if (typeof newData.coveragePeriod === 'object' && newData.coveragePeriod !== null) {
-    coveragePeriod.value = newData.coveragePeriod.id; 
+  enabled.value = newData.enabled || true;
+  if (typeof newData.coveragePeriod === 'object' && newData.coveragePeriod !== null) {
+    coveragePeriod.value = newData.coveragePeriod.id;
   } else {
-    coveragePeriod.value = newData.coveragePeriod; 
+    coveragePeriod.value = newData.coveragePeriod;
   }
   company.value = newData.company || "";
 }, { immediate: true });
@@ -181,7 +183,7 @@ const onSubmit = async () => {
     salaryComponent: salaryComponent.value,
     coveragePeriod: coveragePeriod.value,
     company: props.data?.company ?? "",
-    enabled: true
+    enabled: enabled.value
   };
 
   emit("onSubmit", payload, {
@@ -236,7 +238,7 @@ onMounted(async () => {
   try {
     if (company.value) {
       await coveragePeriodStore.fetchCoveragePeriodsForDropdown(company.value, 0, 10000000);
-      
+
     }
   } catch (error) {
     console.error("Failed to load períodos de cobertura:", error);
@@ -261,7 +263,7 @@ onMounted(async () => {
             density="compact" @click="errorMsg = ''" style="cursor: pointer;" />
         </transition>
         <v-card-text>
-        <v-row class="">
+          <v-row class="">
             <v-col cols="12" lg="12">
               <div class="font-weight-bold text-caption mb-1">
                 {{ $t('t-coverage-period') }} <i class="ph-asterisk ph-xs text-danger" />
@@ -303,7 +305,7 @@ onMounted(async () => {
                 :rules="requiredRules.fixedAmount" class="mb-2" />
             </v-col>
           </v-row>
-          <v-row class="mt-n5">
+          <v-row class="mt-n6">
             <v-col cols="12" lg="6">
               <div class="font-weight-bold mb-2">
                 {{ $t('t-salary-component') }} <i v-if="healthPlanLimit === 'ANUAL_SALARY'"
@@ -319,6 +321,16 @@ onMounted(async () => {
               <TextField v-model="companyContributionPercentage"
                 :placeholder="t('t-enter-company-contribuition-percentage')" type="number" class="mb-2"
                 :rules="requiredRules.companyContributionPercentage" />
+            </v-col>
+          </v-row>
+          <v-row class="mt-n9">
+            <v-col cols="12" lg="12" class="">
+              <div class="font-weight-bold">{{ $t('t-status') }}</div>
+              <v-checkbox v-model="enabled" density="compact" color="primary" class="d-inline-flex">
+                <template #label>
+                  <span>{{ $t('t-is-enabled') }}</span>
+                </template>
+              </v-checkbox>
             </v-col>
           </v-row>
         </v-card-text>

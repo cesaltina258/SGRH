@@ -197,7 +197,8 @@ export default class InstitutionService extends HttpService {
           childrenMaxAge: institutionData.childrenMaxAge,
           healthPlanLimit: institutionData.healthPlanLimit,
           salaryComponent: institutionData.salaryComponent,
-          fixedAmount: institutionData.fixedAmount
+          fixedAmount: institutionData.fixedAmount,
+          enabled: institutionData.enabled
 
         };
   

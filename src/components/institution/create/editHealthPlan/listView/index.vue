@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from "vue";
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
-import { positionHeader } from "@/components/institution/create/utils";
 import { HealthPlanInsertType, HospitalProcedureListingType, HospitalProcedureInsertType } from "@/components/institution/types";
 import { CoveragePeriodListingType, HealthPlanListingType } from "@/components/institution/types";
 import TableAction from "@/app/common/components/TableAction.vue";
@@ -19,6 +18,7 @@ import DataTableServer from "@/app/common/components/DataTableServer.vue";
 import { useCoveragePeriodStore } from '@/store/institution/coveragePeriodStore';
 import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
 import type { ApiErrorResponse } from "@/app/common/types/errorType";
+import Status from "@/app/common/components/Status.vue";
 
 //Options Enums
 import {
@@ -159,7 +159,7 @@ onMounted(async () => {
           companyContributionPercentage: healthPlan.companyContributionPercentage,
           coveragePeriod: healthPlan.coveragePeriod.id,
           company: healthPlan.company?.id,
-          enabled: healthPlan.enabled || true
+          enabled: healthPlan.enabled
         };
 
       }
@@ -220,7 +220,7 @@ const onCreateEditClick = (data: HospitalProcedureInsertType | HospitalProcedure
     hospitalProcedureType: data?.hospitalProcedureType || undefined,
     companyHealthPlan: healthPlanId.value || undefined,
     company: healthPlanFormData.value.company || undefined,
-    enabled: true
+    enabled: data?.enabled || true
   };
   dialog.value = true;
 };
@@ -354,7 +354,7 @@ const handleSubmit = async () => {
 
   loading.value = true;
   try {
-  let response: ServiceResponse<HealthPlanListingType>;
+    let response: ServiceResponse<HealthPlanListingType>;
 
     if (healthPlanFormData.value.id) {
       response = await healthPlanService.updateHealthPlan(healthPlanFormData.value.id, healthPlanFormData.value);
@@ -459,6 +459,17 @@ const getLimitTypeLabel = (value: string) => {
                   :rules="requiredRules.companyContributionPercentage" />
               </v-col>
             </v-row>
+            <v-row class="mt-n6">
+              <v-col cols="12" lg="12" class="">
+                <div class="font-weight-bold">{{ $t('t-enabled') }}</div>
+                <v-checkbox v-model="healthPlanFormData.enabled" density="compact" color="primary"
+                  class="d-inline-flex">
+                  <template #label>
+                    <span>{{ $t('t-is-enabled') }}</span>
+                  </template>
+                </v-checkbox>
+              </v-col>
+            </v-row>
           </v-card-text>
         </v-card>
       </v-card-text>
@@ -501,6 +512,7 @@ const getLimitTypeLabel = (value: string) => {
                     <td>{{ getLimitTypeLabel(item.limitTypeDefinition) }}</td>
                     <td>{{ item.fixedAmount }}</td>
                     <td>{{ item.percentage }}%</td>
+                    <td><Status :status="item.enabled ? 'enabled' : 'disabled'" /></td>
                     <td>
                       <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)"
                         @onDelete="onDelete(item.id)" />

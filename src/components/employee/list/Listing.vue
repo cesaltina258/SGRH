@@ -14,6 +14,7 @@ import RemoveItemConfirmationDialog from "@/app/common/components/RemoveItemConf
 import { employeeHeader } from "@/components/employee/list/utils"
 import Card from "@/app/common/components/Card.vue"
 import { EmployeeListingType } from "../types"
+import Status from "@/app/common/components/Status.vue";
 
 const { t } = useI18n()
 const toast = useToast()
@@ -128,7 +129,8 @@ const toggleSelection = (item: EmployeeListingType) => {
             </td>
             <td>{{ item.firstName }} {{ item.lastName }}</td> 
             <td>{{ item.phone || 'N/A' }}</td>
-            <td>{{ item.email || 'N/A' }}</td>
+            <td>{{ item.email || 'N/A' }}</td> 
+            <td><Status :status="item.enabled ? 'enabled' : 'disabled'" /></td>
             <td>
               <TableAction @on-view="() => router.push(`/employee/view/${item.id}`)" @onEdit="() => router.push(`/employee/edit/${item.id}`)"
                 @onDelete="() => openDeleteDialog(item.id)" />

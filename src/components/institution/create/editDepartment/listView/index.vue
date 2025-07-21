@@ -15,6 +15,7 @@ import { useToast } from 'vue-toastification';
 import { useI18n } from "vue-i18n";
 import { useRoute } from 'vue-router';
 import DataTableServer from "@/app/common/components/DataTableServer.vue";
+import Status from "@/app/common/components/Status.vue";
 
 const { t } = useI18n();
 const toast = useToast();
@@ -69,7 +70,7 @@ onMounted(async () => {
           name: dept.name,
           description: dept.description || "",
           company: dept.company?.id,
-          enabled: dept.enabled || true
+          enabled: dept.enabled 
         };
       }
 
@@ -265,6 +266,16 @@ const handleSubmit = async () => {
               <TextField v-model="form.description" :placeholder="$t('t-enter-description')" />
             </v-col>
           </v-row>
+          <v-row class="mt-n6">
+          <v-col cols="12" lg="12" class="">
+            <div class="font-weight-bold">{{ $t('t-enabled') }}</div>
+            <v-checkbox v-model="form.enabled" density="compact" color="primary" class="d-inline-flex">
+              <template #label>
+                <span>{{ $t('t-is-enabled') }}</span>
+              </template>
+            </v-checkbox>
+          </v-col>
+        </v-row>
         </v-card-text>
       </v-card>
     </v-card-text>
@@ -313,6 +324,9 @@ const handleSubmit = async () => {
                     </td>
                     <td>{{ item.name }}</td>
                     <td>{{ item.description }}</td>
+                    <td>
+                      <Status :status="item.enabled ? 'enabled' : 'disabled'" />
+                    </td>
                     <td style="padding-right: 0px;">
                       <TableAction 
                         @onView="onViewClick(item)" 

@@ -67,7 +67,8 @@ export type EmployeeListingType = {
   company: {
     id: string;
     name: string
-  } | undefined
+  } | undefined,
+  enabled: boolean;
 
 };
 
@@ -119,7 +120,8 @@ export type EmployeeResponseType = {
   company: {
     id: string;
     name: string
-  } | undefined
+  } | undefined,
+  enabled: boolean;
 
 };
 
@@ -212,6 +214,7 @@ export type DependentInsertType = {
   idCardIssuer: string;
   idCardExpiryDate: Date | undefined;
   idCardIssuanceDate: Date | undefined;
+  enabled: boolean;
 }
 
 export type DependentListingType = {
@@ -232,4 +235,5 @@ export type DependentListingType = {
   idCardIssuer: string;
   idCardExpiryDate: Date | undefined;
   idCardIssuanceDate: Date | undefined;
+  enabled: boolean;
 }

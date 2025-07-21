@@ -13,6 +13,7 @@ export type ClinicUpdateType = {
   personOfContactFullname2: string;
   personOfContactPhone2: string;
   personOfContactEmail2: string;
+  enabled: boolean;
 };
 
 
@@ -31,6 +32,7 @@ export type ClinicResponseType = {
   personOfContactFullname2: string;
   personOfContactPhone2: string;
   personOfContactEmail2: string;
+  enabled: boolean;
 };
 
 
@@ -49,6 +51,7 @@ export type ClinicInsertType = {
   personOfContactFullname2: string;
   personOfContactPhone2: string;
   personOfContactEmail2: string;
+  enabled: boolean;
 };
 
 export type ClinicListingType = {
@@ -66,6 +69,7 @@ export type ClinicListingType = {
   personOfContactFullname2: string;
   personOfContactPhone2: string;
   personOfContactEmail2: string;
+  enabled: boolean;
 };
 
 export type ClinicListingForListType = {

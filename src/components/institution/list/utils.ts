@@ -51,10 +51,10 @@ export const institutionOverview = [
 export const institutionHeader: DataTableHeaderType[] = [
   { title: "institution-name", key: "employeeNumber", sortable: true },
   { title: "institution-type", key: "firstName", sortable: true },
-  { title: "email", key: "phone", sortable: true },
-  { title: "phone-number", key: "email", sortable: true }, 
-  { title: "created-date", key: "email", sortable: true }, 
-  { title: "status", key: "email", sortable: true }, 
+  { title: "email", key: "email", sortable: true },
+  { title: "phone-number", key: "phone", sortable: true }, 
+  { title: "created-date", key: "createdAt", sortable: true }, 
+  { title: "is-enabled", key: "enabled", sortable: true }, 
   { title: "action", sortable: false },
 ];
 

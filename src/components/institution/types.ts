@@ -103,6 +103,7 @@ export type DepartmentListingType = {
     id: string;
     name: string;
     description: string;
+    company: any;
     institution: {
         id: string | number;
         name: string;

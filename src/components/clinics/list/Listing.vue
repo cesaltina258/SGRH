@@ -5,6 +5,7 @@ import { useClinicStore } from "@/store/clinicStore"
 import { clinicService } from "@/app/http/httpServiceProvider"
 import { useToast } from 'vue-toastification'
 import { useI18n } from "vue-i18n"
+import Status from "@/app/common/components/Status.vue";
 
 // Components
 import QuerySearch from "@/app/common/components/filters/QuerySearch.vue"
@@ -143,6 +144,7 @@ const truncate = (text: string, maxLength = 30) => {
             <td>{{ truncate(item.phone) }}</td>
             <td>{{ truncate(item.email) }}</td>
             <td>{{ truncate(item.website) }}</td>
+            <td><Status :status="item.enabled ? 'enabled' : 'disabled'" /></td>
             <td>
               <TableAction @on-view="() => router.push(`/clinics/view/${item.id}`)"
                 @onEdit="() => router.push(`/clinics/edit/${item.id}`)" @onDelete="() => openDeleteDialog(item.id)" />

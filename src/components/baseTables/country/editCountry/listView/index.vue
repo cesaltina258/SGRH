@@ -49,7 +49,7 @@ const loading = ref(false);
 const loadingList = computed(() => provinceByCountryStoreID.loading);
 const totalItems = computed(() => provinceByCountryStoreID.pagination.totalElements);
 const route = useRoute();
-const countryId = computed(() => Number(route.query.id));
+const countryId = computed(() => String(route.query.id));
 const deleteDialog = ref(false);
 const deleteId = ref<string | null>(null);
 const deleteLoading = ref(false);

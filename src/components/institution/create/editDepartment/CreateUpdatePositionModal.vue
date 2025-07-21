@@ -20,7 +20,8 @@ const props = defineProps({
       id: undefined,
       name: "",
       description: "",
-      company: ""
+      company: "",
+      enabled: true,
     })
   },
 });
@@ -32,6 +33,7 @@ const errorMsg = ref("");
 const id = ref("");
 const name = ref("");
 const description = ref("");
+const enabled = ref(true);
 
 // Watch for data changes
 watch(() => props.data, (newData) => {
@@ -39,6 +41,7 @@ watch(() => props.data, (newData) => {
   id.value = newData.id || "";
   name.value = newData.name || "";
   description.value = newData.description || "";
+  enabled.value = newData.enabled;
 }, { immediate: true });
 
 
@@ -91,7 +94,7 @@ const onSubmit = async () => {
   name: name.value, // em vez de name.value
   description: description.value, // em vez de description.value
   department: props.data?.department ?? "",
-  enabled: true
+  enabled: enabled.value
 };
 
 
@@ -129,6 +132,16 @@ const onSubmit = async () => {
               {{ $t('t-description') }} <i class="ph-asterisk ph-xs text-danger" />
             </div>
             <TextField v-model="description" :placeholder="$t('t-enter-description')" :rules="requiredRules.description" />
+          </v-col>
+        </v-row>
+        <v-row class="mt-n6">
+          <v-col cols="12" lg="12" class="">
+            <div class="font-weight-bold">{{ $t('t-status') }}</div>
+            <v-checkbox v-model="enabled" density="compact" color="primary" class="d-inline-flex">
+              <template #label>
+                <span>{{ $t('t-is-enabled') }}</span>
+              </template>
+            </v-checkbox>
           </v-col>
         </v-row>
       </v-card-text>

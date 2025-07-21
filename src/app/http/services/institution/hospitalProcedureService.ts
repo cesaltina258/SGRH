@@ -2,6 +2,7 @@
 import HttpService from "@/app/http/httpService";
 import type { HospitalProcedureListingType, HospitalProcedureInsertType } from "@/components/institution/types";
 import type { ApiErrorResponse } from "@/app/common/types/errorType";
+import EnableAccountConfirmationDialog from "@/components/users/users/EnableAccountConfirmationDialog.vue";
 
 interface ApiResponse<T> {
   data: T;
@@ -233,7 +234,8 @@ export default class HospitalProcedureService extends HttpService {
         percentage: hospitalProcedureData.percentage,
         limitTypeDefinition: hospitalProcedureData.limitTypeDefinition,
         //hospitalProcedureType: hospitalProcedureData.hospitalProcedureType,
-        companyHealthPlan: hospitalProcedureData.companyHealthPlan
+        companyHealthPlan: hospitalProcedureData.companyHealthPlan,
+        enabled: hospitalProcedureData.enabled
       };
 
       const response = await this.put<ApiResponse<HospitalProcedureListingType>>(`/administration/company/allowed-hospital-procedures/${id}`, payload);

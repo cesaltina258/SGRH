@@ -182,7 +182,8 @@ export default class PositionService extends HttpService {
         const payload = {
           name: positionData.name,
           description: positionData.description,
-          department: positionData.department
+          department: positionData.department,
+          enabled: positionData.enabled
         };
   
         const response = await this.put<PositionListingForListType>(`/administration/positions/${id}`, payload);

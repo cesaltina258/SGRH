@@ -17,6 +17,7 @@ import { useToast } from 'vue-toastification';
 // Components
 import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
 import ValidatedDatePicker from "@/app/common/components/ValidatedDatePicker.vue";
+import Status from "@/app/common/components/Status.vue";
 
 // Stores
 // import { useEmployeeStore } from '@/store/employeeStore';
@@ -154,79 +155,60 @@ const submitForm = async () => {
       </transition>
 
       <v-card-text class="pt-0">
-        
+        <v-row class="">
+        <v-col cols="12" lg="12" class="text-right">
+          <Status :status="clinicData.enabled ? 'enabled' : 'disabled'" />
+        </v-col>
+      </v-row>
         <!-- Nome da Clínica -->
-        <v-row class="mt-n3">
+        <v-row class="mt-n9">
           <v-col cols="12">
             <div class="font-weight-bold mb-2 mt-5">
-              {{ $t('t-clinic-name') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-clinic-name') }} 
             </div>
-            <TextField
-              v-model="clinicData.name"
-              :placeholder="$t('t-enter-clinic-name')"
-              :rules="requiredRules.name" disabled
-            />
+            <div>{{ clinicData.name || '-' }}</div>
           </v-col>
         </v-row>
 
         <!-- Endereço e Telefone -->
-        <v-row class="mt-n6">
+        <v-row class="">
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
-              {{ $t('t-clinic-address') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-clinic-address') }} 
             </div>
-            <TextField
-              v-model="clinicData.address"
-              :placeholder="$t('t-enter-clinic-address')"
-              :rules="requiredRules.address" disabled
-            />
+            <div>{{ clinicData.address || '-' }}</div>
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
-              {{ $t('t-clinic-phone') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-clinic-phone') }} 
             </div>
-            <TextField
-              v-model="clinicData.phone"
-              :placeholder="$t('t-enter-clinic-phone')"
-              :rules="requiredRules.phone" disabled
-            />
+            <div>{{ clinicData.phone || '-' }}</div>
           </v-col>
         </v-row>
 
         <!-- Email e Website -->
-        <v-row class="mt-n6">
+        <v-row class="">
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
-              {{ $t('t-clinic-email') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-clinic-email') }} 
             </div>
-            <TextField
-              v-model="clinicData.email"
-              :placeholder="$t('t-enter-clinic-email')"
-              :rules="requiredRules.email" disabled
-            />
+            <div>{{ clinicData.email || '-' }}</div>
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold mb-2">
-              {{ $t('t-clinic-website') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-clinic-website') }} 
             </div>
-            <TextField
-              v-model="clinicData.website"
-              :placeholder="$t('t-enter-clinic-website')"
-              :rules="requiredRules.website" disabled
-            />
+            <div>{{ clinicData.website || '-' }}</div>
           </v-col>
         </v-row>
 
         <!-- Descrição -->
-        <v-row class="mt-n6">
+        <v-row class="">
           <v-col cols="12">
             <div class="font-weight-bold mb-2">
               {{ $t('t-clinic-description') }}
             </div>
-            <TextArea
-              v-model="clinicData.description"
-              :placeholder="$t('t-enter-clinic-description')"
-            disabled/>
+            <div>{{ clinicData.description || '-' }}</div>
           </v-col>
         </v-row>
 
@@ -242,6 +224,15 @@ const submitForm = async () => {
           :disabled="loading"
         >
           {{ $t('t-back') }} <i class="ph-arrow-left ms-2" />
+        </v-btn>
+        <v-btn 
+          color="secondary" 
+          variant="outlined" 
+          class="me-2" 
+          @click="emit('onStepChange', 2)" 
+          :disabled="loading"
+        >
+          {{ $t('t-proceed') }} <i class="ph-arrow-right ms-2" />
         </v-btn>
       </v-card-actions>
     </Card>
