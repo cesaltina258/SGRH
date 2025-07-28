@@ -18,7 +18,7 @@ import { useInstitutionStore } from '@/store/institution/institutionStore';
 
 
 // Types
-import { InstitutionTypeListingType } from "@/components/baseTables/institutionType/types"
+import type { InstitutionTypeListing } from '@/components/baseTables/institutionTypes/types';
 import { InstitutionInsertType } from "@/components/institution/types";
 import { email } from "@vuelidate/validators";
 
@@ -98,7 +98,7 @@ const requiredRules = {
  * Opções para selects (tipos de instituicao)
  */
 const institutionTypes = computed(() => {
-  return (institutionTypeStore.institutiontypes as InstitutionTypeListingType[]).map((item) => ({
+  return (institutionTypeStore.enabledInstitutionTypes as InstitutionTypeListing[]).map((item) => ({
     value: item.id,
     label: item.name,
   }));

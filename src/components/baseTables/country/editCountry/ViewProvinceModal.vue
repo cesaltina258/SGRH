@@ -5,6 +5,8 @@ import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
 import { statusOptions } from "@/components/realEstate/agent/utils";
 import { colors } from "@/components/ui/utils";
 import { useI18n } from "vue-i18n";
+import Status from "@/app/common/components/Status.vue";
+
 
 const localLoading = ref(false);
 const emit = defineEmits(["update:modelValue", "onSubmit"]);
@@ -45,6 +47,7 @@ const dialogValue = computed({
 const id = ref(formData.value.id || "");
 const name = ref(formData.value.name || "");
 const code = ref(formData.value.code || "");
+const enabled = ref(formData.value.enabled);
 
 const { t } = useI18n();
 
@@ -101,17 +104,20 @@ const onSubmit = () => {
         'max-height': isCreate ? '70vh' : '45vh'
       }">
         <v-row>
+           <v-col cols="12" lg="12" class="text-right">
+            <Status :status="enabled ? 'enabled' : 'disabled'" />
+          </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
               {{ $t('t-name') }}
             </div>
-            <TextField v-model="name" :placeholder="$t('t-enter-name')" disabled/>
+            <div>{{ name || '-' }}</div>
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
               {{ $t('t-province-code') }}
             </div>
-            <TextField v-model="code" :placeholder="$t('t-enter-code')" disabled/>
+            <div>{{ code || '-' }}</div>
           </v-col>
         </v-row>
       </v-card-text>

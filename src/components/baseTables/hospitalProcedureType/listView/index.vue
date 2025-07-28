@@ -126,6 +126,7 @@ const onCreateEditClick = (data: HospitalProcedureTypeListing | null) => {
       id: "-1",
       name: "",
       description: "",
+      enabled: true
     };
   } else {
     hospitalProcedureTypeData.value = data;
@@ -174,7 +175,7 @@ const onViewClick = (data: HospitalProcedureTypeListing | null) => {
       id: "-1",
       name: "",
       description: "",
-
+      enabled: true
     };
   } else {
     hospitalProcedureTypeData.value = data;
@@ -253,9 +254,9 @@ const onConfirmDelete = async () => {
             </td>
             <td>{{ item.name }}</td>
             <td>{{ item.description }}</td>
-            <!-- <td>
-              <Status :status="item.enabled ? 'active' : 'unactive'" />
-            </td> -->
+            <td>
+              <Status :status="item.enabled ? 'enabled' : 'disabled'" />
+            </td>
             <td>
               <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)"
                 @onDelete="onDelete(item.id)" />

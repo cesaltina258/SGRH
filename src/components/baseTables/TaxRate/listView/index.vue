@@ -4,7 +4,6 @@ import QuerySearch from "@/app/common/components/filters/QuerySearch.vue";
 import Table from "@/app/common/components/Table.vue";
 import { listViewHeader } from "@/components/baseTables/TaxRate/listView/utils";
 import { TaxRateTypeInsert, TaxRateTypeListing, TaxRateTypeUpdate } from "@/components/baseTables/TaxRate/types";
-import Status from "@/app/common/components/Status.vue";
 import TableAction from "@/app/common/components/TableAction.vue";
 import CreateUpdateTaxRateModal from "@/components/baseTables/TaxRate/CreateUpdateTaxRateModal.vue";
 import ViewTaxRateModal from "@/components/baseTables/TaxRate/ViewTaxRateModal.vue";
@@ -17,7 +16,7 @@ import { useToast } from 'vue-toastification';
 import { useI18n } from "vue-i18n";
 import DataTableServer from "@/app/common/components/DataTableServer.vue";
 import { TaxRateTypeOption } from "@/components/baseTables/TaxRate/types";
-
+import Status from "@/app/common/components/Status.vue";
 
 
 const { t } = useI18n();
@@ -129,6 +128,7 @@ const onCreateEditClick = (data: TaxRateTypeListing | null) => {
       name: "",
       description: "",
       rate: 0,
+      enabled: true
     };
   } else {
     taxRateData.value = data;
@@ -178,6 +178,7 @@ const onViewClick = (data: TaxRateTypeListing | null) => {
       name: "",
       description: "",
       rate: 0,
+      enabled: true
 
     };
   } else {
@@ -257,6 +258,9 @@ const onConfirmDelete = async () => {
             <td style="padding-right: 180px;">{{ item.name }}</td>
             <td style="padding-right: 180px;">{{ item.rate }}</td>
             <td style="padding-right: 180px;">{{ item.description }}</td>
+            <td>
+              <Status :status="item.enabled ? 'enabled' : 'disabled'" />
+            </td>
             <td>
               <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)"
                 @onDelete="onDelete(item.id)" />

@@ -5,6 +5,7 @@ import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
 import { statusOptions } from "@/components/realEstate/agent/utils";
 import { colors } from "@/components/ui/utils";
 import { useI18n } from "vue-i18n";
+import Status from "@/app/common/components/Status.vue";
 
 const localLoading = ref(false);
 const emit = defineEmits(["update:modelValue", "onSubmit"]);
@@ -41,6 +42,7 @@ const phoneCode = ref(formData.value.phoneCode || "");
 const currency = ref(formData.value.currency || "");
 const currencySymbol = ref(formData.value.currencySymbol || "");
 const currencyCode = ref(formData.value.currencyCode || "");
+const enabled = ref(formData.value.enabled);
 
 const formErrors = ref<Record<string, string>>({
   name: '',
@@ -175,91 +177,62 @@ const onSubmit = () => {
         'max-height': isCreate ? '70vh' : '45vh'
       }">
         <v-row>
-          <v-col cols="12" lg="6">
-            <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-name') }} <i class="ph-asterisk ph-xs text-danger" />
-            </div>
-            <TextField v-model="name" :placeholder="$t('t-enter-name')"
-              :error-messages="formErrors.name ? [formErrors.name] : []" hide-details disabled/>
-            <div v-if="formErrors.name" class="text-red text-extra-small pt-1">
-              {{ formErrors.name }}
-            </div>
+           <v-col cols="12" lg="12" class="text-right">
+            <Status :status="enabled ? 'enabled' : 'disabled'" />
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-country-code') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-name') }} 
             </div>
-            <TextField v-model="code" :placeholder="$t('t-enter-code')"
-              :error-messages="formErrors.code ? [formErrors.code] : []" hide-details disabled/>
-            <div v-if="formErrors.code" class="text-red text-extra-small pt-1">
-              {{ formErrors.code }}
+            <div>{{ name || '-' }}</div>
+          </v-col>
+          <v-col cols="12" lg="6">
+            <div class="font-weight-bold text-caption mb-1">
+              {{ $t('t-country-code') }} 
             </div>
+            <div>{{ code || '-' }}</div>
           </v-col>
         </v-row>
         <v-row>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-iso2Code') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-iso2Code') }} 
             </div>
-            <TextField v-model="iso2Code" :placeholder="$t('t-enter-iso2-code')"
-              :error-messages="formErrors.iso2Code ? [formErrors.iso2Code] : []" hide-details disabled/>
-            <div v-if="formErrors.iso2Code" class="text-red text-extra-small pt-1">
-              {{ formErrors.iso2Code }}
-            </div>
+            <div>{{ iso2Code || '-' }}</div>
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-iso3Code') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-iso3Code') }} 
             </div>
-            <TextField v-model="iso3Code" :placeholder="$t('t-enter-iso3-code')"
-              :error-messages="formErrors.iso3Code ? [formErrors.iso3Code] : []" hide-details disabled/>
-            <div v-if="formErrors.iso3Code" class="text-red text-extra-small pt-1">
-              {{ formErrors.iso3Code }}
-            </div>
+            <div>{{ iso3Code || '-' }}</div>
           </v-col>
         </v-row>
         <v-row>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-phone-code') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-phone-code') }} 
             </div>
-            <TextField v-model="phoneCode" :placeholder="$t('t-enter-phone-code')"
-              :error-messages="formErrors.phoneCode ? [formErrors.phoneCode] : []" hide-details disabled/>
-            <div v-if="formErrors.phoneCode" class="text-red text-extra-small pt-1">
-              {{ formErrors.phoneCode }}
-            </div>
+            <div>{{ phoneCode || '-' }}</div>
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-currency') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-currency') }} 
             </div>
-            <TextField v-model="currency" :placeholder="$t('t-enter-currency')"
-              :error-messages="formErrors.currency ? [formErrors.currency] : []" hide-details disabled/>
-            <div v-if="formErrors.currency" class="text-red text-extra-small pt-1">
-              {{ formErrors.currency }}
-            </div>
+            <div>{{ currency || '-' }}</div>
           </v-col>
         </v-row>
         <v-row>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-currency-symbol') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-currency-symbol') }} 
             </div>
-            <TextField v-model="currencySymbol" :placeholder="$t('t-enter-currency-symbol')"
-              :error-messages="formErrors.currencySymbol ? [formErrors.currencySymbol] : []" hide-details disabled/>
-            <div v-if="formErrors.currencySymbol" class="text-red text-extra-small pt-1">
-              {{ formErrors.currencySymbol }}
-            </div>
+            <div>{{ currencySymbol || '-' }}</div>
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-currency-code') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-currency-code') }} 
             </div>
-            <TextField v-model="currencyCode" :placeholder="$t('t-enter-currency-code')"
-              :error-messages="formErrors.currencyCode ? [formErrors.currencyCode] : []" hide-details disabled/>
-            <div v-if="formErrors.currencyCode" class="text-red text-extra-small pt-1">
-              {{ formErrors.currencyCode }}
-            </div>
+            <div>{{ currencyCode || '-' }}</div>
           </v-col>
         </v-row>
       </v-card-text>

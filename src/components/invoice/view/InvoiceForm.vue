@@ -4,7 +4,7 @@ import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
 import ProductCard from "@/components/invoice/view/ProductCard.vue";
 import { ref, computed, onMounted, watch, reactive } from "vue";
 import { InvoiceInsertType, InvoiceItemInsertType } from "@/components/invoice/types";
-import { useClinicStore } from "@/store/clinicStore";
+import { useClinicStore } from "@/store/clinic/clinicStore";
 import { useInstitutionStore } from "@/store/institution/institutionStore";
 import { useEmployeeStore } from "@/store/employee/employeeStore";
 import { useCurrencyStore } from "@/store/baseTables/currencyStore";

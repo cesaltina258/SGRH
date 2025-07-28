@@ -5,6 +5,7 @@ import type { InstitutionListingType, InstitutionInsertType } from '@/components
 export const useInstitutionStore = defineStore('institutions', {
   state: () => ({
     institutions: [] as InstitutionListingType[],
+    institutions_for_dropdown: [] as InstitutionListingType[],
     pagination: {
       totalElements: 0,
       currentPage: 0,
@@ -84,19 +85,19 @@ export const useInstitutionStore = defineStore('institutions', {
           query_props
         );
 
-        this.institutions = content;
+        this.institutions_for_dropdown = content;
         this.pagination = {
           totalElements: meta.totalElements,
           currentPage: meta.page,
           itemsPerPage: meta.size,
           totalPages: meta.totalPages || Math.ceil(meta.totalElements / meta.size)
         };
-        console.log('Instituições:', this.institutions);
+        console.log('Instituições:', this.institutions_for_dropdown);
         console.log('Meta:', this.pagination);
       } catch (err: any) {
         this.error = err.message || 'Erro ao buscar instituições';
         console.error("❌ Erro ao buscar instituições:", err);
-        this.institutions = [];
+        this.institutions_for_dropdown = [];
         this.pagination.totalElements = 0;
       } finally {
         this.loading = false;
@@ -121,6 +122,11 @@ export const useInstitutionStore = defineStore('institutions', {
       const id = localStorage.getItem('currentInstitutionId');
       if (draft) this.draftInstitution = JSON.parse(draft);
       if (id) this.currentInstitutionId = id;
+    }
+  },
+    getters: {
+    enabledInstitutions: (state) => {
+      return state.institutions_for_dropdown.filter(item => item.enabled === true) 
     }
   }
 });

@@ -17,7 +17,7 @@ import { useToast } from 'vue-toastification';
 import { useI18n } from "vue-i18n";
 import DataTableServer from "@/app/common/components/DataTableServer.vue";
 import { LanguagesOption } from "@/components/baseTables/languages/types";
-
+import Status from "@/app/common/components/Status.vue";
 
 const { t } = useI18n();
 const toast = useToast();
@@ -121,7 +121,8 @@ const onCreateEditClick = (data: LanguagesListing | null) => {
       code: "",
       localizedName: "",
       region: "",
-      rtl: false
+      rtl: false,
+      enabled: true
     };
   } else {
     languagesData.value = data;
@@ -172,7 +173,8 @@ const onViewClick = (data: LanguagesListing | null) => {
       code: "",
       localizedName: "",
       region: "",
-      rtl: false
+      rtl: false,
+      enabled: true
 
     };
   } else {
@@ -253,11 +255,11 @@ const onConfirmDelete = async () => {
             <td>{{ item.code?.toUpperCase() }}</td>
             <td>{{ item.localizedName?.toUpperCase() }}</td>
             <td>{{ item.region?.toUpperCase() }}</td>
-            <!-- <td>
-              <Status :status="item.enabled ? 'active' : 'unactive'" />
-            </td> -->
             <td>
               <Rtl :rtl="item.rtl ? 'true' : 'false'" />
+            </td>
+            <td>
+              <Status :status="item.enabled ? 'enabled' : 'disabled'" />
             </td>
             <td>
               <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)"

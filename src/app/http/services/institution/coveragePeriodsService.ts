@@ -186,13 +186,21 @@ export default class CoveragePeriodService extends HttpService {
             };
 
             const response = await this.put<ServiceResponse<CoveragePeriodListingType>>(`/administration/company/coverage-periods/${id}`, payload);
-            console.log('response update periodo', response)
-            return response;
-
-        }
-        catch (error) {
-            console.error("❌ Erro ao actualizar periodo:", error);
-            throw error;
+            return {
+                status: 'success',
+                data: response.data
+            };
+        } catch (error: any) {
+            if (error.response) {
+                return {
+                    status: 'error',
+                    error: error.response.data as ApiErrorResponse
+                };
+            }
+            return {
+                status: 'error',
+                error: this.NetworkErrorResponse()
+            };
         }
 
     }

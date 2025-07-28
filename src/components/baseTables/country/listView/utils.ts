@@ -23,5 +23,6 @@ export const listViewHeader: DataTableHeaderType[] = [
   { title: "currency", sortable: false },
   { title: "currency-symbol", sortable: false },
   { title: "currency-code", sortable: false },
+  { title: "enabled", sortable: false },
   { title: "action", sortable: false },
 ];

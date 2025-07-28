@@ -5,6 +5,7 @@ import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
 import { statusOptions } from "@/components/realEstate/agent/utils";
 import { colors } from "@/components/ui/utils";
 import { useI18n } from "vue-i18n";
+import Status from "@/app/common/components/Status.vue";
 
 const localLoading = ref(false);
 const emit = defineEmits(["update:modelValue", "onSubmit"]);
@@ -40,6 +41,7 @@ const dialogValue = computed({
 const id = ref(formData.value.id || "");
 const name = ref(formData.value.name || "");
 const symbol = ref(formData.value.symbol || "");
+const enabled = ref(formData.value.enabled || "");
 
 const formErrors = ref<Record<string, string>>({
   name: '',
@@ -115,25 +117,21 @@ const onSubmit = () => {
           density="compact" />
 
         <v-row>
+          <v-col cols="12" lg="12" class="text-right">
+            <Status :status="enabled ? 'enabled' : 'disabled'" />
+          </v-col>
           <v-col cols="12" lg="6">
+           
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-name') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-name') }} 
             </div>
-            <TextField v-model="name" :placeholder="$t('t-enter-name')"
-              :error-messages="formErrors.name ? [formErrors.name] : []" hide-details disabled/>
-            <div v-if="formErrors.name" class="text-red text-extra-small pt-1">
-              {{ formErrors.name }}
-            </div>
+            <div>{{ name || '-' }}</div>
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-symbol') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-symbol') }} 
             </div>
-            <TextField v-model="symbol" :placeholder="$t('t-enter-symbol')"
-              :error-messages="formErrors.symbol ? [formErrors.symbol] : []" hide-details disabled/>
-            <div v-if="formErrors.symbol" class="text-red text-extra-small pt-1">
-              {{ formErrors.symbol }}
-            </div>
+            <div>{{ symbol || '-' }}</div>
           </v-col>
         </v-row>
       </v-card-text>

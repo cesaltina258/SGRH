@@ -20,7 +20,7 @@ import Step2 from "@/components/clinics/view/TabClinicContact.vue";
 // import Step2 from "@/components/view/create/TabClinicContact.vue";
 import { clinicService } from "@/app/http/httpServiceProvider";
 
-import { useClinicStore } from "@/store/clinicStore"
+import { useClinicStore } from "@/store/clinic/clinicStore"
 import { ClinicInsertType } from "../types";
 
 // Props

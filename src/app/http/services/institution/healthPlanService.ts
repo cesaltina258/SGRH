@@ -204,6 +204,28 @@ export default class HealthPlanService extends HttpService {
     }
 
 
+    async getActiveHealthPlanByCompany(companyId: string) : Promise<ServiceResponse<HealthPlanListingType>>  {
+        try {
+            const response = await this.get<ApiResponse<HealthPlanListingType>>(`/administration/company/health-plans/active-health-plan-by-company/${companyId}`);
+         return {
+                status: 'success',
+                data: response.data
+            };
+        } catch (error: any) {
+            if (error.response) {
+                return {
+                    status: 'error',
+                    error: error.response.data as ApiErrorResponse
+                };
+            }
+            return {
+                status: 'error',
+                error: this.NetworkErrorResponse()
+            };
+        }
+    }
+
+
 
 }
 

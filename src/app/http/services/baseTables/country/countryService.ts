@@ -124,19 +124,20 @@ export default class CountryService extends HttpService {
     }
   }
 
-  async updateCountry(id: string, userData: CountryInsertType): Promise<CountryResponseType> {
+  async updateCountry(id: string, countryData: CountryInsertType): Promise<CountryResponseType> {
 
     try {
       // Corpo da requisição conforme especificado
       const payload = {
-        name: userData.name,
-        code: userData.code,
-        iso2Code: userData.iso2Code,
-        iso3Code: userData.iso3Code,
-        phoneCode: userData.phoneCode,
-        currency: userData.currency,
-        currencySymbol: userData.currencySymbol,
-        currencyCode: userData.currencyCode,
+        name: countryData.name,
+        code: countryData.code,
+        iso2Code: countryData.iso2Code,
+        iso3Code: countryData.iso3Code,
+        phoneCode: countryData.phoneCode,
+        currency: countryData.currency,
+        currencySymbol: countryData.currencySymbol,
+        currencyCode: countryData.currencyCode,
+        enabled: countryData.enabled
       };
 
 
@@ -283,6 +284,7 @@ export default class CountryService extends HttpService {
       const payload = {
         name: userData.name,
         code: userData.code,
+        enabled: userData.enabled
       };
 
 

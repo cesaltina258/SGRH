@@ -5,7 +5,7 @@ import { ClinicListingForListType } from "@/components/clinics/types";
 import { useI18n } from "vue-i18n";
 import { useToast } from 'vue-toastification';
 import { clinicInstitutionService } from "@/app/http/httpServiceProvider";
-import { useClinicStore } from "@/store/clinicStore";
+import { useClinicStore } from "@/store/clinic/clinicStore";
 import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
 
 const { t } = useI18n();
@@ -71,8 +71,9 @@ const requiredRules = {
   ]
 };
 
+
 const clinics = computed(() => {
-  return (clinicStore.clinics_list || []).map((item: ClinicListingForListType) => ({
+  return (clinicStore.enabledClinics as ClinicListingForListType[]).map((item) => ({
     value: item.id,
     label: item.name,
   }));

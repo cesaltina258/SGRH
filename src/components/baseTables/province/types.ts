@@ -25,4 +25,5 @@ export type ProvinceListingType = {
       createdBy: string;
       updatedBy: string;
       deletedBy: string; 
+      enabled: boolean;
   };

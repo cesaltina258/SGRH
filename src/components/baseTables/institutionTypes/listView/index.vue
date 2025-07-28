@@ -118,6 +118,7 @@ const onCreateEditClick = (data: InstitutionTypeListing | null) => {
       id: "-1",
       name: "",
       description: "",
+      enabled: true
     };
   } else {
     institutionTypeData.value = data;
@@ -166,6 +167,7 @@ const onViewClick = (data: InstitutionTypeListing | null) => {
       id: "-1",
       name: "",
       description: "",
+      enabled: true
 
     };
   } else {
@@ -244,9 +246,9 @@ const onConfirmDelete = async () => {
             </td>
             <td style="padding-right: 200px;">{{ item.name }}</td>
             <td style="padding-right: 200px;">{{ item.description?.toUpperCase() }}</td>
-            <!-- <td>
-              <Status :status="item.enabled ? 'active' : 'unactive'" />
-            </td> -->
+            <td>
+              <Status :status="item.enabled ? 'enabled' : 'disabled'" /> 
+            </td>
             <td>
               <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)"
                 @onDelete="onDelete(item.id)" />

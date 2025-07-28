@@ -137,5 +137,11 @@ export const useCurrencyStore = defineStore('currencies', {
       if (id) this.currentCurrencyId = id;
       console.log('🌍 Carregando draft de Currency e ID atual do armazenamento:', this.draftCurrency, this.currentCurrencyId);
     }
+  },
+    getters: {
+    enabledCurrencies: (state) => {
+      return state.currenciesForDropdown.filter(item => item.enabled === true) 
+    }
   }
+
 });

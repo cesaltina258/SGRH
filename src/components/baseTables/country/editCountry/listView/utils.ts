@@ -20,6 +20,7 @@ export const breadcrumb: BreadcrumbType[] = [
 export const listViewHeader: TableHeaderType[] = [
   { title: "province-name", key: "name", sortable: true },
   { title: "province-code",  key: "code", sortable: true },
+  { title: "availability",  key: "enabled", sortable: true },
   { title: "action", sortable: false },
 ];
 

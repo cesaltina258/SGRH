@@ -2,7 +2,7 @@
 import { PropType, computed, watch, ref, onMounted } from "vue";
 import { ClinicInsertType, ClinicListingType } from "@/components/institution/types";
 import { ClinicListingForListType } from "@/components/clinics/types";
-import { useClinicStore } from "@/store/clinicStore";
+import { useClinicStore } from "@/store/clinic/clinicStore";
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();

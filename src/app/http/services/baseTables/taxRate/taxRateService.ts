@@ -115,7 +115,8 @@ export default class TaxRateTypeTypeService extends HttpService {
       const payload = {
         name: data.name,
         rate: data.rate,
-        description: data.description
+        description: data.description,
+        enabled: data.enabled
       };
 
       const response = await this.put<TaxRateTypeResponse>(

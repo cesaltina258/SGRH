@@ -223,7 +223,8 @@ export default class EmployeeService extends HttpService {
         salary: employeeData.salary,
         company: employeeData.company,
         department: employeeData.department,
-        position: employeeData.position
+        position: employeeData.position,
+        enabled: employeeData.enabled
       };
 
       const response = await this.put<EmployeeResponseType>(`/human-resource/employees/${id}`, payload);

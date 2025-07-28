@@ -89,5 +89,11 @@ export const useInstitutionTypeStore = defineStore('institutiontypes', {
       if (id) this.currentInstitutionTypeId = id;
       console.log('📦 Carregado do armazenamento:', this.draftInstitutionType, this.currentInstitutionTypeId);
     }
+  },
+  
+  getters: {
+    enabledInstitutionTypes: (state) => {
+      return state.institutiontypes.filter(item => item.enabled === true) 
+    }
   }
 });

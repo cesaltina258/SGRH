@@ -126,6 +126,7 @@ export const healthPlanHeader: DataTableHeaderType[] = [
   { title: "fixed-amount", key: "fixedAmount", sortable: true },
   { title: "salary-component", key: "salaryComponent", sortable: true },
   { title: "company-contribution-percentage", key: "companyContributionPercentage", sortable: true },
+  { title: "status", key: "status", sortable: true },
   { title: "is-enabled", key: "enabled", sortable: true },
   { title: "action", sortable: false, align: "end" }
 ];

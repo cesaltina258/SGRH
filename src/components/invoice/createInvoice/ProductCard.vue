@@ -14,6 +14,7 @@ import Table from "@/app/common/components/Table.vue";
 // Stores
 import { useTaxRateStore } from "@/store/baseTables/taxRateServiceStore";
 import { useHospitalProcedureStore } from "@/store/institution/hospitalProcedureStore";
+import { useHealthPlanStore } from "@/store/institution/healthPlanStore";
 
 // Types e Utils
 import { InvoiceItemInsertType } from "@/components/invoice/types";
@@ -76,6 +77,7 @@ const emit = defineEmits<{
 // =============================================
 const taxRateStore = useTaxRateStore();
 const hospitalProcedureStore = useHospitalProcedureStore();
+const healthPlanStore = useHealthPlanStore();
 
 // =============================================
 // REACTIVE STATE
@@ -83,14 +85,17 @@ const hospitalProcedureStore = useHospitalProcedureStore();
 const form = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 const errorMsg = ref("");
 const invoiceItems = ref<InvoiceItem[]>([]);
+const activeHealthPlanId = ref("");
 
 // =============================================
 // COMPUTED PROPERTIES
 // =============================================
+
+
 const companyAllowedHospitalProcedures = computed(() => 
-  hospitalProcedureStore.hospital_procedure_for_dropdown.map(item => ({
+  hospitalProcedureStore.hospital_procedure_of_plan.map(item => ({
     value: item.id,
-    label: item.hospitalProcedureType.name,
+    label: item.hospitalProcedureType.name
   }))
 );
 
@@ -174,14 +179,27 @@ const calculateLineTotal = (item: InvoiceItem) => {
 
 const loadProcedures = async () => {
   try {
+
+    hospitalProcedureStore.hospital_procedure_of_plan = [];
+    activeHealthPlanId.value = "";
+
     if (!props.institutionId) {
       console.warn('Institution ID not available');
       return;
     }
+    
+    const healthPlan = await healthPlanStore.fetchActiveHealthPlan(props.institutionId);
+    
+    if (!healthPlan?.id) {
+      throw new Error('No active health plan found for this company');
+    }
+    
+    activeHealthPlanId.value = healthPlan.id;
+    console.log("Active Health Plan ID:", activeHealthPlanId.value);
 
     await Promise.all([
       taxRateStore.fetchTaxRatesForDropdown(),
-      hospitalProcedureStore.fetchHospitalProceduresForDropdown(props.institutionId)
+      hospitalProcedureStore.fetchHospitalProceduresOfPlan(activeHealthPlanId.value)
     ]);
   } catch (error) {
     handleError('t-error-loading-procedures', error);
@@ -262,7 +280,11 @@ defineExpose({ emitItemsReady });
 // =============================================
 // WATCHERS
 // =============================================
-watch(() => props.institutionId, loadProcedures, { immediate: true });
+watch(() => props.institutionId, (newId, oldId) => {
+  if (newId && newId !== oldId) {
+    loadProcedures();
+  }
+}, { immediate: true });
 
 watch(() => props.initialItems, (newItems) => {
   if (newItems?.length) {

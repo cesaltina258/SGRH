@@ -39,6 +39,7 @@ const dialogValue = computed({
 const id = ref(formData.value.id || "");
 const name = ref(formData.value.name || "");
 const description = ref(formData.value.description || "");
+const enabled = ref(true);
 const errorMessage = computed(() => prop.error);
 
 
@@ -100,6 +101,7 @@ const onSubmit = () => {
     ...(!isCreate.value && { id: id.value }),
     name: name.value,
     description: description.value,
+    enabled: enabled.value
   };
 
   emit('onSubmit', data, {
@@ -149,6 +151,16 @@ const onSubmit = () => {
               {{ $t('t-description') }}
             </div>
             <TextArea v-model="description" :placeholder="$t('t-enter-description')" hide-details />
+          </v-col>
+        </v-row>
+        <v-row class="">
+          <v-col cols="12" lg="12" class="">
+            <div class="font-weight-bold">{{ $t('t-availability') }}</div>
+            <v-checkbox v-model="enabled" density="compact" color="primary" class="d-inline-flex">
+              <template #label>
+                <span>{{ $t('t-is-enabled') }}</span>
+              </template>
+            </v-checkbox>
           </v-col>
         </v-row>
       </v-card-text>

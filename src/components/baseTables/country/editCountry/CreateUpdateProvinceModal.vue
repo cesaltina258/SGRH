@@ -44,6 +44,7 @@ const dialogValue = computed({
 const id = ref(formData.value.id || "");
 const name = ref(formData.value.name || "");
 const code = ref(formData.value.code || "");
+const enabled = ref(formData.value.enabled)
 
 const { t } = useI18n();
 
@@ -114,6 +115,7 @@ const onSubmit = () => {
     name: name.value,
     code: code.value,
     country: prop.country,
+    enabled: enabled.value
   };
 
   emit('onSubmit', data, {
@@ -165,6 +167,16 @@ const onSubmit = () => {
             </div>
             <TextField v-model="code" :placeholder="$t('t-enter-code')"
               :error-messages="formErrors.code ? [formErrors.code] : []" hide-details />
+          </v-col>
+        </v-row>
+        <v-row class="">
+          <v-col cols="12" lg="12" class="">
+            <div class="font-weight-bold">{{ $t('t-availability') }}</div>
+            <v-checkbox v-model="enabled" density="compact" color="primary" class="d-inline-flex">
+              <template #label>
+                <span>{{ $t('t-is-enabled') }}</span>
+              </template>
+            </v-checkbox>
           </v-col>
         </v-row>
       </v-card-text>

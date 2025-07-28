@@ -149,5 +149,11 @@ export const useClinicStore = defineStore('clinics', {
       if (draft) this.draftClinic = JSON.parse(draft);
       if (id) this.currentClinicId = id;
     }
+  },
+   getters: {
+    enabledClinics: (state) => {
+      return state.clinics_list.filter(item => item.enabled === true) 
+    }
   }
+  
 });

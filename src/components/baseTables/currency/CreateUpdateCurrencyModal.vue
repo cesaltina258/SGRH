@@ -36,6 +36,7 @@ const dialogValue = computed({
 const id = ref(formData.value.id || "");
 const name = ref(formData.value.name || "");
 const symbol = ref(formData.value.symbol || "");
+const enabled = ref(formData.value.enabled);
 
 const formErrors = ref<Record<string, string>>({
   name: '',
@@ -97,6 +98,7 @@ const onSubmit = () => {
     ...(!isCreate.value && { id: id.value }),
     name: name.value,
     symbol: symbol.value,
+    enabled: enabled.value
   };
 
   emit('onSubmit', data, {
@@ -148,6 +150,16 @@ const onSubmit = () => {
             </div>
             <TextField v-model="symbol" :placeholder="$t('t-enter-symbol')" :error-messages="formErrors.symbol"
               hide-details />
+          </v-col>
+        </v-row>
+        <v-row class="">
+          <v-col cols="12" lg="12" class="">
+            <div class="font-weight-bold">{{ $t('t-availability') }}</div>
+            <v-checkbox v-model="enabled" density="compact" color="primary" class="d-inline-flex">
+              <template #label>
+                <span>{{ $t('t-is-enabled') }}</span>
+              </template>
+            </v-checkbox>
           </v-col>
         </v-row>
       </v-card-text>

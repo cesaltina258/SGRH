@@ -40,6 +40,7 @@ const id = ref(formData.value.id || "");
 const name = ref(formData.value.name || "");
 const description = ref(formData.value.description || "");
 const rate = ref(formData.value.rate || "");
+const enabled = ref(formData.value.enabled);
 const errorMessage = computed(() => prop.error);
 
 
@@ -100,6 +101,7 @@ watch(
     name.value = newVal.name || "";
     description.value = newVal.description || "";
     rate.value = newVal.rate || "";
+    enabled.value = newVal.enabled;
   },
   { immediate: true }
 );
@@ -154,21 +156,21 @@ const onSubmit = () => {
         <v-row>
           <v-col cols="6" lg="6">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-name') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-name') }} 
             </div>
-            <TextField v-model="name" :placeholder="$t('t-enter-name')" hide-details disabled/>
+            <div>{{ name || '-' }}</div>
           </v-col>
           <v-col cols="6" lg="6">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-rate') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-rate') }} 
             </div>
-            <TextField v-model="rate" :placeholder="$t('t-enter-rate')" hide-details disabled/>
+            <div>{{ rate || '-' }}</div>
           </v-col>
           <v-col cols="12" lg="12">
             <div class="font-weight-bold text-caption mb-1">
               {{ $t('t-description') }}
             </div>
-            <TextArea v-model="description" :placeholder="$t('t-enter-description')" hide-details disabled/>
+            <div>{{ description || '-' }}</div>
           </v-col>
         </v-row>
       </v-card-text>

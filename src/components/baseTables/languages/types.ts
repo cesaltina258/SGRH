@@ -5,6 +5,7 @@ export type LanguagesInsert = {
   localizedName: string,
   region: string,
   rtl: boolean
+  enabled: boolean;
 };
 
 export type LanguagesListing = {
@@ -13,7 +14,8 @@ export type LanguagesListing = {
   name: string,
   localizedName: string,
   region: string,
-  rtl: boolean
+  rtl: boolean,
+  enabled: boolean;
 };
 
 export type LanguagesUpdate = {
@@ -21,7 +23,8 @@ export type LanguagesUpdate = {
   name: string,
   localizedName: string,
   region: string,
-  rtl: boolean
+  rtl: boolean,
+  enabled: boolean;
 };
 
 export type LanguagesResponse = {
@@ -30,7 +33,8 @@ export type LanguagesResponse = {
   name: string,
   localizedName: string,
   region: string,
-  rtl: boolean
+  rtl: boolean;
+  enabled: boolean;
 };
 
 export type LanguagesOption = {

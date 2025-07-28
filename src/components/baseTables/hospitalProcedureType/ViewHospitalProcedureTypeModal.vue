@@ -5,6 +5,7 @@ import MenuSelect from "@/app/common/components/filters/MenuSelect.vue";
 import { statusOptions } from "@/components/realEstate/agent/utils";
 import { colors } from "@/components/ui/utils";
 import { useI18n } from "vue-i18n";
+import Status from "@/app/common/components/Status.vue";
 
 const localLoading = ref(false);
 const emit = defineEmits(["update:modelValue", "onSubmit"]);
@@ -35,6 +36,8 @@ const dialogValue = computed({
 const id = ref(formData.value.id || "");
 const name = ref(formData.value.name || "");
 const description = ref(formData.value.description || "");
+const enabled = ref(formData.value.enabled || "");
+
 
 const formErrors = ref<Record<string, string>>({
   name: '',
@@ -72,6 +75,7 @@ const onSubmit = () => {
     ...(!isCreate.value && { id: id.value }),
     name: name.value,
     description: description.value,
+    enabled: enabled.value
   };
 
   emit('onSubmit', data, {
@@ -99,12 +103,14 @@ const onSubmit = () => {
         'max-height': isCreate ? '70vh' : '45vh'
       }">
         <v-row>
-          <v-col cols="12" lg="12">
+          <v-col cols="12" lg="12" class="text-right">
+            <Status :status="enabled ? 'enabled' : 'disabled'" />
+          </v-col>
+          <v-col class="mt-n6" cols="12" lg="12">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-name') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-name') }} 
             </div>
-            <TextField v-model="name" :placeholder="$t('t-enter-name')"
-              :error-messages="formErrors.name ? [formErrors.name] : []" hide-details disabled />
+            <div>{{ name || '-' }}</div>
             <div v-if="formErrors.name" class="text-red text-extra-small pt-1">
               {{ formErrors.name }}
             </div>
@@ -113,8 +119,7 @@ const onSubmit = () => {
             <div class="font-weight-bold text-caption mb-1">
               {{ $t('t-description') }}
             </div>
-            <TextArea v-model="description" :placeholder="$t('t-enter-description')"
-              :error-messages="formErrors.description ? [formErrors.description] : []" hide-details disabled />
+            <div>{{ description || '-' }}</div>
             <div v-if="formErrors.description" class="text-red text-extra-small pt-1">
               {{ formErrors.description }}
             </div>

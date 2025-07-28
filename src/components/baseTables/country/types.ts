@@ -8,6 +8,7 @@ export type CountryInsertType = {
   currency: string;
   currencySymbol: string;
   currencyCode: string;
+  enabled: boolean;
 };
 
 export type CountryListingType = {
@@ -20,6 +21,7 @@ export type CountryListingType = {
   currency: string;
   currencySymbol: string;
   currencyCode: string;
+  enabled: boolean;
 };
 
 export type CountryUpdateType = {
@@ -31,23 +33,27 @@ export type CountryUpdateType = {
   currency?: string;
   currencySymbol?: string;
   currencyCode?: string;
+  enabled: boolean;
 };
 
 export type ProvinceInsertType = {
   id: string;
   name: string;
   code: string;
+  enabled: boolean;
 };
 
 export type ProvinceListingType = {
   id: string;
   name: string;
   code: string;
+  enabled: boolean;
 };
 
 export type ProvinceUpdateType = {
   name?: string;
   code?: string;
+  enabled: boolean;
 };
 
 export type OptionType = {
@@ -83,10 +89,12 @@ export type CountryResponseType = {
   currency: string;
   currencySymbol: string;
   currencyCode: string;
+  enabled: boolean;
 };
 
 export type ProvinceResponseType = {
   id: string;
   name: string;
   code: string;
+  enabled: boolean;
 };

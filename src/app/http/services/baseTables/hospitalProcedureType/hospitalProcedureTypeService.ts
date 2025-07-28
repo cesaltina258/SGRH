@@ -112,8 +112,10 @@ export default class HospitalProcedureTypeService extends HttpService {
     try {
       const payload = {
         name: data.name,
-        description: data.description
+        description: data.description,
+        enabled: data.enabled
       };
+      console.log("payload hospitalprocedure", payload)
 
       const response = await this.put<HospitalProcedureTypeResponse>(`/administration/setup/hospital-procedure-types/${id}`, payload);
       return response;

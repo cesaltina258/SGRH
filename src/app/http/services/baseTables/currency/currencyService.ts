@@ -109,7 +109,8 @@ export default class CurrencyService extends HttpService {
     try {
       const payload = {
         name: currencyData.name,
-        symbol: currencyData.symbol
+        symbol: currencyData.symbol,
+        enabled: currencyData.enabled
       };
 
       const response = await this.put<CurrencyResponseType>(`/administration/setup/currencies/${id}`, payload);

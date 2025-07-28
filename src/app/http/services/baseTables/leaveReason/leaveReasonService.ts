@@ -74,8 +74,11 @@ export default class LeaveReasonService extends HttpService {
     try {
       const payload = {
         name: data.name,
-        description: data.description
+        description: data.description,
+        enabled: data.enabled
       };
+
+      console.log("payload leave reason", payload);
 
       const response = await this.put<LeaveReasonResponse>(
         `/administration/setup/leave-reasons/${id}`,

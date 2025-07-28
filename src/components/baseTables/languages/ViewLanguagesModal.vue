@@ -118,49 +118,33 @@ const onSubmit = () => {
         <v-row>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
-              {{ $t('t-language') }} <i class="ph-asterisk ph-xs text-danger" />
+              {{ $t('t-language') }} 
             </div>
-            <TextField v-model="name" :placeholder="$t('t-enter-language')"
-              :error-messages="formErrors.name ? [formErrors.name] : []" hide-details disabled />
-            <div v-if="formErrors.name" class="text-red text-extra-small pt-1">
-              {{ formErrors.name }}
-            </div>
+            <div>{{ name || '-' }}</div>
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
               {{ $t('t-code') }}
             </div>
-            <TextField v-model="code" :placeholder="$t('t-enter-code')"
-              :error-messages="formErrors.code ? [formErrors.code] : []" hide-details disabled />
-            <div v-if="formErrors.code" class="text-red text-extra-small pt-1">
-              {{ formErrors.code }}
-            </div>
+            <div>{{ code || '-' }}</div>
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
               {{ $t('t-localized-name') }}
             </div>
-            <TextField v-model="localizedName" :placeholder="$t('t-enter-localized-name')"
-              :error-messages="formErrors.localizedName ? [formErrors.localizedName] : []" hide-details disabled />
-            <div v-if="formErrors.localizedName" class="text-red text-extra-small pt-1">
-              {{ formErrors.localizedName }}
-            </div>
+            <div>{{ localizedName || '-' }}</div>
           </v-col>
           <v-col cols="12" lg="6">
             <div class="font-weight-bold text-caption mb-1">
               {{ $t('t-region') }}
             </div>
-            <TextField v-model="region" :placeholder="$t('t-enter-region')"
-              :error-messages="formErrors.region ? [formErrors.region] : []" hide-details disabled />
-            <div v-if="formErrors.region" class="text-red text-extra-small pt-1">
-              {{ formErrors.region }}
-            </div>
+            <div>{{ region || '-' }}</div>
           </v-col>
           <v-col cols="12" lg="12">
             <div class="font-weight-bold mb-2">
               {{ $t('t-right-to-left') }}
             </div>
-            <MenuSelect v-model="rtl  as any" :items="propertyTypes" disabled />
+            <div>{{ rtl ? $t('t-yes') : $t('t-no') }}</div>
           </v-col>
         </v-row>
       </v-card-text>

@@ -138,6 +138,7 @@ const onCreateEditClick = (data: CountryListingType | null) => {
       currency: "",
       currencySymbol: "",
       currencyCode: "",
+      enabled: true
     };
   } else {
     router.push({
@@ -199,7 +200,7 @@ const onViewClick = (data: CountryListingType | null) => {
       currency: "",
       currencySymbol: "",
       currencyCode: "",
-
+      enabled: true
     };
   } else {
     countryData.value = data;
@@ -285,6 +286,9 @@ const onConfirmDelete = async () => {
             <td>{{ item.currency }}</td>
             <td>{{ item.currencySymbol }}</td>
             <td>{{ item.currencyCode }}</td>
+            <td>
+              <Status :status="item.enabled ? 'enabled' : 'disabled'" />
+            </td> 
             <td>
               <TableAction @onEdit="onCreateEditClick(item as CountryListingType)"
                 @onView="onViewClick(item as CountryListingType)"

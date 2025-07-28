@@ -3,6 +3,7 @@ export type TaxRateTypeInsert = {
   name: string;
   description: string;
   rate: number;
+  enabled: boolean;
 };
 
 export type TaxRateTypeListing = {
@@ -10,12 +11,14 @@ export type TaxRateTypeListing = {
   name: string;
   description: string;
   rate: number;
+  enabled: boolean;
 };
 
 export type TaxRateTypeUpdate = {
   name: string;
   description: string;
   rate: number;
+  enabled: boolean;
 };
 
 export type TaxRateTypeResponse = {
@@ -23,6 +26,7 @@ export type TaxRateTypeResponse = {
   name: string;
   description: string;
   rate: number;
+  enabled: boolean;
 };
 
 export type TaxRateTypeOption = {

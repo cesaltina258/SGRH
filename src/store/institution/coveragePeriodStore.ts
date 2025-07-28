@@ -108,5 +108,10 @@ export const useCoveragePeriodStore = defineStore('coverage_periods', {
     }
     
   },
+  getters: {
+    enabledCoveragePeriods: (state) => {
+      return state.coverage_periods_for_dropdown.filter(item => item.enabled === true) 
+    }
+  }
   
 });

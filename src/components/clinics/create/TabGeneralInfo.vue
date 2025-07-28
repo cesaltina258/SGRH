@@ -20,7 +20,7 @@ import ValidatedDatePicker from "@/app/common/components/ValidatedDatePicker.vue
 
 // Stores
 // import { useEmployeeStore } from '@/store/employeeStore';
-import { useClinicStore } from "@/store/clinicStore"
+import { useClinicStore } from "@/store/clinic/clinicStore"
 // import { useCountryStore } from '@/store/baseTables/countryStore';
 // import { useProvinceStore } from '@/store/baseTables/countryStore';
 

@@ -203,7 +203,10 @@ export const useEmployeeStore = defineStore('employees', {
       this.employeesForDropdown = [];
     }
   },
-  getters: {
+  getters: {  
+    enabledEmployees: (state) => {
+      return state.employeesForDropdown.filter(item => item.enabled === true) 
+    },
     employeeStatsForOverview: (state) => {
       const total = state.stats.total;
 

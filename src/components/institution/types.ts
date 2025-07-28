@@ -295,6 +295,7 @@ export type HealthPlanListingType = {
     createdBy: string;
     updatedBy: string;
     deletedBy: string;
+    status: string;
     enabled: boolean;
 };
 

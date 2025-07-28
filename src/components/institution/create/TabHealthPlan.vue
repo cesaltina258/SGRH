@@ -219,13 +219,19 @@ Opcoes da lista
 const getDynamicOptions = (invoice: HealthPlanListingType) => {
   // Opções base
   let availableOptions = [...Options];
+  
+  // Se o status for RUNNING, remove as opções de editar e deletar
+  if (invoice.coveragePeriod?.status === 'RUNNING') {
+    availableOptions = availableOptions.filter(option => 
+      option.value !== 'edit' && option.value !== 'delete'
+    );
+  }
 
   return availableOptions.map(option => ({
     ...option,
     title: t(`t-${option.title}`)
   }));
 };
-
 
 const onSelect = (option: string, data: HealthPlanListingType) => {
   switch (option) {
@@ -402,6 +408,9 @@ onBeforeUnmount(() => {
             <td>{{ item.fixedAmount }}</td>
             <td>{{ getsalaryComponentLabel(item.salaryComponent) }}</td>
             <td>{{ item.companyContributionPercentage }}</td>
+            <td>
+              <Status :status="item.status" />
+            </td>
             <td>
               <Status :status="item.enabled ? 'enabled' : 'disabled'" />
             </td>

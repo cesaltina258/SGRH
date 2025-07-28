@@ -8,6 +8,7 @@ export const useHospitalProcedureStore = defineStore('hospital_procedure', {
     hospital_procedure: [] as HospitalProcedureListingType[],
     hospital_procedure_for_dropdown: [] as HospitalProcedureListingType[],
     hospital_procedure_of_plan: [] as HospitalProcedureListingType[],
+    activeHealthPlan: null as any,
     pagination: { 
       totalElements: 0,
       currentPage: 0,
@@ -154,10 +155,7 @@ export const useHospitalProcedureStore = defineStore('hospital_procedure', {
         this.loading = false;
       }
     }
-    
-  },
 
-  
     
-  
+  }, 
 });

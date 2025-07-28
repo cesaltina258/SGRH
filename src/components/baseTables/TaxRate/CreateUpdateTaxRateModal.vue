@@ -40,6 +40,7 @@ const id = ref(formData.value.id || "");
 const name = ref(formData.value.name || "");
 const description = ref(formData.value.description || "");
 const rate = ref(formData.value.rate || "");
+const enabled = ref(formData.value.enabled)
 const errorMessage = computed(() => prop.error);
 
 
@@ -100,6 +101,7 @@ watch(
     name.value = newVal.name || "";
     description.value = newVal.description || "";
     rate.value = newVal.rate || "";
+    enabled.value = newVal.enabled;
   },
   { immediate: true }
 );
@@ -115,6 +117,7 @@ const onSubmit = () => {
     name: name.value,
     description: description.value,
     rate: rate.value,
+    enabled: enabled.value
   };
 
   emit('onSubmit', data, {
@@ -169,6 +172,16 @@ const onSubmit = () => {
               {{ $t('t-description') }}
             </div>
             <TextArea v-model="description" :placeholder="$t('t-enter-description')" hide-details />
+          </v-col>
+        </v-row>
+        <v-row class="">
+          <v-col cols="12" lg="12" class="">
+            <div class="font-weight-bold">{{ $t('t-availability') }}</div>
+            <v-checkbox v-model="enabled" density="compact" color="primary" class="d-inline-flex">
+              <template #label>
+                <span>{{ $t('t-is-enabled') }}</span>
+              </template>
+            </v-checkbox>
           </v-col>
         </v-row>
       </v-card-text>

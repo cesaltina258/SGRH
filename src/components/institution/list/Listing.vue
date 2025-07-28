@@ -48,8 +48,8 @@ interface FetchParams {
 }
 
 // Busca os funcionários com os parâmetros atuais
-const fetchInstitutionsforListing = async ({ page, itemsPerPage, sortBy, search }: FetchParams) => {
-  await institutionStore.fetchInstitutionsforListing( 
+const fetchInstitutions = async ({ page, itemsPerPage, sortBy, search }: FetchParams) => {
+  await institutionStore.fetchInstitutions( 
     page - 1, // Ajuste para API que começa em 0
     itemsPerPage,
     sortBy[0]?.key || 'createdAt',
@@ -78,7 +78,7 @@ const deleteInstitution = async () => {
   try {
     await institutionService.deleteInstitution(deleteId.value);
     toast.success(t('t-toast-message-deleted'));
-    await institutionStore.fetchInstitutionsforListing(0, itemsPerPage.value);
+    await institutionStore.fetchInstitutions(0, itemsPerPage.value);
   } catch (error) {
     if (error instanceof Error && 'response' in error) {
       const axiosError = error as { response?: { data?: { message?: string } } };
@@ -123,7 +123,7 @@ const toggleSelection = (item: InstitutionListingType) => {
       <DataTableServer v-model="selectedInstitutions"
         :headers="institutionHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
         :items="institutionStore.institutions" :items-per-page="itemsPerPage" :total-items="totalItems"
-        :loading="loading" :search-query="searchQuery" @load-items="fetchInstitutionsforListing" item-value="id"
+        :loading="loading" :search-query="searchQuery" @load-items="fetchInstitutions" item-value="id"
         show-select>
         <template #body="{ items }: { items: readonly unknown[] }">
           <tr v-for="item in items as InstitutionListingType[]" :key="item.id">

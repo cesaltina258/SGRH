@@ -41,6 +41,7 @@ const code = ref(formData.value.code || "");
 const localizedName = ref(formData.value.localizedName || "");
 const region = ref(formData.value.region || "");
 const rtl = ref(isCreate.value ? null : formData.value.rtl ?? false);
+const enabled = ref(formData.value.enabled);
 
 // Erro vindo da API
 const errorMessage = computed(() => prop.error);
@@ -94,6 +95,7 @@ const onSubmit = () => {
     localizedName: localizedName.value,
     region: region.value,
     rtl: rtl.value,
+    enabled: enabled.value
   };
 
   emit("onSubmit", data, {
@@ -161,6 +163,16 @@ const onSubmit = () => {
               {{ $t('t-right-to-left') }}
             </div>
             <MenuSelect v-model="rtl as any" :items="propertyTypes" />
+          </v-col>
+        </v-row>
+        <v-row class="mt-n6">
+          <v-col cols="12" lg="12" class="">
+            <div class="font-weight-bold">{{ $t('t-availability') }}</div>
+            <v-checkbox v-model="enabled" density="compact" color="primary" class="d-inline-flex">
+              <template #label>
+                <span>{{ $t('t-is-enabled') }}</span>
+              </template>
+            </v-checkbox>
           </v-col>
         </v-row>
       </v-card-text>

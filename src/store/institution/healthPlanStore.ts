@@ -7,6 +7,7 @@ export const useHealthPlanStore = defineStore('health_plans', {
   state: () => ({
     health_plans: [] as HealthPlanListingType[],
     health_plans_for_dropdown: [] as HealthPlanListingType[],
+    activeHealthPlan: undefined as any,
     pagination: { 
       totalElements: 0,
       currentPage: 0,
@@ -102,6 +103,19 @@ export const useHealthPlanStore = defineStore('health_plans', {
         console.error("❌ Erro ao buscar planos de saúde:", err);
         this.health_plans_for_dropdown = [];
         this.pagination.totalElements = 0;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async fetchActiveHealthPlan(companyId: string) {
+      this.loading = true;
+      try {
+        const response = await healthPlanService.getActiveHealthPlanByCompany(companyId);
+        this.activeHealthPlan = response.data;
+        return response.data;
+      } catch (error: any) {
+        this.error = error.message || 'Failed to fetch active health plan';
+        throw error;
       } finally {
         this.loading = false;
       }

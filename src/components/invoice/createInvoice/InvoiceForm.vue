@@ -15,10 +15,11 @@ import ProductCard from "@/components/invoice/createInvoice/ProductCard.vue";
 import ValidatedDatePicker from "@/app/common/components/ValidatedDatePicker.vue";
 
 // Stores
-import { useClinicStore } from "@/store/clinicStore";
+import { useClinicStore } from "@/store/clinic/clinicStore";
 import { useInstitutionStore } from "@/store/institution/institutionStore";
 import { useEmployeeStore } from "@/store/employee/employeeStore";
 import { useCurrencyStore } from "@/store/baseTables/currencyStore";
+import { useHealthPlanStore } from "@/store/institution/healthPlanStore";
 import { useDependentEmployeeStore } from "@/store/employee/dependentStore";
 import { useInvoiceStore } from "@/store/invoice/invoiceStore";
 
@@ -68,6 +69,7 @@ const clinicStore = useClinicStore();
 const institutionStore = useInstitutionStore();
 const employeeStore = useEmployeeStore();
 const currencyStore = useCurrencyStore();
+const healthPlanStore = useHealthPlanStore();
 const dependentStore = useDependentEmployeeStore();
 
 // =============================================
@@ -97,28 +99,28 @@ const invoiceData = computed({
 });
 
 const institutions = computed(() =>
-  institutionStore.institutions.map(item => ({
+  institutionStore.enabledInstitutions.map(item => ({
     value: item.id,
     label: item.name,
   }))
 );
 
 const clinics = computed(() =>
-  clinicStore.clinics_list.map(clinic => ({
+  clinicStore.enabledClinics.map(clinic => ({
     value: clinic.id,
     label: clinic.name
   }))
 );
 
 const employees = computed(() =>
-  employeeStore.employeesForDropdown.map(item => ({
+  employeeStore.enabledEmployees.map(item => ({
     value: item.id,
     label: `${item.firstName} ${item.lastName}`,
   }))
 );
 
 const currencies = computed(() =>
-  currencyStore.currenciesForDropdown.map(item => ({
+  currencyStore.enabledCurrencies.map(item => ({
     value: item.id,
     label: item.name,
   }))
@@ -263,9 +265,9 @@ watch(() => invoiceData.value.employee, async (newEmployeeId) => {
 onMounted(async () => {
   try {
     await Promise.all([
-      institutionStore.fetchInstitutions(),
-      currencyStore.fetchCurrenciesForDropdown(),
-      clinicStore.fetchClinicsForDropdown()
+      institutionStore.fetchInstitutionsforListing(0,100000000),
+      currencyStore.fetchCurrenciesForDropdown(0,1000000000),
+      clinicStore.fetchClinicsForDropdown(0,1000000000)
     ]);
   } catch (error) {
     handleLoadError("institutions", error);

@@ -123,7 +123,8 @@ const form = ref({
   phoneCode: "",
   currency: "",
   currencySymbol: "",
-  currencyCode: ""
+  currencyCode: "",
+  enabled: true
 });
 
 const validateForm = () => {
@@ -192,6 +193,7 @@ watch(countryData, (val) => {
       currency: val.currency,
       currencySymbol: val.currencySymbol,
       currencyCode: val.currencyCode,
+      enabled: val.enabled
     };
   }
 });
@@ -251,6 +253,7 @@ const onCreateEditClick = (data: ProvinceListingType | null) => {
       id: "-1",
       name: "",
       code: "",
+      enabled: true
     };
   } else {
     provinceFormData.value = data;
@@ -359,6 +362,7 @@ const onViewClick = (data: ProvinceListingType | null) => {
       id: "-1",
       name: "",
       code: "",
+      enabled: true
 
     };
   } else {
@@ -513,6 +517,16 @@ const handleSubmit = async () => {
               <TextField v-model="form.currencyCode" :placeholder="$t('t-enter-currency-code')" hide-details />
             </v-col>
           </v-row>
+          <v-row class="">
+          <v-col cols="12" lg="12" class="">
+            <div class="font-weight-bold">{{ $t('t-availability') }}</div>
+            <v-checkbox v-model="form.enabled" density="compact" color="primary" class="d-inline-flex">
+              <template #label>
+                <span>{{ $t('t-is-enabled') }}</span>
+              </template>
+            </v-checkbox>
+          </v-col>
+        </v-row>
         </v-card-text>
       </v-card>
     </v-card-text>
@@ -544,6 +558,9 @@ const handleSubmit = async () => {
                     </td>
                     <td style="padding-right: 200px;">{{ item.name }}</td>
                     <td style="padding-right: 200px;">{{ item.code }}</td>
+                    <td>
+                      <Status :status="item.enabled ? 'enabled' : 'disabled'" />
+                    </td> 
                     <td>
                       <TableAction @onView="onViewClick(item)" @onEdit="onCreateEditClick(item)"
                         @onDelete="onDelete(item.id)" />

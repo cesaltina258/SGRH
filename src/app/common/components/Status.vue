@@ -34,7 +34,8 @@ const successChips: { text: string; value: string }[] = [
   { value: "unblock", text: "unblock" },
   { value: "POSTED", text: "posted" },
   { value: "RUNNING", text: "running" },
-  { value: "enabled" , text: "enabled"}
+  { value: "enabled" , text: "enabled"},
+  { value: "ACTIVE", text: "active"}
 ];
 const dangerChips: { text: string; value: string }[] = [
   { value: "ood", text: "Out of Delivery" },

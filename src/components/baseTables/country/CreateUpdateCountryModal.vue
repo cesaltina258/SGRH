@@ -31,6 +31,7 @@ const currencySymbol = ref(formData.value.currencySymbol || "");
 const currencyCode = ref(formData.value.currencyCode || "");
 const errorMessage = computed(() => prop.error); // <- mostrar erro da API
 const validationAlertMessage = ref('');
+const enabled = ref(formData.value.enabled);
 let validationAlertTimeout: ReturnType<typeof setTimeout> | null = null;
 const localLoading = ref(false);
 
@@ -127,6 +128,7 @@ const onSubmit = () => {
     currency: currency.value,
     currencySymbol: currencySymbol.value,
     currencyCode: currencyCode.value,
+    enabled: enabled.value
   };
 
   emit('onSubmit', data, {
@@ -224,6 +226,16 @@ const onSubmit = () => {
             </div>
             <TextField v-model="currencyCode" :placeholder="$t('t-enter-currency-code')"
               :error-messages="formErrors.currencyCode" hide-details="auto" />
+          </v-col>
+        </v-row>
+        <v-row class="">
+          <v-col cols="12" lg="12" class="">
+            <div class="font-weight-bold">{{ $t('t-availability') }}</div>
+            <v-checkbox v-model="enabled" density="compact" color="primary" class="d-inline-flex">
+              <template #label>
+                <span>{{ $t('t-is-enabled') }}</span>
+              </template>
+            </v-checkbox>
           </v-col>
         </v-row>
       </v-card-text>

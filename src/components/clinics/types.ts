@@ -87,4 +87,5 @@ export type ClinicListingForListType = {
   personOfContactFullname2: string;
   personOfContactPhone2: string;
   personOfContactEmail2: string;
+  enabled: boolean;
 };

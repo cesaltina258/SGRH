@@ -80,8 +80,10 @@ export default class LanguagesService extends HttpService {
         name: data.name,
         localizedName: data.localizedName,
         region: data.region,
-        rtl: data.rtl
+        rtl: data.rtl,
+        enabled: data.enabled
       };
+      console.log("enabled languages" ,payload)
 
       const response = await this.put<LanguagesResponse>(`/administration/languages/${id}`, payload);
       return response;

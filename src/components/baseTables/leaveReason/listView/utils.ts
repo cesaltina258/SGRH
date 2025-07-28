@@ -17,5 +17,6 @@ export const breadcrumb: BreadcrumbType[] = [
 export const listViewHeader: DataTableHeaderType[] = [
   { title: "reason", key: "reason", sortable: true },
   { title: "description",  key: "description", sortable: true },
+  { title: "availability",  key: "enabled", sortable: true },
   { title: "action", sortable: false },
 ];

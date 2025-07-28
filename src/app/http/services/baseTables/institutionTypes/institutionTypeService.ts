@@ -77,7 +77,8 @@ export default class InstitutionTypeService extends HttpService {
     try {
       const payload = {
         name: data.name,
-        description: data.description
+        description: data.description,
+        enabled: data.enabled
       };
 
       const response = await this.put<InstitutionTypeResponse>(

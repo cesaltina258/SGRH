@@ -117,6 +117,7 @@ const onCreateEditClick = (data: LeaveReasonListing | null) => {
       id: "-1",
       name: "",
       description: "",
+      enabled: true
     };
   } else {
     leaveReasonData.value = data;
@@ -165,7 +166,7 @@ const onViewClick = (data: LeaveReasonListing | null) => {
       id: "-1",
       name: "",
       description: "",
-
+      enabled:true
     };
   } else {
     leaveReasonData.value = data;
@@ -243,9 +244,9 @@ const onConfirmDelete = async () => {
             </td>
             <td style="padding-right: 200px;">{{ item.name }}</td>
             <td style="padding-right: 200px;">{{ item.description?.toUpperCase() }}</td>
-            <!-- <td>
-              <Status :status="item.enabled ? 'active' : 'unactive'" />
-            </td> -->
+            <td>
+              <Status :status="item.enabled ? 'enabled' : 'disabled'" />
+            </td>
             <td>
               <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)"
                 @onDelete="onDelete(item.id)" />

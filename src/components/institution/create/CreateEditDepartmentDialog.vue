@@ -134,10 +134,10 @@ const onSubmit = async () => {
         </v-row>
         <v-row class="mt-n6">
           <v-col cols="12" lg="12" class="">
-            <div class="font-weight-bold">{{ $t('t-status') }}</div>
+            <div class="font-weight-bold">{{ $t('t-availability') }}</div>
             <v-checkbox v-model="enabled" density="compact" color="primary" class="d-inline-flex">
               <template #label>
-                <span>{{ $t('t-is-active') }}</span>
+                <span>{{ $t('t-is-enabled') }}</span>
               </template>
             </v-checkbox>
           </v-col>

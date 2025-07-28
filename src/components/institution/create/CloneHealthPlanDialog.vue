@@ -140,7 +140,7 @@ const requiredRules = {
 };
 
 const coveragePeriods = computed(() => {
-  return (coveragePeriodStore.coverage_periods_for_dropdown || [])
+  return (coveragePeriodStore.enabledCoveragePeriods || [])
     .filter((item: CoveragePeriodListingType) =>
       !item.status || item.status.toString().toUpperCase() !== 'CLOSED'
     )

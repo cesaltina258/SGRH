@@ -48,8 +48,8 @@ const errorMsg = ref("");
 let alertTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const handleApiError = (error: any) => {
-  console.error("🔥 ERRO COMPLETO:", JSON.stringify(error, null, 2));
-  console.error("🔥 RESPONSE:", error?.response);
+  console.error(" ERRO COMPLETO:", JSON.stringify(error, null, 2));
+  console.error(" RESPONSE:", error?.response);
   if (alertTimeout) {
     clearTimeout(alertTimeout);
     alertTimeout = null;
@@ -122,6 +122,7 @@ const onCreateEditClick = (data: CurrencyListingType | null) => {
       id: "-1",
       name: "",
       symbol: "",
+      enabled: true
     };
   } else {
     currencyData.value = data;
@@ -170,7 +171,7 @@ const onViewClick = (data: CurrencyListingType | null) => {
       id: "-1",
       name: "",
       symbol: "",
-
+      enabled: true
     };
   } else {
     currencyData.value = data;
@@ -249,9 +250,9 @@ const onConfirmDelete = async () => {
             </td>
             <td style="padding-right: 200px;">{{ item.name }}</td>
             <td style="padding-right: 200px;">{{ item.symbol }}</td>
-            <!-- <td>
-              <Status :status="item.enabled ? 'active' : 'unactive'" />
-            </td> -->
+            <td>
+              <Status :status="item.enabled ? 'enabled' : 'disabled'" />
+            </td> 
             <td>
               <TableAction @onEdit="onCreateEditClick(item)" @onView="onViewClick(item)"
                 @onDelete="onDelete(item.id)" />
