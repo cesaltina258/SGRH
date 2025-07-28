@@ -16,6 +16,7 @@ import Card from "@/app/common/components/Card.vue"
 import Status from "@/app/common/components/Status.vue";
 import { formateDate } from "@/app/common/dateFormate";
 import { InstitutionListingType } from "../types"
+import AdvancedFilter from "@/components/institution/list/AdvancedFilter.vue";
 
 const { t } = useI18n()
 const toast = useToast()
@@ -24,12 +25,13 @@ const institutionStore = useInstitutionStore()
 
 // Estado do componente
 const searchQuery = ref("")
-const searchProps = "name,description,address,phone,email,website,incomeTaxNumber" // Campos de pesquisa
+const searchProps = "name,description,address,phone,email,website,incomeTaxNumber" 
+const itemsPerPage = ref(10)
+const selectedInstitutions = ref<any[]>([]) 
+
 const deleteDialog = ref(false)
 const deleteId = ref<string | null>(null)
 const deleteLoading = ref(false)
-const itemsPerPage = ref(10)
-const selectedInstitutions = ref<any[]>([]) /// Armazena os funcionários selecionados
 
 // Computed properties
 const loading = computed(() => institutionStore.loading)
@@ -41,21 +43,18 @@ watch(selectedInstitutions, (newSelection) => {
 }, { deep: true })
 
 interface FetchParams {
-  page: number
-  itemsPerPage: number
-  sortBy: { key: string, order: 'asc' | 'desc' }[]
-  search: string
+  page: number;
+  itemsPerPage: number;
+  sortBy: Array<{ key: string; order: 'asc' | 'desc' }>;
 }
 
 // Busca os funcionários com os parâmetros atuais
-const fetchInstitutions = async ({ page, itemsPerPage, sortBy, search }: FetchParams) => {
-  await institutionStore.fetchInstitutions( 
+const fetchInstitutions = async ({ page, itemsPerPage, sortBy }: FetchParams) => {
+  await institutionStore.fetchInstitutions(
     page - 1, // Ajuste para API que começa em 0
     itemsPerPage,
     sortBy[0]?.key || 'createdAt',
-    sortBy[0]?.order || 'asc',
-    search, // query_values
-    searchProps // query_props
+    sortBy[0]?.order || 'asc'
   )
 }
 
@@ -106,24 +105,28 @@ const toggleSelection = (item: InstitutionListingType) => {
 
 <template>
   <Card :title="$t('t-institution-list')" class="mt-7">
-    <template #title-action>
-      <v-row justify="end" align="center" no-gutters>
-        <v-col cols="12" sm="6" md="4">
-          <QuerySearch v-model="searchQuery" :placeholder="$t('t-search-institution')" />
+    <v-card-title class="mt-2">
+      <v-row justify="space-between">
+        <v-col lg="12">
+          <AdvancedFilter />
         </v-col>
-        <v-col cols="12" sm="6" md="auto" class="ms-sm-3 mt-sm-0 mt-2">
+      </v-row>
+      <v-row justify="space-between" class="mt-n6">
+        <v-col lg="8">
+        </v-col>
+        <v-col lg="auto">
           <v-btn color="secondary" to="/institution/create" block>
             <i class="ph-plus-circle" /> {{ $t('t-add-institution') }}
           </v-btn>
         </v-col>
       </v-row>
-    </template>
+    </v-card-title>
 
     <v-card-text>
       <DataTableServer v-model="selectedInstitutions"
         :headers="institutionHeader.map(item => ({ ...item, title: $t(`t-${item.title}`) }))"
         :items="institutionStore.institutions" :items-per-page="itemsPerPage" :total-items="totalItems"
-        :loading="loading" :search-query="searchQuery" @load-items="fetchInstitutions" item-value="id"
+        :loading="loading" :search-query="searchQuery" :search-props="searchProps" @load-items="fetchInstitutions" item-value="id"
         show-select>
         <template #body="{ items }: { items: readonly unknown[] }">
           <tr v-for="item in items as InstitutionListingType[]" :key="item.id">

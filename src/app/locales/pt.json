@@ -888,5 +888,7 @@
   "t-enabled": "Habilitado",
   "t-disabled": "Desabilitado",
   "t-availability": "Disponibilidade",
-  "t-back-to-institution-and-classification": "Voltar à Instituição e Classificação"
+  "t-back-to-institution-and-classification": "Voltar à Instituição e Classificação",
+  "t-institution-search": "Pesquisar Instituição",
+  "t-enter-date": "Insira a data"
 }

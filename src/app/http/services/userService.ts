@@ -19,7 +19,7 @@ export default class UserService extends HttpService {
       value: string;
     }[] = [],
     logicalOperator: string = 'AND'
-  ): Promise<{ content: UserListingType[]; meta: any }> {
+  ): Promise<{ content: UserListingType[]; meta: any }> { 
     try {
       // Construir parâmetros base
       const params = new URLSearchParams({

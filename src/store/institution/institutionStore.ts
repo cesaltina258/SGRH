@@ -9,11 +9,19 @@ export const useInstitutionStore = defineStore('institutions', {
     pagination: {
       totalElements: 0,
       currentPage: 0,
-      itemsPerPage: 10000000,
+      itemsPerPage: 10,
       totalPages: 0
     },
     loading: false,
     error: null as string | null,
+    globalSearch: '',
+    advancedFilters: [] as {
+      prop: string;
+      operator: string;
+      value: string | boolean | Date;
+    }[],
+    logicalOperator: 'AND' as 'AND' | 'OR',
+    // Draft institution for form handling
     draftInstitution: null as InstitutionInsertType | null,
     currentInstitutionId: null as string | null
   }),
@@ -23,9 +31,7 @@ export const useInstitutionStore = defineStore('institutions', {
       page?: number,
       size?: number,
       sortColumn: string = 'createdAt',
-      direction: string = 'asc',
-      query_value?: string,
-      query_props?: string
+      direction: string = 'asc'
     ) {
       this.loading = true;
       this.error = null;
@@ -39,8 +45,9 @@ export const useInstitutionStore = defineStore('institutions', {
           actualSize,
           sortColumn,
           direction,
-          query_value,
-          query_props
+          this.globalSearch,
+          this.advancedFilters,
+          this.logicalOperator
         );
 
         this.institutions = content;
@@ -61,6 +68,29 @@ export const useInstitutionStore = defineStore('institutions', {
         this.loading = false;
       }
     },
+    
+    setGlobalSearch(search: string) {
+      this.globalSearch = search;
+    },
+
+    setAdvancedFilters(filters: {
+      prop: string ;
+      operator: string;
+      value: string | boolean | Date;
+    }[]) {
+      this.advancedFilters = filters;
+      console.log('Advanced filters set:', this.advancedFilters);
+    },
+
+    setLogicalOperator(operator: 'AND' | 'OR') {
+      this.logicalOperator = operator;
+    },
+
+    clearFilters() {
+      this.globalSearch = '';
+      this.advancedFilters = [];
+    },
+
     async fetchInstitutionsforListing(
       page?: number,
       size?: number,
